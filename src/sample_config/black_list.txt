@@ -1,0 +1,15 @@
+*prompts*
+*.idea*
+*__pycache__*
+*.xml
+*.gitignore*
+*.md
+*gen_scripts/old*
+*/resources*
+*.tpl
+*bazel-*
+*examples*
+*tests*
+*scripts*
+*dse*
+*.gpt*

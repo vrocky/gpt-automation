@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "gpt_automation"
+version = "0.1.0"
+description = "GPT directory structure and file contents prompt generator"
+authors = [
+    {name = "Author Name", email = "author@example.com"},
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = [
+    "shutil",
+    "pyperclip",
+    "argparse",
+    "os",
+    "pathlib",
+    "fnmatch",
+    "igittigitt",
+]
+
+[project.scripts]
+autogpt = "src.main:main"

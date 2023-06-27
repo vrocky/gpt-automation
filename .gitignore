@@ -1,0 +1,7 @@
+.idea/
+.git
+*__pycache__*
+venv
+dist/
+gpt_automation.egg-info/
+.gpt/

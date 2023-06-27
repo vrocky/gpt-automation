@@ -1,0 +1,2 @@
+include README.md
+include src/sample_config/*.txt
