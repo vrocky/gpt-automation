@@ -52,16 +52,18 @@ GPT Automation provides two types of prompts:
 1. **Full Prompt:** This includes both the directory structure and the contents of all files. To generate a full prompt, use:
 
 ```bat
-autogpt prompt-all --black-list-file [BLACKLIST_PATH] --white-list-file [WHITELIST_PATH] --project-path [PROJECT_PATH]
+autogpt prompt-all
 ```
 
 2. **Directory-Only Prompt:** As the name suggests, this only includes the directory structure. To generate a directory-only prompt, use:
 
 ```bat
-autogpt prompt-dir --black-list-file [BLACKLIST_PATH] --white-list-file [WHITELIST_PATH] --project-path [PROJECT_PATH]
+autogpt prompt-dir
 ```
 
 In both cases, the generated prompt is automatically copied to the clipboard.
+
+If you want to specify a different blacklist file, whitelist file, or project path, you can do so with the --black-list-file, --white-list-file, and --project-path options, respectively
 
 ## Blacklists and Whitelists
 
