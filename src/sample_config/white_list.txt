@@ -1,5 +1,0 @@
-*.groovy
-*.java
-*.py
-*.ini
-*.txt

@@ -1,2 +1,2 @@
 include README.md
-include src/sample_config/*.txt
+include gpt_automation/sample_config/*.txt

@@ -5,3 +5,4 @@ venv
 dist/
 gpt_automation.egg-info/
 .gpt/
+build/

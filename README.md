@@ -1,8 +1,31 @@
 # GPT Automation
 This Python-based project provides a way to automatically generate a project structure, including all directories and files, while ignoring certain unwanted files or directories (as specified in a blacklist). It also provides the ability to generate file contents, and can copy either the entire project structure or just the directory structure to the clipboard.
 
-## Getting Started
-Installation
+
+
+## Installation
+
+### Pipx Installation
+We recommend installing GPT Automation through pipx, which is a package manager for running applications written in Python. If you haven't installed pipx, first install it by running:
+
+
+```bash
+
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+
+```
+
+
+Next, install the GPT Automation package with:
+
+```bash
+
+pipx install gpt-automation
+
+```
+### Manual Installation
+
 To install the project, run the following command from the project's root directory:
 
 ```
