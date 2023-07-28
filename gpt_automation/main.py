@@ -1,5 +1,7 @@
 # gpt_automation\main.py
 import shutil
+import sys
+
 import pyperclip
 import argparse
 import os
@@ -79,7 +81,6 @@ def init_gql_folder(profile_name=None):
 
     print(f"Initialized {profile_dir} folder with sample black_list.txt and white_list.txt files.")
 
-
 def main():
     parser = argparse.ArgumentParser(
         description="Generate directory structure and file contents prompt for a GPT model.",
@@ -109,6 +110,11 @@ def main():
                                    help="Name of the profile to use (default: default profile).")
 
     args = parser.parse_args()
+
+    # Check if no arguments were passed and display help message
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
     if args.command == "init":
         init_gql_folder(args.profile)
