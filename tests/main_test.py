@@ -19,10 +19,10 @@ if __name__ == "__main__":
     config = read_config()
 
     # Get the absolute path of main.py
-    main_path = os.path.abspath("gpt_automation/main.py")
+    main_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../gpt_automation/main.py"))
 
     # Construct the arguments list using the values from the config file
-    args = [main_path, "prompt-all", "--black-list-file", config["black_list_file"],
-            "--white-list-file", config["white_list_file"], "--project-path", config["project_path"]]
+    args = sys.argv
+    args[0] = main_path
 
     run_main_with_args(args)
