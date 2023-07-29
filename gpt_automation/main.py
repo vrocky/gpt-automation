@@ -8,7 +8,16 @@ import os
 from gpt_automation.project_info import ProjectInfo
 
 
-def prompt_all(project_path, profile_name=None):
+import shutil
+import sys
+
+import pyperclip
+import argparse
+import os
+from gpt_automation.project_info import ProjectInfo
+
+
+def prompt_all(project_path='.', profile_name=None):
     profile_dir = f".gpt/other_profiles/{profile_name}" if profile_name else ".gpt"
 
     black_list_file = os.path.join(profile_dir, "black_list.txt")
@@ -35,7 +44,7 @@ def prompt_all(project_path, profile_name=None):
     print("Prompt copied to clipboard.")
 
 
-def prompt_only_dir_structure(project_path, profile_name=None):
+def prompt_only_dir_structure(project_path='.', profile_name=None):
     profile_dir = f".gpt/other_profiles/{profile_name}" if profile_name else ".gpt"
 
     black_list_file = os.path.join(profile_dir, "black_list.txt")
@@ -56,7 +65,6 @@ def prompt_only_dir_structure(project_path, profile_name=None):
     pyperclip.copy(directory_structure_prompt)
 
     print("Prompt for directory structure copied to clipboard.")
-
 
 def init_gql_folder(profile_name=None):
     # Use the profile name to determine the folder to initialize
@@ -95,7 +103,7 @@ def main():
 
     prompt_all_parser = subparsers.add_parser('prompt-all',
                                               help='Create a directory structure and file contents prompt.')
-    prompt_all_parser.add_argument("--project-path", default=".",
+    prompt_all_parser.add_argument("--path", default=".",
                                    help="Path to your project's root directory (default: current directory). "
                                         "The tool will start traversing the directory structure from here.")
     prompt_all_parser.add_argument("--profile", default=None,
@@ -103,7 +111,7 @@ def main():
 
     prompt_dir_parser = subparsers.add_parser('prompt-dir',
                                               help='Create a directory structure prompt without file contents.')
-    prompt_dir_parser.add_argument("--project-path", default=".",
+    prompt_dir_parser.add_argument("--path", default=".",
                                    help="Path to your project's root directory (default: current directory). "
                                         "The tool will start traversing the directory structure from here.")
     prompt_dir_parser.add_argument("--profile", default=None,
@@ -119,11 +127,11 @@ def main():
     if args.command == "init":
         init_gql_folder(args.profile)
     elif args.command == "prompt-all":
-        project_path = args.project_path
-        prompt_all(project_path, args.profile)
+        path = args.path
+        prompt_all(path, args.profile)
     elif args.command == "prompt-dir":
-        project_path = args.project_path
-        prompt_only_dir_structure(project_path, args.profile)
+        path = args.path
+        prompt_only_dir_structure(path, args.profile)
 
 
 if __name__ == "__main__":
