@@ -1,83 +1,63 @@
+
 # GPT Automation
-This Python-based project provides a way to automatically generate a project structure, including all directories and files, while ignoring certain unwanted files or directories (as specified in a blacklist). It also provides the ability to generate file contents, and can copy either the entire project structure or just the directory structure to the clipboard.
 
-
+This Python-based project provides a way to automatically generate a project structure, including all directories and files, while ignoring certain unwanted files or directories as specified in a blacklist. It also offers the capability to generate file contents, allowing users to copy either the entire project structure or just the directory structure to the clipboard.
 
 ## Installation
 
 ### Pipx Installation
-We recommend installing GPT Automation through pipx, which is a package manager for running applications written in Python. If you haven't installed pipx, first install it by running:
 
+We recommend installing GPT Automation through pipx, a package manager for running applications written in Python. If you haven't installed pipx, first install it by running:
 
 ```bash
-
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
-
 ```
-
 
 Next, install the GPT Automation package with:
 
 ```bash
-
 pipx install gpt-automation
-
 ```
-### Manual Installation
 
-To install the project, run the following command from the project's root directory:
+Manual InstallationTo manually install the project, run the following command from the project's root directory:
 
-```
+```bash
 python setup.py install
 ```
 
-This will install the project as a package, making the `main` module accessible from the command line.
+This will install the project as a package, making the main module accessible from the command line.
 
-## Initialization
+InitializationTo initialize the .gpt directory with sample blacklist and whitelist files, run:
 
-
-To initialize the .gpt directory with sample blacklist and whitelist files, run:
-```
-autogpt init
+```bash
+autogpt init [--profile PROFILE_NAME]
 ```
 
-This will create a .gpt directory if it doesn't already exist, and will copy sample_config/black_list.txt and sample_config/white_list.txt to the .gpt directory.
+This creates a .gpt directory (or a profile-specific directory under .gpt/other_profiles/ if --profile is specified) if it doesn't already exist, copying sample_config/black_list.txt and sample_config/white_list.txt into this directory.
 
+Prompt GenerationGPT Automation provides two types of prompts:
 
-## Prompt Generation
+Full PromptIncludes both the directory structure and the contents of all files. To generate a full prompt, use:
 
-GPT Automation provides two types of prompts:
-
-1. **Full Prompt:** This includes both the directory structure and the contents of all files. To generate a full prompt, use:
-
-```bat
-autogpt prompt-all
+```bash
+autogpt prompt-all [--path PROJECT_PATH] [--profile PROFILE_NAME]
 ```
 
-2. **Directory-Only Prompt:** As the name suggests, this only includes the directory structure. To generate a directory-only prompt, use:
+Directory-Only PromptOnly includes the directory structure. To generate a directory-only prompt, use:
 
-```bat
-autogpt prompt-dir
+```bash
+autogpt prompt-dir [--path PROJECT_PATH] [--profile PROFILE_NAME]
 ```
 
 In both cases, the generated prompt is automatically copied to the clipboard.
 
-If you want to specify a different blacklist file, whitelist file, or project path, you can do so with the --black-list-file, --white-list-file, and --project-path options, respectively
+Options- --path: Specifies the path to your project's root directory. Defaults to the current directory.
+- --profile: Specifies the name of the profile to use. This allows for different configurations for different projects or use cases.
 
-## Blacklists and Whitelists
+Blacklists and WhitelistsThe blacklist file contains patterns of files and directories to ignore during prompt generation, whereas the whitelist file contains patterns of files and directories to include. If a file matches patterns in both lists, it will be included in the prompt.
 
-The blacklist file is a list of patterns that will be ignored when generating the prompt. The whitelist file, on the other hand, is a list of patterns that will be included in the prompt. If a file matches a pattern in both the blacklist and the whitelist, it will be included.
-
-Sample contents for black_list.txt:
-
-
-
-Here are some sample contents for the black_list.txt and white_list.txt files to be used with the GPT Automation project:
-
-Sample contents for black_list.txt:
-
-```
+Sample Blacklist (black_list.txt)```plaintext
 *prompts*
 *.idea*
 *__pycache__*
@@ -95,10 +75,7 @@ Sample contents for black_list.txt:
 *.gpt*
 ```
 
-
-Sample contents for white_list.txt:
-
-```
+Sample Whitelist (white_list.txt)```plaintext
 *.groovy
 *.java
 *.py
@@ -106,12 +83,9 @@ Sample contents for white_list.txt:
 *.txt
 ```
 
-## Output
-
-The whole code will be coped to clipboard in this format
+OutputThe generated code, including the directory structure and file contents, will be copied to the clipboard in the following format:
 
 ```python
-
 Directory Structure:
 ./
     file_1.py
@@ -119,14 +93,17 @@ Directory Structure:
     dir_1/
         file_1.py
 
-
 File Contents:
 ==========file_1.py:
-##.... code for file_1.py
+# Code for file_1.py
 
 ==========file_2.py:
-##.... code for file_2.py
+# Code for file_2.py
 
 ==========dir_1/file_1.py:
-##.... code for dir_1/file_1.py
+# Code for dir_1/file_1.py
 ```
+
+This README provides detailed instructions for installing and using the GPT Automation tool, including how to use the `init`, `prompt-all`, and `prompt-dir` commands with their respective options. It also explains the purpose of the blacklist and whitelist files, and how the output will be formatted and copied to the clipboard.
+
+
