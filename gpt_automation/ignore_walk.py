@@ -1,25 +1,24 @@
+import fnmatch
 import os
 import pathlib
-import igittigitt
-import fnmatch
+import gitignore_parser
 import re
+
+from gpt_automation.git_tools import find_git_root  # Ensure this is defined somewhere in your code
 
 class IgnoreMatch:
     def __init__(self, gitignore_path):
         self.gitignore_path = gitignore_path
-        self.parser = igittigitt.IgnoreParser()
-        self.parser.parse_rule_file(gitignore_path)
-
-    def match(self, path):
-        path = pathlib.Path(path)
-        return self.parser.match(path)
+        self.match = gitignore_parser.parse_gitignore(gitignore_path)
 
 def load_gitignore(gitignore_path):
-    return IgnoreMatch(gitignore_path)
+    if gitignore_path is not None:
+        return IgnoreMatch(gitignore_path)
+    else:
+        return None
 
-def matches_any_pattern(file_path, matches_collection):
-    flattened_collection = flatten_matches_collection(matches_collection)
-    for match in flattened_collection:
+def matches_any_pattern(file_path, gitignore_match_collection):
+    for match in gitignore_match_collection:
         if match.match(file_path):
             return True
     return False
@@ -36,23 +35,23 @@ def matches_list_pattern(file_path, patterns):
             return True
     return False
 
-def flatten_matches_collection(matches_stack):
-    # Flatten the stack in reverse order to ensure correct priority
-    flattened = []
-    for matches in reversed(matches_stack):
-        flattened.extend(matches)
-    return flattened
+def should_ignore_by_git(file_path, gitignore_matches_stack):
+    for gitignore_path in reversed(gitignore_matches_stack):
+        if gitignore_path is not None:
+            ignore_match = load_gitignore(gitignore_path)
+            if ignore_match and ignore_match.match(file_path):
+                return True
+    return False
+
+def should_ignore_by_black_list(file_path, black_list_patterns):
+    return matches_list_pattern(file_path, black_list_patterns)
 
 def ignore_walk(path, black_list, white_list):
     black_list_patterns = compile_patterns(black_list)
     white_list_patterns = compile_patterns(white_list) if white_list else None
 
     visited = set()
-    matches_stack = [[]]  # Use a stack to manage matches_collections for each directory depth
-
-    def should_ignore(file_path, current_matches_collection):
-        flattened_collection = flatten_matches_collection(current_matches_collection)
-        return any(match.match(file_path) for match in flattened_collection) or matches_list_pattern(file_path, black_list_patterns)
+    gitignore_match_stack = init_gitignore_stack(path)
 
     def walk(dirpath, depth):
         if dirpath in visited:
@@ -61,10 +60,9 @@ def ignore_walk(path, black_list, white_list):
 
         local_gitignore_path = os.path.join(dirpath, '.gitignore')
         if os.path.exists(local_gitignore_path):
-            new_rules = load_gitignore(local_gitignore_path)
-            matches_stack.append([new_rules])  # Append only new rules
+            gitignore_match_stack.append(local_gitignore_path)
         else:
-            matches_stack.append([])  # Still add a new level to stack for depth management
+            gitignore_match_stack.append(None)
 
         dirnames, filenames = [], []
         for entry in os.scandir(dirpath):
@@ -73,13 +71,33 @@ def ignore_walk(path, black_list, white_list):
             elif entry.is_file():
                 filenames.append(entry.name)
 
-        yield dirpath, dirnames, filenames
+        # Filter filenames based on gitignore and blacklist
+        filtered_filenames = [filename for filename in filenames if not should_ignore_by_git(os.path.join(dirpath, filename), gitignore_match_stack) and not should_ignore_by_black_list(os.path.join(dirpath, filename), black_list_patterns)]
+
+        yield dirpath, dirnames, filtered_filenames
 
         for dirname in dirnames:
             full_dir_path = os.path.join(dirpath, dirname)
-            if not should_ignore(full_dir_path, matches_stack):
+            if not should_ignore_by_git(full_dir_path, gitignore_match_stack) and not should_ignore_by_black_list(full_dir_path, black_list_patterns):
                 yield from walk(full_dir_path, depth + 1)
 
-        matches_stack.pop()  # Remove the current directory's rules from the stack
+        gitignore_match_stack.pop()
 
     return walk(path, 0)
+
+def init_gitignore_stack(start_path):
+    git_root = find_git_root(start_path)
+    gitignore_match_stack = []
+    if git_root:
+        relative_path = os.path.relpath(start_path, git_root)
+        current_path = git_root
+        for part in pathlib.Path(relative_path).parts:
+            current_path = os.path.join(current_path, part)
+            gitignore_path = os.path.join(current_path, '.gitignore')
+            if os.path.exists(gitignore_path):
+                gitignore_match_stack.append(gitignore_path)
+            else:
+                gitignore_match_stack.append(None)
+    else:
+        gitignore_match_stack.append(None)
+    return gitignore_match_stack
