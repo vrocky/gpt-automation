@@ -35,18 +35,36 @@ def matches_list_pattern( file_path, patterns):
 
 
 def ignore_walk(path, black_list, white_list):
-
-    gitignores = [file_path for file_path in pathlib.Path(path).rglob('.gitignore')]
-
     black_list_patterns = compile_patterns(black_list)
     white_list_patterns = compile_patterns(white_list) if white_list else None
 
+    visited = set()
+    matches_collection = []
 
-    matches_collection = [load_gitignore(g) for g in gitignores]
+    def should_ignore(file_path):
+        return any(match.match(file_path) for match in matches_collection) or matches_list_pattern(file_path, black_list_patterns)
 
-    for dirpath, dirnames, filenames in os.walk(path):
-        dirnames[:] = [d for d in dirnames if not matches_any_pattern(os.path.join(dirpath, d), matches_collection)
-                        and not matches_list_pattern(os.path.join(dirpath, d), black_list_patterns)]
-        filenames = [f for f in filenames if not matches_any_pattern(os.path.join(dirpath, f), matches_collection)
-                        and (not white_list or matches_list_pattern(os.path.join(dirpath, f), white_list_patterns))]
+    def walk(dirpath):
+        if dirpath in visited:
+            return
+        visited.add(dirpath)
+
+        local_gitignore_path = os.path.join(dirpath, '.gitignore')
+        if os.path.exists(local_gitignore_path):
+            matches_collection.append(load_gitignore(local_gitignore_path))
+
+        dirnames, filenames = [], []
+        for entry in os.scandir(dirpath):
+            if entry.is_dir(follow_symlinks=False):
+                dirnames.append(entry.name)
+            elif entry.is_file():
+                filenames.append(entry.name)
+
         yield dirpath, dirnames, filenames
+
+        for dirname in dirnames:
+            full_dir_path = os.path.join(dirpath, dirname)
+            if not should_ignore(full_dir_path):
+                yield from walk(full_dir_path)
+
+    return walk(path)
