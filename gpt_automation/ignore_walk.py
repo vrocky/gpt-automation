@@ -3,6 +3,7 @@ import pathlib
 import igittigitt
 import fnmatch
 import re
+
 class IgnoreMatch:
     def __init__(self, gitignore_path):
         self.gitignore_path = gitignore_path
@@ -17,7 +18,8 @@ def load_gitignore(gitignore_path):
     return IgnoreMatch(gitignore_path)
 
 def matches_any_pattern(file_path, matches_collection):
-    for match in matches_collection:
+    flattened_collection = flatten_matches_collection(matches_collection)
+    for match in flattened_collection:
         if match.match(file_path):
             return True
     return False
@@ -25,7 +27,8 @@ def matches_any_pattern(file_path, matches_collection):
 def compile_patterns(patterns_list):
     compiled_patterns = [re.compile(fnmatch.translate(pattern)) for pattern in patterns_list]
     return compiled_patterns
-def matches_list_pattern( file_path, patterns):
+
+def matches_list_pattern(file_path, patterns):
     file_path = file_path.replace("\\", "/")
     file_path = file_path.lstrip("/")
     for pattern in patterns:
@@ -33,6 +36,12 @@ def matches_list_pattern( file_path, patterns):
             return True
     return False
 
+def flatten_matches_collection(matches_stack):
+    # Flatten the stack in reverse order to ensure correct priority
+    flattened = []
+    for matches in reversed(matches_stack):
+        flattened.extend(matches)
+    return flattened
 
 def ignore_walk(path, black_list, white_list):
     black_list_patterns = compile_patterns(black_list)
@@ -42,7 +51,8 @@ def ignore_walk(path, black_list, white_list):
     matches_stack = [[]]  # Use a stack to manage matches_collections for each directory depth
 
     def should_ignore(file_path, current_matches_collection):
-        return any(match.match(file_path) for match in current_matches_collection) or matches_list_pattern(file_path, black_list_patterns)
+        flattened_collection = flatten_matches_collection(current_matches_collection)
+        return any(match.match(file_path) for match in flattened_collection) or matches_list_pattern(file_path, black_list_patterns)
 
     def walk(dirpath, depth):
         if dirpath in visited:
@@ -51,11 +61,10 @@ def ignore_walk(path, black_list, white_list):
 
         local_gitignore_path = os.path.join(dirpath, '.gitignore')
         if os.path.exists(local_gitignore_path):
-            # When entering a directory, add its .gitignore rules to a new level in the stack
-            matches_stack.append(matches_stack[-1] + [load_gitignore(local_gitignore_path)])
+            new_rules = load_gitignore(local_gitignore_path)
+            matches_stack.append([new_rules])  # Append only new rules
         else:
-            # If no .gitignore, still add a new level to stack for consistent depth management
-            matches_stack.append(list(matches_stack[-1]))
+            matches_stack.append([])  # Still add a new level to stack for depth management
 
         dirnames, filenames = [], []
         for entry in os.scandir(dirpath):
@@ -68,10 +77,9 @@ def ignore_walk(path, black_list, white_list):
 
         for dirname in dirnames:
             full_dir_path = os.path.join(dirpath, dirname)
-            if not should_ignore(full_dir_path, matches_stack[-1]):
+            if not should_ignore(full_dir_path, matches_stack):
                 yield from walk(full_dir_path, depth + 1)
 
-        # After walking a directory, remove its matches_collection from the stack
-        matches_stack.pop()
+        matches_stack.pop()  # Remove the current directory's rules from the stack
 
     return walk(path, 0)
