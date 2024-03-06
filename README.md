@@ -1,11 +1,10 @@
+<h1>GPT Automation</h1>
 
-# GPT Automation
+This Python-based project provides a way to automatically generate a project structure, including all directories and files, while ignoring certain unwanted files or directories as specified in a blacklist or a .gptignore file. It also offers the capability to generate file contents, allowing users to copy either the entire project structure or just the directory structure to the clipboard.
 
-This Python-based project provides a way to automatically generate a project structure, including all directories and files, while ignoring certain unwanted files or directories as specified in a blacklist. It also offers the capability to generate file contents, allowing users to copy either the entire project structure or just the directory structure to the clipboard.
+<h2>Installation</h2>
 
-## Installation
-
-### Pipx Installation
+<h3>Pipx Installation</h3>
 
 We recommend installing GPT Automation through pipx, a package manager for running applications written in Python. If you haven't installed pipx, first install it by running:
 
@@ -20,7 +19,9 @@ Next, install the GPT Automation package with:
 pipx install gpt-automation
 ```
 
-Manual InstallationTo manually install the project, run the following command from the project's root directory:
+<h3>Manual Installation</h3>
+
+To manually install the project, run the following command from the project's root directory:
 
 ```bash
 python setup.py install
@@ -28,23 +29,27 @@ python setup.py install
 
 This will install the project as a package, making the main module accessible from the command line.
 
-InitializationTo initialize the .gpt directory with sample blacklist and whitelist files, run:
+<h3>Initialization</h3>
+
+To initialize the .gpt directory with sample blacklist, whitelist, and .gptignore files, run:
 
 ```bash
 autogpt init [--profile PROFILE_NAME]
 ```
 
-This creates a .gpt directory (or a profile-specific directory under .gpt/other_profiles/ if --profile is specified) if it doesn't already exist, copying sample_config/black_list.txt and sample_config/white_list.txt into this directory.
+This creates a .gpt directory (or a profile-specific directory under .gpt/other_profiles/ if --profile is specified) if it doesn't already exist, copying sample_config/black_list.txt, sample_config/white_list.txt, and a sample .gptignore file into this directory.
 
-Prompt GenerationGPT Automation provides two types of prompts:
+<h3>Prompt Generation</h3>
 
-Full PromptIncludes both the directory structure and the contents of all files. To generate a full prompt, use:
+GPT Automation provides two types of prompts:
+
+- Full Prompt: Includes both the directory structure and the contents of all files. To generate a full prompt, use:
 
 ```bash
 autogpt prompt-all [--path PROJECT_PATH] [--profile PROFILE_NAME]
 ```
 
-Directory-Only PromptOnly includes the directory structure. To generate a directory-only prompt, use:
+- Directory-Only Prompt: Only includes the directory structure. To generate a directory-only prompt, use:
 
 ```bash
 autogpt prompt-dir [--path PROJECT_PATH] [--profile PROFILE_NAME]
@@ -52,10 +57,14 @@ autogpt prompt-dir [--path PROJECT_PATH] [--profile PROFILE_NAME]
 
 In both cases, the generated prompt is automatically copied to the clipboard.
 
-Options- --path: Specifies the path to your project's root directory. Defaults to the current directory.
+<h3>Options</h3>
+
+- --path: Specifies the path to your project's root directory. Defaults to the current directory.
 - --profile: Specifies the name of the profile to use. This allows for different configurations for different projects or use cases.
 
-Blacklists and WhitelistsThe blacklist file contains patterns of files and directories to ignore during prompt generation, whereas the whitelist file contains patterns of files and directories to include. If a file matches patterns in both lists, it will be included in the prompt.
+<h3>Blacklists, Whitelists, and .gptignore</h3>
+
+The blacklist file contains patterns of files and directories to ignore during prompt generation, whereas the whitelist file contains patterns of files and directories to include. The .gptignore file functions similarly to a blacklist, offering a more flexible and familiar way to specify files and directories to ignore. If a file matches patterns in both lists, it will be included in the prompt.
 
 Sample Blacklist (black_list.txt)```plaintext
 *prompts*
@@ -83,9 +92,22 @@ Sample Whitelist (white_list.txt)```plaintext
 *.txt
 ```
 
-OutputThe generated code, including the directory structure and file contents, will be copied to the clipboard in the following format:
+Sample .gptignore
 
-```python
+```plaintext
+# Ignore all markdown files
+*.md
+
+# Ignore specific directories
+node_modules/
+build/
+```
+
+<h3>Output</h3>
+
+The generated code, including the directory structure and file contents, will be copied to the clipboard in the following format:
+
+```dir
 Directory Structure:
 ./
     file_1.py
@@ -104,6 +126,6 @@ File Contents:
 # Code for dir_1/file_1.py
 ```
 
-This README provides detailed instructions for installing and using the GPT Automation tool, including how to use the `init`, `prompt-all`, and `prompt-dir` commands with their respective options. It also explains the purpose of the blacklist and whitelist files, and how the output will be formatted and copied to the clipboard.
+This README provides detailed instructions for installing and using the GPT Automation tool, including how to use the init, prompt-all, and prompt-dir commands with their respective options. It also explains the purpose of the blacklist, whitelist, and .gptignore files, and how the output will be formatted and copied to the clipboard.
 
 
