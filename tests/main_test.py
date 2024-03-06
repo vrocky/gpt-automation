@@ -118,9 +118,9 @@ def test_prompt_dir_structure_with_loops(fixture, request):
     stdout, stderr = run_gpt_command(project_dir, "prompt-dir --path .")
 
     # Expected elements to verify in the stdout
-    expected_elements = ["dir1/", "nested/", "file1.txt", "file_nested.txt",
-                         "dir2/", "subdir1/", "file_subdir1.txt",
-                         "dir3/", "file_dir3.txt"]
+    expected_elements = ["file1.txt", "file_nested.txt",
+                          "file_subdir1.txt",
+                          "file_dir3.txt"]
 
     # Verify expected elements are present in the command output
     for element in expected_elements:

@@ -46,6 +46,12 @@ def should_ignore_by_git(file_path, gitignore_matches_stack):
 def should_ignore_by_black_list(file_path, black_list_patterns):
     return matches_list_pattern(file_path, black_list_patterns)
 
+def filter_with_white_list(filtered_filenames, white_list_patterns):
+    if white_list_patterns:
+        return [filename for filename in filtered_filenames if matches_list_pattern(filename, white_list_patterns)]
+    else:
+        return filtered_filenames
+
 def ignore_walk(path, black_list, white_list):
     black_list_patterns = compile_patterns(black_list)
     white_list_patterns = compile_patterns(white_list) if white_list else None
@@ -73,6 +79,8 @@ def ignore_walk(path, black_list, white_list):
 
         # Filter filenames based on gitignore and blacklist
         filtered_filenames = [filename for filename in filenames if not should_ignore_by_git(os.path.join(dirpath, filename), gitignore_match_stack) and not should_ignore_by_black_list(os.path.join(dirpath, filename), black_list_patterns)]
+        # Filter filenames with white list patterns
+        filtered_filenames = filter_with_white_list(filtered_filenames, white_list_patterns)
 
         yield dirpath, dirnames, filtered_filenames
 
