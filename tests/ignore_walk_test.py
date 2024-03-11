@@ -27,7 +27,7 @@ def test_gitignore_rules(setup_directory_structure):
     white_list = ["*.txt"]
 
     files = []
-    for dirpath, dirnames, filenames in ignore_walk.ignore_walk(root, black_list, white_list):
+    for dirpath, dirnames, filenames in ignore_walk.traverse_with_filters(root, black_list, white_list):
         for filename in filenames:
             files.append(os.path.relpath(os.path.join(dirpath, filename), root).replace("\\","/"))
 
@@ -54,7 +54,7 @@ def test_nested_gitignore_rules(setup_directory_structure):
     white_list = []
 
     files = []
-    for dirpath, dirnames, filenames in ignore_walk.ignore_walk(root, black_list, white_list):
+    for dirpath, dirnames, filenames in ignore_walk.traverse_with_filters(root, black_list, white_list):
         for filename in filenames:
             files.append(os.path.relpath(os.path.join(dirpath, filename), root).replace("\\", "/"))
 
@@ -85,7 +85,7 @@ def test_ignore_deeply_nested_subtree(setup_directory_structure):
     white_list = []
 
     files = []
-    for dirpath, dirnames, filenames in ignore_walk.ignore_walk(root, black_list, white_list):
+    for dirpath, dirnames, filenames in ignore_walk.traverse_with_filters(root, black_list, white_list):
         for filename in filenames:
             files.append(os.path.relpath(os.path.join(dirpath, filename), root).replace("\\", "/"))
 
@@ -147,7 +147,7 @@ def test_symlink_loop_with_gitignore(setup_symlink_loop_structure_with_gitignore
 
     visited = set()
     try:
-        for dirpath, dirnames, filenames in ignore_walk.ignore_walk(root, black_list, white_list):
+        for dirpath, dirnames, filenames in ignore_walk.traverse_with_filters(root, black_list, white_list):
             # Normalize path to handle symlinks and avoid duplicates
             normalized_path = os.path.normpath(dirpath)
             if normalized_path in visited:
