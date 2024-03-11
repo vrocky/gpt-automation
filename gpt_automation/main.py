@@ -29,7 +29,7 @@ def prompt_all(project_path='.', profile_name=None):
     with open(white_list_file, 'r') as f:
         white_list = f.read()
 
-    project_info = ProjectInfo(project_path, black_list, white_list)
+    project_info = ProjectInfo(project_path, black_list, white_list, profile_name)
 
     directory_structure_prompt = project_info.create_directory_structure_prompt()
     print(directory_structure_prompt)

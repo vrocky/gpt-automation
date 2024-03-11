@@ -9,9 +9,6 @@ def load_ignore_matches(base_pattern_pairs):
         return None
 
 
-
-
-
 def should_ignore_by_ignore_files(file_path, ignore_matches_stack):
     for base_pattern_pairs in reversed(ignore_matches_stack):
         if base_pattern_pairs:
@@ -21,7 +18,6 @@ def should_ignore_by_ignore_files(file_path, ignore_matches_stack):
     return False
 
 
-
 def should_ignore_by_black_list(file_path, black_list_patterns):
     return matches_list_pattern(file_path, black_list_patterns)
 
@@ -29,7 +25,8 @@ def should_ignore_by_black_list(file_path, black_list_patterns):
 def should_include_by_include_only_list(file_path, include_only_matches_stack):
     # Pre-load IgnoreMatch objects from the stack to avoid repeated loading
     preloaded_include_matches = [
-        load_ignore_matches(include_only_paths) for include_only_paths in include_only_matches_stack if include_only_paths
+        load_ignore_matches(include_only_paths) for include_only_paths in include_only_matches_stack if
+        include_only_paths
     ]
 
     # Determine if any IgnoreMatch object has matches
@@ -46,10 +43,6 @@ def should_include_by_include_only_list(file_path, include_only_matches_stack):
 
     # If the file does not match any include_only patterns, it should not be included
     return False
-
-
-
-
 
 
 def filter_with_white_list(filtered_filenames, white_list_patterns):

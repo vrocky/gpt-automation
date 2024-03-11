@@ -2,14 +2,15 @@ import os
 import gpt_automation.ignore_walk
 
 class ProjectInfo:
-    def __init__(self, root_dir, black_list=None, white_list=None):
+    def __init__(self, root_dir, black_list=None, white_list=None,profile_name=None):
         self.root_dir = root_dir
         self.black_list = black_list.strip().split('\n') if black_list else None
         self.white_list = white_list.strip().split('\n') if white_list else None
+        self.profile_name = profile_name
 
     def create_directory_structure_prompt(self):
         prompt = "Directory Structure:\n"
-        for root, dirs, files in gpt_automation.ignore_walk.traverse_with_filters(self.root_dir, self.black_list, self.white_list):
+        for root, dirs, files in gpt_automation.ignore_walk.traverse_with_filters(self.root_dir, self.black_list, self.white_list, self.profile_name):
             level = root.replace(self.root_dir, '').count(os.sep)
             indent = ' ' * 4 * level
             prompt += '{}{}/\n'.format(indent, os.path.basename(root))
@@ -21,7 +22,7 @@ class ProjectInfo:
 
     def create_file_contents_prompt(self):
         prompt = "File Contents:\n"
-        for root, dirs, files in gpt_automation.ignore_walk.traverse_with_filters(self.root_dir, self.black_list, self.white_list):
+        for root, dirs, files in gpt_automation.ignore_walk.traverse_with_filters(self.root_dir, self.black_list, self.white_list, self.profile_name):
             for file in files:
                 file_path = os.path.join(root, file)
                 relative_path = os.path.relpath(file_path, self.root_dir) # Corrected Line

@@ -1,6 +1,7 @@
 import os
 import pathlib
 
+from gpt_automation.ignore_file_parser import collect_patterns_from_ignore_files
 from gpt_automation.utils.git_tools import find_git_root
 from gpt_automation.filters import (
     should_ignore_by_ignore_files,
@@ -11,7 +12,7 @@ from gpt_automation.filters import (
 from gpt_automation.utils.pattern_utils import compile_patterns
 
 
-def traverse_with_filters(path, blacklist, whitelist, ignore_filenames=['.gitignore', ".gptignore"],
+def traverse_with_filters(path, blacklist, whitelist, profile_name=None,ignore_filenames=['.gitignore', ".gptignore"],
                           include_only_filenames=[".gptincludeonly"]):
     blacklist_patterns = compile_patterns(blacklist)
     whitelist_patterns = compile_patterns(whitelist) if whitelist else None
@@ -26,10 +27,10 @@ def traverse_with_filters(path, blacklist, whitelist, ignore_filenames=['.gitign
             return
         visited_dirs.add(directory_path)
 
-        local_ignore_patterns = collect_patterns_from_ignore_files(directory_path, ignore_filenames)
+        local_ignore_patterns = collect_patterns_from_ignore_files(directory_path, ignore_filenames,profile_name)
         ignore_patterns_stack.append(local_ignore_patterns if local_ignore_patterns else None)
 
-        local_include_only_patterns = collect_patterns_from_ignore_files(directory_path, include_only_filenames)
+        local_include_only_patterns = collect_patterns_from_ignore_files(directory_path, include_only_filenames,profile_name)
         include_only_patterns_stack.append(local_include_only_patterns if local_include_only_patterns else None)
 
         subdirectories, file_names = [], []
@@ -43,7 +44,7 @@ def traverse_with_filters(path, blacklist, whitelist, ignore_filenames=['.gitign
                               not should_ignore_by_ignore_files(os.path.join(directory_path, filename),
                                                                 ignore_patterns_stack) and
                               not should_ignore_by_black_list(os.path.join(directory_path, filename),
-                                                               blacklist_patterns)]
+                                                              blacklist_patterns)]
         filtered_filenames = filter_with_white_list(filtered_filenames, whitelist_patterns)
 
         filtered_filenames = [filename for filename in filtered_filenames if
@@ -63,18 +64,6 @@ def traverse_with_filters(path, blacklist, whitelist, ignore_filenames=['.gitign
 
     return walk(path, 0)
 
-
-def collect_patterns_from_ignore_files(directory_path, ignore_filenames):
-    pattern_pairs = []
-    for ignore_filename in ignore_filenames:
-        for entry in os.scandir(directory_path):
-            if entry.is_file() and entry.name in ignore_filenames:
-                base_path = os.path.dirname(entry.path)
-                with open(entry.path, 'r') as file:
-                    patterns = file.read().splitlines()
-                    for pattern in patterns:
-                        pattern_pairs.append((base_path, pattern))
-    return pattern_pairs
 
 
 def initialize_ignore_patterns_stack(start_path, ignore_filenames):
