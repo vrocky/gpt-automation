@@ -3,3 +3,15 @@
 *.py
 *.ini
 *.txt
+*.html
+*.css
+*.js
+*.json
+*.ts
+*.jsx
+*.tsx
+*.coffee
+*.less
+*.scss
+*.styl
+*.css

@@ -62,11 +62,12 @@ In both cases, the generated prompt is automatically copied to the clipboard.
 - --path: Specifies the path to your project's root directory. Defaults to the current directory.
 - --profile: Specifies the name of the profile to use. This allows for different configurations for different projects or use cases.
 
-<h3>Blacklists, Whitelists, and .gptignore</h3>
+<h3>Blacklists, Whitelists, .gptignore, and .gptincludeonly</h3>
 
-The blacklist file contains patterns of files and directories to ignore during prompt generation, whereas the whitelist file contains patterns of files and directories to include. The .gptignore file functions similarly to a blacklist, offering a more flexible and familiar way to specify files and directories to ignore. If a file matches patterns in both lists, it will be included in the prompt.
+The blacklist file contains patterns of files and directories to ignore during prompt generation, whereas the whitelist file contains patterns of files and directories to include. The .gptignore file functions similarly to a blacklist, offering a more flexible and familiar way to specify files and directories to ignore. The .gptincludeonly file is a new addition that allows users to specify files and directories that should exclusively be included in the prompt, regardless of other rules. If a file matches patterns in both the include and exclude lists, it will be included in the prompt.
+Sample Blacklist (black_list.txt)
 
-Sample Blacklist (black_list.txt)```plaintext
+```plaintext
 *prompts*
 *.idea*
 *__pycache__*
@@ -75,8 +76,6 @@ Sample Blacklist (black_list.txt)```plaintext
 *.md
 *gen_scripts/old*
 */resources*
-*.tpl
-*bazel-*
 *examples*
 *tests*
 *scripts*
@@ -84,7 +83,9 @@ Sample Blacklist (black_list.txt)```plaintext
 *.gpt*
 ```
 
-Sample Whitelist (white_list.txt)```plaintext
+Sample Whitelist (white_list.txt)
+
+```plaintext
 *.groovy
 *.java
 *.py
@@ -92,9 +93,9 @@ Sample Whitelist (white_list.txt)```plaintext
 *.txt
 ```
 
-Sample .gptignore
+Sample `.gptignore`
 
-```plaintext
+```gitignore
 # Ignore all markdown files
 *.md
 
@@ -102,6 +103,16 @@ Sample .gptignore
 node_modules/
 build/
 ```
+
+Sample `.gptincludeonly`
+
+```gitignore
+# Explicitly include only these files or directories
+src/main/
+*.yml
+
+```
+
 
 <h3>Output</h3>
 

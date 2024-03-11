@@ -51,18 +51,33 @@ def should_ignore_by_ignore_files(file_path, ignore_matches_stack):
 def should_ignore_by_black_list(file_path, black_list_patterns):
     return matches_list_pattern(file_path, black_list_patterns)
 
+
+def should_include_by_include_only_list(file_path, include_only_matches_stack):
+
+    for include_only_paths in reversed(include_only_matches_stack):
+        if include_only_paths:
+            include_match = load_ignore_matches(include_only_paths)
+            if include_match and include_match.match(file_path):
+                # If the file matches any include_only pattern, it should be included
+                return True
+    # If the file does not match any include_only patterns, it should not be included
+    return False
+
+
 def filter_with_white_list(filtered_filenames, white_list_patterns):
     if white_list_patterns:
         return [filename for filename in filtered_filenames if matches_list_pattern(filename, white_list_patterns)]
     else:
         return filtered_filenames
 
-def ignore_walk(path, black_list, white_list, ignore_file_names=['.gitignore',".gptignore"]):
+def ignore_walk(path, black_list, white_list, ignore_file_names=['.gitignore', ".gptignore"], include_only_file_names=[".gptincludeonly"]):
     black_list_patterns = compile_patterns(black_list)
     white_list_patterns = compile_patterns(white_list) if white_list else None
+    include_only_patterns = compile_patterns(include_only_file_names) if include_only_file_names else None
 
     visited = set()
     ignore_matches_stack = init_ignore_stack(path, ignore_file_names)
+    include_only_matches_stack = init_ignore_stack(path, include_only_file_names)  # Initialize the include_only stack
 
     def walk(dirpath, depth):
         if dirpath in visited:
@@ -71,6 +86,9 @@ def ignore_walk(path, black_list, white_list, ignore_file_names=['.gitignore',".
 
         local_ignore_paths = find_ignore_files(dirpath, ignore_file_names)
         ignore_matches_stack.append(local_ignore_paths if local_ignore_paths else None)
+
+        local_include_only_paths = find_ignore_files(dirpath, include_only_file_names)
+        include_only_matches_stack.append(local_include_only_paths if local_include_only_paths else None)
 
         dirnames, filenames = [], []
         for entry in os.scandir(dirpath):
@@ -83,6 +101,10 @@ def ignore_walk(path, black_list, white_list, ignore_file_names=['.gitignore',".
         filtered_filenames = [filename for filename in filenames if not should_ignore_by_ignore_files(os.path.join(dirpath, filename), ignore_matches_stack) and not should_ignore_by_black_list(os.path.join(dirpath, filename), black_list_patterns)]
         filtered_filenames = filter_with_white_list(filtered_filenames, white_list_patterns)
 
+        # Filter using the include_only list, if specified
+        if include_only_patterns:
+            filtered_filenames = [filename for filename in filtered_filenames if should_include_by_include_only_list(os.path.join(dirpath, filename), include_only_matches_stack)]
+
         yield dirpath, dirnames, filtered_filenames
 
         for dirname in dirnames:
@@ -91,9 +113,9 @@ def ignore_walk(path, black_list, white_list, ignore_file_names=['.gitignore',".
                 yield from walk(full_dir_path, depth + 1)
 
         ignore_matches_stack.pop()
+        include_only_matches_stack.pop()  # Ensure to pop from this stack too
 
     return walk(path, 0)
-
 def find_ignore_files(dirpath, ignore_file_names):
     ignore_paths = []
     for ignore_file_name in ignore_file_names:
