@@ -4,18 +4,37 @@ import pathlib
 import gitignore_parser
 import re
 
+from gpt_automation import gitignore_parser2
 from gpt_automation.git_tools import find_git_root  # Ensure this is defined somewhere in your code
 
 
 class IgnoreMatch:
     def __init__(self, ignore_paths):
-        # Changed to support multiple ignore paths
         self.ignore_paths = ignore_paths
-        self.matches = [gitignore_parser.parse_gitignore(path) for path in ignore_paths]
+        self.matches = [
+            gitignore_parser2.parse_patterns_with_base_dir(pathlib.Path(path).parent, [open(path, 'r').read()]) for path
+            in ignore_paths]
 
     def match(self, file_path):
-        # Check against all provided ignore files
         return any(match(file_path) for match in self.matches)
+
+    def has_matches(self):
+        for ignore_path in self.ignore_paths:
+            if os.path.exists(ignore_path):
+                if not self._is_file_effectively_empty(ignore_path):
+                    return True
+
+        return False
+
+
+    @staticmethod
+    def _is_file_effectively_empty(file_path):
+        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+            with open(file_path, 'r') as file:
+                content = file.read().strip()
+                return len(content) == 0
+        return True
+
 
 
 def load_ignore_matches(ignore_paths):
@@ -60,18 +79,28 @@ def should_ignore_by_black_list(file_path, black_list_patterns):
 
 
 def should_include_by_include_only_list(file_path, include_only_matches_stack):
-    # Check if the include-only feature is not being used
-    if not include_only_matches_stack or all(paths is None for paths in include_only_matches_stack):
-        return True  # If we are not using this feature, return True
+    # Pre-load IgnoreMatch objects from the stack to avoid repeated loading
+    preloaded_include_matches = [
+        load_ignore_matches(include_only_paths) for include_only_paths in include_only_matches_stack if include_only_paths
+    ]
 
-    for include_only_paths in reversed(include_only_matches_stack):
-        if include_only_paths:
-            include_match = load_ignore_matches(include_only_paths)
-            if include_match and include_match.match(file_path):
-                # If the file matches any include_only pattern, it should be included
-                return True
+    # Determine if any IgnoreMatch object has matches
+    active_include_only_rules = any(match.has_matches() for match in preloaded_include_matches if match)
+
+    # If no active rules are found, the feature is not in use, so return True
+    if not active_include_only_rules:
+        return True
+
+    for include_match in reversed(preloaded_include_matches):
+        if include_match and include_match.match(file_path):
+            # If the file matches any include_only pattern, it should be included
+            return True
+
     # If the file does not match any include_only patterns, it should not be included
     return False
+
+
+
 
 
 
