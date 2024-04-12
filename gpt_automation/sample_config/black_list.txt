@@ -1,15 +1,1 @@
-*.idea*
-*__pycache__*
-*.xml
-*.gitignore*
-*.md
-*bazel-*
 *.gpt*
-*.class
-*.gradle*
-*.zip
-*.jar
-*.war
-*.ear
-*.git*
-*build*
