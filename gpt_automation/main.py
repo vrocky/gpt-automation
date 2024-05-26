@@ -1,4 +1,4 @@
-# gpt_automation\main.py
+# gpt_automation_tests\main.py
 import shutil
 import sys
 

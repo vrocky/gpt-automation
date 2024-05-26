@@ -22,7 +22,7 @@ def run_main_with_args(args):
 
 if __name__ == "__main__":
     project_path = read_config("main", "project_path")
-    main_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../gpt_automation/main.py"))
+    main_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../gpt_automation_tests/main.py"))
 
     # Change the current working directory
     os.chdir(project_path)

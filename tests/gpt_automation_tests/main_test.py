@@ -90,13 +90,13 @@ def temp_project_dir_with_junction_loop():
 
 def run_gpt_command(project_dir, command):
     """
-    Executes a command in the context of project_dir using the gpt_automation tool,
+    Executes a command in the context of project_dir using the gpt_automation_tests tool,
     capturing and returning the command's output.
     """
     original_cwd = os.getcwd()
     os.chdir(project_dir)
     try:
-        result = subprocess.run([sys.executable, '-m', 'gpt_automation.main'] + command.split(),
+        result = subprocess.run([sys.executable, '-m', 'gpt_automation_tests.main'] + command.split(),
                                 capture_output=True, text=True, check=True)
     finally:
         os.chdir(original_cwd)
@@ -111,7 +111,7 @@ def run_gpt_command(project_dir, command):
 def test_prompt_dir_structure_with_loops(fixture, request):
     project_dir = request.getfixturevalue(fixture)
 
-    # Initialize the directory using the gpt_automation tool
+    # Initialize the directory using the gpt_automation_tests tool
     stdout_init, stderr_init = run_gpt_command(project_dir, "init")
     assert "error" not in stderr_init.lower(), "Initialization failed with an error"
 
