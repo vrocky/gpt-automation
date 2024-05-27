@@ -1,6 +1,6 @@
 import os
 
-from gpt_automation.utils.gitignore_parser2 import parse_patterns_with_base_dir
+from gitignore_parser2.parser import parse_patterns_with_base_dir
 
 
 class IgnoreMatch:
