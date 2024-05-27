@@ -1,5 +1,4 @@
 .idea/
-.git
 *__pycache__*
 venv
 dist/

@@ -15,8 +15,10 @@ def compile_patterns(patterns_list):
 
 
 def matches_list_pattern(file_path, patterns):
+
     file_path = file_path.replace("\\", "/")
-    file_path = file_path.lstrip("/")
+
+
     for pattern in patterns:
         if pattern.fullmatch(file_path):
             return True
