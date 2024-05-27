@@ -1,4 +1,4 @@
-from gitignore_parser2.parser import GitIgnoreRule, _normalize_path  # Make sure to adjust the import based on your actual module structure
+from gpt_automation.third_party.gitignore_parser2.parser import GitIgnoreRule, _normalize_path  # Make sure to adjust the import based on your actual module structure
 import pytest
 
 # Test class for GitIgnoreRule

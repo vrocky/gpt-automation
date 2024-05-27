@@ -1,12 +1,12 @@
 import unittest
 from pathlib import Path
 
-from gitignore_parser2.parser2 import GitIgnoreParser
+from gpt_automation.third_party.gitignore_parser2.parser2 import GitIgnoreParser
 
 
 class TestGitIgnoreParser(unittest.TestCase):
     def setUp(self):
-        self.base_dir = str(Path(".").resolve())  # Setting up the base directory
+        self.base_dir = str(Path("").resolve())  # Setting up the base directory
         self.patterns = ['tests/*']
         self.parser = GitIgnoreParser(self.base_dir, self.patterns)
 

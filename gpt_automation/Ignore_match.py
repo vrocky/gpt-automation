@@ -1,8 +1,7 @@
 import logging
 import os
 
-from gitignore_parser2.parser import parse_gitignore2
-from gitignore_parser2.parser2 import GitIgnoreParser
+from gpt_automation.third_party.gitignore_parser2.parser2 import GitIgnoreParser
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 class IgnoreMatch:
