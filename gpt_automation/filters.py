@@ -3,7 +3,7 @@ from gpt_automation.utils.pattern_utils import matches_list_pattern
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def load_ignore_matches(base_pattern_pairs):

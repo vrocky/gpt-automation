@@ -4,7 +4,7 @@ import os
 from gitignore_parser2.parser import parse_gitignore2
 from gitignore_parser2.parser2 import GitIgnoreParser
 
-
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 class IgnoreMatch:
     def __init__(self, base_pattern_pairs):
         # Now expects an array of (base_path, pattern) tuples
@@ -31,7 +31,7 @@ class IgnoreMatch:
             })
 
         # Optionally, you could print or log the results array to inspect it
-        print(results)
+        #print(results)
         logging.debug(f"results:{ results}")
         final_result = any(result['result'] for result in results)
         return final_result
