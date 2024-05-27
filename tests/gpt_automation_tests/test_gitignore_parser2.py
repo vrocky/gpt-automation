@@ -1,5 +1,5 @@
 import pytest
-from gitignore_parser2.parser import parse_patterns_with_base_dir
+from gitignore_parser2.parser import parse_gitignore2
 import os
 
 
@@ -27,7 +27,7 @@ def base_dir_path():
 # Test to dry run parse_patterns_with_base_dir with specific patterns
 def test_parse_patterns_with_specific_patterns(base_dir_path):
     patterns = ['*.txt', '!dir_1/']
-    matcher = parse_patterns_with_base_dir(base_dir_path, patterns)
+    matcher = parse_gitignore2(base_dir_path, patterns)
     results = check_patterns_and_collect_results(base_dir_path, matcher)
     # Add assertion to validate expected results
     for file_path, matched in results:
@@ -40,7 +40,7 @@ def test_parse_patterns_with_specific_patterns(base_dir_path):
 # Test to dry run parse_patterns_with_base_dir with empty patterns
 def test_parse_patterns_with_empty_patterns(base_dir_path):
     patterns = []
-    matcher = parse_patterns_with_base_dir(base_dir_path, patterns)
+    matcher = parse_gitignore2(base_dir_path, patterns)
     results = check_patterns_and_collect_results(base_dir_path, matcher)
     # Since no patterns are provided, nothing should match
     for file_path, matched in results:
@@ -50,7 +50,7 @@ def test_parse_patterns_with_empty_patterns(base_dir_path):
 # Test to dry run parse_patterns_with_base_dir for negation pattern
 def test_parse_patterns_with_negation_pattern(base_dir_path):
     patterns = ['!file10.txt']
-    matcher = parse_patterns_with_base_dir(base_dir_path, patterns)
+    matcher = parse_gitignore2(base_dir_path, patterns)
     results = check_patterns_and_collect_results(base_dir_path, matcher)
     # Assert based on the negation pattern
     for file_path, matched in results:
@@ -61,7 +61,7 @@ def test_parse_patterns_with_negation_pattern(base_dir_path):
 # Test to dry run parse_patterns_with_base_dir with non-existent files
 def test_parse_patterns_with_non_existent_files(base_dir_path):
     patterns = ['non_existent_file.*']
-    matcher = parse_patterns_with_base_dir(base_dir_path, patterns)
+    matcher = parse_gitignore2(base_dir_path, patterns)
     results = check_patterns_and_collect_results(base_dir_path, matcher)
     # Since the pattern specifies non-existent files, nothing should match
     for file_path, matched in results:

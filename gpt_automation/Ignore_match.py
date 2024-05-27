@@ -1,13 +1,13 @@
 import os
 
-from gitignore_parser2.parser import parse_patterns_with_base_dir
+from gitignore_parser2.parser import parse_gitignore2
 
 
 class IgnoreMatch:
     def __init__(self, base_pattern_pairs):
         # Now expects an array of (base_path, pattern) tuples
         self.matches = [
-            parse_patterns_with_base_dir(base_path, [pattern]) for base_path, pattern in base_pattern_pairs
+            parse_gitignore2(base_path, [pattern]) for base_path, pattern in base_pattern_pairs
         ]
 
     def match(self, file_path):

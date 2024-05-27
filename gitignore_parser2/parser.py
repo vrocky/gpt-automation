@@ -2,7 +2,7 @@ from gitignore_parser import _normalize_path, rule_from_pattern, handle_negation
 from typing import List
 
 
-def parse_patterns_with_base_dir(base_dir: str, patterns: List[str]):
+def parse_gitignore2(base_dir: str, patterns: List[str]):
     rules = []
     base_path = _normalize_path(base_dir)
     for counter, line in enumerate(patterns, start=1):
@@ -14,3 +14,7 @@ def parse_patterns_with_base_dir(base_dir: str, patterns: List[str]):
         return lambda file_path: any(r.match(file_path) for r in rules)
     else:
         return lambda file_path: handle_negation(file_path, rules)
+
+
+
+
