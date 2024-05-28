@@ -59,12 +59,12 @@ def traverse_with_filters(path, blacklist, whitelist, profile_name=None, ignore_
                                    not should_ignore_by_black_list(os.path.join(directory_path, subdir + "/"),
                                                                    blacklist_patterns)]
 
-        filtered_subdirectories_yield = [subdir for subdir in filtered_subdirectories if
+        filtered_subdirectories = [subdir for subdir in filtered_subdirectories if
                                          should_include_by_include_only_list(os.path.join(directory_path, subdir + "/"),
                                                                              include_only_patterns_stack)]
         #filtered_subdirectories = filter_with_white_list(filtered_subdirectories, whitelist_patterns)
         if not (len(filtered_filenames) == 0 and len(filtered_subdirectories) == 0):
-            yield directory_path, filtered_subdirectories_yield, filtered_filenames
+            yield directory_path, filtered_subdirectories, filtered_filenames
 
         for subdir in filtered_subdirectories:
             full_subdir_path = os.path.join(directory_path, subdir)

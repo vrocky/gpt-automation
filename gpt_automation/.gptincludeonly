@@ -1,4 +1,11 @@
+[ignore_match]
 filters.py
 ignore_match.py
 utils/git_tools.py
 utils/pattern_utils.py
+
+[ignore_walk]
+ignore_walk.py
+utils/git_tools.py
+ignore_file_parser.py
+filters.py

@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "gpt_automation"
-version = "0.1.10"
+version = "0.1.11"
 description = "GPT directory structure and file contents prompt generator"
 authors = [
     {name = "Vinit", email = "author@example.com"},
