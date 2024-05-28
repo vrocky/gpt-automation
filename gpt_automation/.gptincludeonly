@@ -5,9 +5,18 @@ utils/git_tools.py
 utils/pattern_utils.py
 
 
-[ignore_walk_tests]
+
+[ignore_walk]
 ignore_walk.py
 project_info.py
 ignore_file_parser.py
 
 
+[ignore_walk_tests]
+ignore_walk.py
+project_info.py
+ignore_file_parser.py
+
+[cli]
+main.py
+project_info.py

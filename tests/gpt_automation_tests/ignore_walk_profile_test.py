@@ -40,7 +40,7 @@ def test_ignore_with_profile_dev(setup_profile_directory_structure):
     profile_name = "dev"
 
     files = []
-    for dirpath, dirnames, filenames in traverse_with_filters(project_root, ["*.gpt*"], ["*.csv","*.txt","*.log"], profile_name=profile_name):
+    for dirpath, dirnames, filenames in traverse_with_filters(project_root, ["*.gpt*"], ["*.csv","*.txt","*.log"], profile_names=[profile_name]):
         for filename in filenames:
             files.append(os.path.relpath(os.path.join(dirpath, filename), project_root).replace("\\", "/"))
 
@@ -53,7 +53,7 @@ def test_ignore_with_profile_prod(setup_profile_directory_structure):
     profile_name = "prod"
 
     files = []
-    for dirpath, dirnames, filenames in traverse_with_filters(project_root, ["*.gpt*"], ["*.csv","*.txt","*.log"], profile_name=profile_name):
+    for dirpath, dirnames, filenames in traverse_with_filters(project_root, ["*.gpt*"], ["*.csv","*.txt","*.log"], profile_names=[profile_name]):
         for filename in filenames:
             files.append(os.path.relpath(os.path.join(dirpath, filename), project_root).replace("\\", "/"))
 

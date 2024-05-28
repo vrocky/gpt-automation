@@ -13,29 +13,29 @@ from gpt_automation.filters import (
 from gpt_automation.utils.pattern_utils import compile_patterns
 
 
-def traverse_with_filters(path, blacklist, whitelist, profile_name=None, ignore_filenames=['.gitignore', ".gptignore"],
+
+def traverse_with_filters(path, blacklist, whitelist, profile_names=None, ignore_filenames=['.gitignore', ".gptignore"],
                           include_only_filenames=[".gptincludeonly"]):
     blacklist_patterns = compile_patterns(blacklist)
     whitelist_patterns = compile_patterns(whitelist) if whitelist else None
     include_only_patterns = compile_patterns(include_only_filenames) if include_only_filenames else None
 
     visited_dirs = set()
-    ignore_patterns_stack = initialize_ignore_patterns_stack(path, ignore_filenames)
-    include_only_patterns_stack = initialize_ignore_patterns_stack(path, include_only_filenames)
+    ignore_patterns_stack = initialize_ignore_patterns_stack(path, ignore_filenames, profile_names)
+    include_only_patterns_stack = initialize_ignore_patterns_stack(path, include_only_filenames, profile_names)
 
     def walk(directory_path, current_depth):
         if directory_path in visited_dirs:
             return
         visited_dirs.add(directory_path)
 
-        local_ignore_patterns = collect_patterns_from_ignore_files(directory_path, ignore_filenames, profile_name)
-
+        local_ignore_patterns = collect_patterns_from_ignore_files(directory_path, ignore_filenames, profile_names)
         ignore_patterns_stack.append(local_ignore_patterns if local_ignore_patterns else None)
 
         local_include_only_patterns = collect_patterns_from_ignore_files(directory_path, include_only_filenames,
-                                                                         profile_name)
+                                                                         profile_names)
         include_only_patterns_stack.append(local_include_only_patterns if local_include_only_patterns
-                                           else generate_pattern_pairs(directory_path,["*"]))
+                                           else generate_pattern_pairs(directory_path, ["*"]))
 
         entries = list(os.scandir(directory_path))
         subdirectories, file_names = [], []
@@ -45,13 +45,11 @@ def traverse_with_filters(path, blacklist, whitelist, profile_name=None, ignore_
             elif entry.is_file():
                 file_names.append(entry.name)
 
-
         filtered_filenames = [filename for filename in file_names if
                               not should_ignore_by_ignore_files(os.path.join(directory_path, filename),
                                                                 ignore_patterns_stack) and
                               not should_ignore_by_black_list(os.path.join(directory_path, filename),
                                                               blacklist_patterns)]
-
 
         filtered_filenames = filter_with_white_list(filtered_filenames, whitelist_patterns)
 
@@ -83,7 +81,7 @@ def traverse_with_filters(path, blacklist, whitelist, profile_name=None, ignore_
     return walk(path, 0)
 
 
-def initialize_ignore_patterns_stack(start_path, ignore_filenames):
+def initialize_ignore_patterns_stack(start_path, ignore_filenames, profile_names):
     git_root_path = find_git_root(start_path)
     patterns_stack = []
     if git_root_path:
@@ -91,8 +89,8 @@ def initialize_ignore_patterns_stack(start_path, ignore_filenames):
         current_path = git_root_path
         for part in pathlib.Path(relative_path).parts:
             current_path = os.path.join(current_path, part)
-            local_pattern_pairs = collect_patterns_from_ignore_files(current_path, ignore_filenames)
-            patterns_stack.append(local_pattern_pairs if local_pattern_pairs else None)
+            pattern_pairs = collect_patterns_from_ignore_files(current_path, ignore_filenames, profile_names)
+            patterns_stack.append(pattern_pairs if pattern_pairs else [])
     else:
-        patterns_stack.append(None)
+        patterns_stack.append([])
     return patterns_stack
