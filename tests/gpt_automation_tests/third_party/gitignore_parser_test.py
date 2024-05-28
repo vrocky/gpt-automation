@@ -11,7 +11,7 @@ class TestGitIgnoreParser(unittest.TestCase):
 
     def test_match_simple_ignore(self):
         # Test when there is a simple ignore rule
-        parser = GitIgnoreParser(base_dir='C:/path/to/base/dir', patterns=['*.txt'])
+        parser = GitIgnoreParser(base_dir='C:/path/to/', patterns=['*.txt'])
         self.assertTrue(parser.match('C:/path/to/file.txt'))
         self.assertFalse(parser.match('C:/path/to/file.py'))
 
@@ -25,7 +25,7 @@ class TestGitIgnoreParser(unittest.TestCase):
 
     def test_additional_case(self):
         # Test additional case you requested
-        base_path = 'C:/Users/vinit/Documents/project-1/gpt-automation/tests/gpt_automation_tests'
+        base_path = '.'
         pattern = 'tests/*'
         parser = GitIgnoreParser(base_dir=base_path, patterns=[pattern])
         self.assertTrue(parser.match('./tests/utils_test.py'))
