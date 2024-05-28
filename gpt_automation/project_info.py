@@ -6,12 +6,12 @@ import gpt_automation.ignore_walk
 class ProjectInfo:
     def __init__(self, root_dir, black_list=None, white_list=None, profile_names=None):
         self.root_dir = root_dir
-        self.black_list = black_list.strip().split('\n') if black_list else []
-        self.white_list = white_list.strip().split('\n') if white_list else []
+        self.black_list = black_list if black_list else []
+        self.white_list = white_list if white_list else []
         self.profile_names = profile_names
 
     def create_directory_structure_prompt(self):
-        prompt = "Directory Structure:\n"
+        prompt = ""
         for root, dirs, files in gpt_automation.ignore_walk.traverse_with_filters(self.root_dir, self.black_list,
                                                                                   self.white_list, self.profile_names):
             level = root.replace(self.root_dir, '').count(os.sep)
@@ -23,7 +23,7 @@ class ProjectInfo:
         return prompt
 
     def create_file_contents_prompt(self):
-        prompt = "File Contents:\n"
+        prompt = ""
         for root, dirs, files in gpt_automation.ignore_walk.traverse_with_filters(self.root_dir, self.black_list,
                                                                                   self.white_list, self.profile_names):
             for file in files:
