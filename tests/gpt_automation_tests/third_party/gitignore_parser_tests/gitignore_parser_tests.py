@@ -2,7 +2,7 @@ import pytest
 import os
 from pathlib import Path
 
-# Assume the provided code has been placed in a file named `gitignore_parser.py`
+# Assume the provided src has been placed in a file named `gitignore_parser.py`
 from gitignore_parser import parse_gitignore, rule_from_pattern, _normalize_path
 
 # Setup for testing environment

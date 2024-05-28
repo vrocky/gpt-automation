@@ -1,1 +1,4 @@
 gpt_automation
+
+[ignore_walk_tests]
+tests/*/ignore_walk*

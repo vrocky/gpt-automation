@@ -1,5 +1,6 @@
 import os
 
+
 def parse_gptignore_file(ignore_file_path, profile_name=None):
     """
     Parses a .gptignore file, returning patterns applicable globally and for the specified profile.
@@ -38,6 +39,18 @@ def parse_gptignore_file(ignore_file_path, profile_name=None):
     else:
         return global_patterns, []
 
+
+def generate_pattern_pairs(directory_path, patterns):
+    """
+    Generates (base_path, pattern) pairs for the given directory path and patterns.
+
+    :param directory_path: Base directory path.
+    :param patterns: List of patterns.
+    :return: A list of (base_path, pattern) pairs.
+    """
+    return [(directory_path, pattern) for pattern in patterns]
+
+
 def collect_patterns_from_ignore_files(directory_path, ignore_filenames, profile_name=None):
     """
     Collects patterns from .gptignore or similar files, considering global and profile-specific patterns.
@@ -54,5 +67,5 @@ def collect_patterns_from_ignore_files(directory_path, ignore_filenames, profile
             if os.path.isfile(ignore_file_path):
                 global_patterns, profile_specific_patterns = parse_gptignore_file(ignore_file_path, profile_name)
                 patterns = global_patterns + profile_specific_patterns
-                pattern_pairs.extend([(directory_path, pattern) for pattern in patterns])
+                pattern_pairs.extend(generate_pattern_pairs(directory_path, patterns))
     return pattern_pairs
