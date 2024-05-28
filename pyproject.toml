@@ -1,9 +1,10 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpt_automation"
-version = "0.1.10"
+version = "0.1.11"
 description = "GPT directory structure and file contents prompt generator"
 authors = [
     {name = "Vinit", email = "author@example.com"},
@@ -15,6 +16,9 @@ dependencies = [
     "pyperclip==1.8.2",
     "gitignore_parser==0.1.11"
 ]
+[project.urls]
+Homepage = "https://github.com/vrocky/gpt-automation/"
+
 
 [project.scripts]
 autogpt = "gpt_automation.main:main"

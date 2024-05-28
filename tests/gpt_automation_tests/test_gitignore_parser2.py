@@ -1,5 +1,5 @@
 import pytest
-from gpt_automation.third_party.gitignore_parser2.parser import parse_gitignore2
+from src.gpt_automation.third_party.gitignore_parser2.parser import parse_gitignore2
 import os
 
 
