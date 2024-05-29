@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpt_automation"
-version = "0.1.14"
+version = "0.1.15"
 description = "GPT directory structure and file contents prompt generator"
 authors = [
     {name = "Vinit", email = "author@example.com"},
@@ -18,7 +18,6 @@ dependencies = [
 ]
 [project.urls]
 Homepage = "https://github.com/vrocky/gpt-automation/"
-
 
 [project.scripts]
 autogpt = "gpt_automation.main:main"

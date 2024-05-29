@@ -17,11 +17,13 @@ def merge_lists(paths):
 
 def get_profile_paths(profile_names, file_name):
     if not profile_names:
-        return [os.path.join(".gpt", file_name)]  # Default to .gpt folder if no profiles are specified
+        # Default to .gpt folder if no profiles are specified
+        return [os.path.join(".gpt", file_name)]
     return [os.path.join(".gpt", "other_profiles", profile, file_name) for profile in profile_names]
 
 
-def get_global_filter_lists_for_profiles(profile_names):
+def get_global_filter_lists_for_profiles(profile_names=None):
+
     black_list_paths = get_profile_paths(profile_names, "black_list.txt")
     white_list_paths = get_profile_paths(profile_names, "white_list.txt")
     black_list = merge_lists(black_list_paths)
@@ -29,33 +31,59 @@ def get_global_filter_lists_for_profiles(profile_names):
     return black_list, white_list
 
 
-def generate_prompt(project_path='.', dir_profiles=None, content_profiles=None):
-    if dir_profiles is not None:
-        dir_black_list, dir_white_list = get_global_filter_lists_for_profiles(dir_profiles)
-        dir_prompt = create_directory_prompt(project_path, dir_black_list, dir_white_list, profile_names=dir_profiles)
-    else:
-        dir_prompt = ""
+def validate_profile_initialization(profile_names):
+    missing_profiles = []
+    for profile_name in profile_names:
+        profile_dir = os.path.join(".gpt", profile_name) if profile_name else ".gpt"
+        black_list_file = os.path.join(profile_dir, "black_list.txt")
+        white_list_file = os.path.join(profile_dir, "white_list.txt")
+        if not (os.path.exists(black_list_file) and os.path.exists(white_list_file)):
+            missing_profiles.append(profile_name)
+    return missing_profiles
+
+
+def generate_prompt(project_path='.', dir_profiles=None, content_profiles=None, generate_dir=False, generate_content=False):
+    all_profiles = set(dir_profiles or []) | set(content_profiles or [])
+    missing_profiles = validate_profile_initialization(all_profiles)
+    if missing_profiles:
+        missing_profiles_str = ", ".join(missing_profiles)
+        print(f"Warning: The following profiles are not properly initialized: {missing_profiles_str}.")
+        return  # Exit if there are missing profiles
+
+    dir_prompt = ""
+    content_prompt = ""
     content_prompt_dir_preview = ""
-    if content_profiles is not None:
 
+    if generate_dir:
+        dir_black_list, dir_white_list = get_global_filter_lists_for_profiles(dir_profiles)
+        dir_prompt = create_directory_prompt(project_path, dir_black_list, dir_white_list,dir_profiles)
+
+    if generate_content:
         content_black_list, content_white_list = get_global_filter_lists_for_profiles(content_profiles)
-        content_prompt_dir_preview = create_directory_prompt(project_path, content_black_list, content_white_list,
-                                                 profile_names=content_profiles)
+        content_prompt_dir_preview = create_directory_prompt(project_path, content_black_list, content_white_list,content_profiles)
+        content_prompt = create_content_prompt(project_path, content_black_list, content_white_list,content_profiles)
 
-        content_prompt = create_content_prompt(project_path, content_black_list, content_white_list,
-                                               profile_names=content_profiles)
-    else:
-        content_prompt = ""
+    if dir_prompt:
+        print("\nDirectory Structure Preview:")
+        print(dir_prompt)
 
-    print("\nDirectory Structure Preview:")
-    print(dir_prompt)  # Displays the generated directory structure based on the provided profiles
+    if content_prompt_dir_preview:
+        print("\nDirectory Preview for Content (to indicate what has been copied):")
+        print(content_prompt_dir_preview)
 
-    print("\nSelected Files for Content Inclusion:")
-    print(content_prompt_dir_preview)  # Shows a list of selected files whose content will be included in the prompt
-
-    combined_prompt = "Directory Structure:\n" + f"{dir_prompt}\nFile Contents:\n{content_prompt}".strip()
-    pyperclip.copy(combined_prompt)  # Copies the combined directory structure and file content prompts to the clipboard
-    print("\nCombined directory structure and selected file content prompt has been copied to the clipboard.")
+    combined_prompt = ""
+    if dir_prompt:
+        combined_prompt += "Directory Structure:\n" + f"{dir_prompt}\n"
+    if content_prompt:
+        combined_prompt += "File Contents:\n" + f"{content_prompt}".strip()
+    if combined_prompt:
+        pyperclip.copy(combined_prompt)
+        if dir_prompt and content_prompt:
+            print("\nBoth directory structure and file contents have been copied to the clipboard.")
+        elif dir_prompt:
+            print("\nDirectory structure prompt has been copied to the clipboard.")
+        elif content_prompt:
+            print("\nFile contents prompt has been copied to the clipboard.")
 
 
 
@@ -63,7 +91,7 @@ def generate_prompt(project_path='.', dir_profiles=None, content_profiles=None):
 def create_directory_prompt(project_path, black_list, white_list, profile_names):
     project_info = ProjectInfo(project_path, black_list, white_list, profile_names)
 
-    return  project_info.create_directory_structure_prompt()
+    return project_info.create_directory_structure_prompt()
 
 
 def create_content_prompt(project_path, black_list, white_list, profile_names):
@@ -73,7 +101,7 @@ def create_content_prompt(project_path, black_list, white_list, profile_names):
 
 def init_profiles(profile_names):
     if not profile_names:
-        profile_names = [""]  # Default to .gpt folder if no profiles are specified
+        profile_names = []
     for profile_name in profile_names:
         profile_dir = os.path.join(".gpt", profile_name) if profile_name else ".gpt"
         if not os.path.exists(profile_dir):
@@ -88,26 +116,39 @@ def init_profiles(profile_names):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Generate directory structure and file contents prompt for a GPT model.")
-    subparsers = parser.add_subparsers(dest='command', help='Select a command to execute')
+    parser = argparse.ArgumentParser(description="Generate directory structure and file contents prompt for a GPT model.")
+    subparsers = parser.add_subparsers(dest='command', help='Select a command to execute', required=True)
 
-    init_parser = subparsers.add_parser('init',
-                                        help='Initialize the .gpt directory with sample black and white list files.')
+    init_parser = subparsers.add_parser('init', help='Initialize the .gpt directory with sample black and white list files.')
     init_parser.add_argument("profiles", nargs='*', default=[], help="Names of the profiles to initialize.")
 
     prompt_parser = subparsers.add_parser('prompt', help='Generate prompts for directory and/or file contents.')
-    prompt_parser.add_argument("--dir", nargs='*', default=None,
-                               help="Generate directory structure prompt for these profiles.")
-    prompt_parser.add_argument("--content", nargs='*', default=None,
-                               help="Generate file contents prompt for these profiles.")
+    prompt_parser.add_argument("profiles", nargs='*', help="Profiles to generate prompts for.")
+    prompt_parser.add_argument("--dir", nargs='*', default=None, help="Generate directory structure prompt for these profiles.")
+    prompt_parser.add_argument("--content", nargs='*', default=None, help="Generate file contents prompt for these profiles.")
 
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
+    if unknown:
+        print("Unknown arguments:", unknown)
+
     if args.command == "init":
         init_profiles(args.profiles)
     elif args.command == "prompt":
-        generate_prompt('.', dir_profiles=args.dir, content_profiles=args.content)
+        generate_dir = args.dir is not None
+        generate_content = args.content is not None
+        both_profiles = args.profiles or []
+        dir_profiles = args.dir if generate_dir else []
+        content_profiles = args.content if generate_content else []
 
+        # Default to both if neither flag is provided
+        if not generate_dir and not generate_content:
+            generate_dir = generate_content = True
+            dir_profiles = content_profiles = []
+        dir_profiles.extend(both_profiles)
+        content_profiles.extend(both_profiles)
+        generate_prompt('.', dir_profiles, content_profiles, generate_dir, generate_content)
+    else:
+        parser.print_help()
 
 if __name__ == "__main__":
     main()
