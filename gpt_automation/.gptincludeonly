@@ -8,8 +8,8 @@ utils/pattern_utils.py
 
 [ignore_walk]
 ignore_walk.py
-project_info.py
 ignore_file_parser.py
+project_info.py
 
 
 [ignore_walk_tests]
