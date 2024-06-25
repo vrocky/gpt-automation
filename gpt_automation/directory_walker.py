@@ -1,10 +1,10 @@
+# gpt_automation/directory_walker.py
 import os
 
-
 class DirectoryWalker:
-    def __init__(self, path, visitor):
+    def __init__(self, path, visitors):
         self.path = path
-        self.visitor = visitor  # This should be an instance of a class that implements BaseVisitor
+        self.visitors = visitors if isinstance(visitors, list) else [visitors]
 
     def walk(self):
         visited_dirs = set()
@@ -15,24 +15,28 @@ class DirectoryWalker:
             return
         visited_dirs.add(directory_path)
 
-        self.visitor.before_traverse_directory(directory_path)  # Before traversal hook
-        if self.visitor.should_visit_subdirectory(directory_path):  # Check if we should proceed
-            self.visitor.enter_directory(directory_path)
-            entries = list(os.scandir(directory_path))
-            subdirectories, file_names = [], []
-            for entry in entries:
-                if entry.is_dir(follow_symlinks=False):
-                    subdirectories.append(entry.path)
-                elif entry.is_file():
-                    file_names.append(entry.path)
+        # Notify all visitors before traversal
+        for visitor in self.visitors:
+            visitor.enter_directory(directory_path)
 
-            for filename in file_names:
-                if self.visitor.should_visit_file(filename):
-                    self.visitor.visit_file(filename)
-                    yield filename
+        entries = list(os.scandir(directory_path))
+        subdirectories, file_names = [], []
+        for entry in entries:
+            if entry.is_dir(follow_symlinks=False):
+                subdirectories.append(entry.path)
+            elif entry.is_file():
+                file_names.append(entry.path)
 
-            for subdir in subdirectories:
-                if self.visitor.should_visit_subdirectory(subdir):
-                    yield from self._walk(subdir, visited_dirs)
+        for filename in file_names:
+            if all(visitor.should_visit_file(filename) for visitor in self.visitors):
+                for visitor in self.visitors:
+                    visitor.visit_file(filename)
+                yield filename
 
-            self.visitor.leave_directory(directory_path)
+        for subdir in subdirectories:
+            if all(visitor.should_visit_subdirectory(subdir) for visitor in self.visitors):
+                yield from self._walk(subdir, visited_dirs)
+
+        # Notify all visitors after traversal
+        for visitor in self.visitors:
+            visitor.leave_directory(directory_path)

@@ -2,7 +2,7 @@ import logging
 import os
 import pathlib
 
-from gpt_automation.ignore_file_parser import collect_patterns_from_ignore_files ,generate_pattern_pairs
+from gpt_automation.ignore_file_parser import collect_patterns_from_ignore_files, generate_pattern_pairs
 from gpt_automation.utils.git_tools import find_git_root
 from gpt_automation.filters import (
     should_ignore_by_ignore_files,
@@ -11,7 +11,6 @@ from gpt_automation.filters import (
     should_include_by_include_only_list,
 )
 from gpt_automation.utils.pattern_utils import compile_patterns
-
 
 
 def traverse_with_filters(path, blacklist, whitelist, profile_names=None, ignore_filenames=['.gitignore', ".gptignore"],

@@ -1,12 +1,17 @@
 import os
 from gpt_automation.directory_walker import DirectoryWalker
 from gpt_automation.visitor.filtering_visitor import FilteringVisitor
+from gpt_automation.visitor.ignore_visitor import IgnoreVisitor
+from gpt_automation.visitor.includeonly_visitor import IncludeOnlyVisitor
 
 
 class ProjectInfo:
     def __init__(self, root_dir, black_list=None, white_list=None, profile_names=None):
         visitor = FilteringVisitor(profile_names=profile_names, ignore_filenames=['.gitignore', '.gptignore'], include_only_filenames=['.gptincludeonly'])
-        self.directory_walker = DirectoryWalker(path=root_dir, visitor=visitor)
+        ignore_visitor = IgnoreVisitor(ignore_filenames=['.gitignore', '.gptignore'], profile_names=profile_names)
+        include_only_visitor = IncludeOnlyVisitor(include_only_filenames=['.gptincludeonly'],
+                                                  profile_names=profile_names)
+        self.directory_walker = DirectoryWalker(path=root_dir, visitors=[ignore_visitor,include_only_visitor])
         self.root_dir = root_dir.strip(os.sep)
 
     def create_directory_structure_prompt(self):
