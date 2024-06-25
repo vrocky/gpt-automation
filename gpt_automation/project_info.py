@@ -1,38 +1,53 @@
-# gpt_automation\project_info.py
 import os
-import gpt_automation.directory_walker
+from gpt_automation.directory_walker import DirectoryWalker
+from gpt_automation.visitor.filtering_visitor import FilteringVisitor
+
 
 class ProjectInfo:
     def __init__(self, root_dir, black_list=None, white_list=None, profile_names=None):
-        self.root_dir = root_dir
-        self.black_list = black_list if black_list else []
-        self.white_list = white_list if white_list else []
-        self.profile_names = profile_names
-        self.directory_walker = gpt_automation.directory_walker.DirectoryWalker(
-            path=root_dir,
-            blacklist=black_list,
-            whitelist=white_list,
-            profile_names=profile_names
-        )
+        visitor = FilteringVisitor(profile_names=profile_names, ignore_filenames=['.gitignore', '.gptignore'], include_only_filenames=['.gptincludeonly'])
+        self.directory_walker = DirectoryWalker(path=root_dir, visitor=visitor)
+        self.root_dir = root_dir.strip(os.sep)
 
     def create_directory_structure_prompt(self):
-        prompt = ""
-        for root, dirs, files in self.directory_walker.walk():
-            level = root.replace(self.root_dir, '').count(os.sep)
-            indent = ' ' * 4 * level
-            prompt += '{}{}/\n'.format(indent, os.path.basename(root))
-            sub_indent = ' ' * 4 * (level + 1)
-            for file in files:
-                prompt += '{}{}\n'.format(sub_indent, os.path.basename(file))
-        return prompt
+        """
+        Create a structured directory prompt displaying all directories and files in a hierarchical format.
+        """
+        tree = {}
+        for file_path in sorted(self.directory_walker.walk()):
+            if file_path.startswith(self.root_dir):
+                relative_path = file_path[len(self.root_dir)+1:]
+                parts = relative_path.split(os.sep)
+                current_level = tree
+                for part in parts[:-1]:  # Navigate/create to the correct location in the dictionary
+                    current_level = current_level.setdefault(part, {})
+                current_level[parts[-1]] = {}  # Set the last part as a key in the dict
+
+        return "\n./\n" + self.format_output(tree, 0)
+
+    def format_output(self, node, indent_level):
+        """
+        Recursively generate the string representation of the directory structure.
+        """
+        lines = []
+        for name, subdict in sorted(node.items()):
+            indent = '    ' * indent_level
+            if subdict:  # This is a directory
+                lines.append(f"{indent}{name}/")
+                lines.append(self.format_output(subdict, indent_level + 1))
+            else:  # This is a file
+                lines.append(f"{indent}{name}")
+        return "\n".join(lines)
 
     def create_file_contents_prompt(self):
+        """
+        Create a prompt showing the contents of each file.
+        """
         prompt = ""
-        for root, dirs, files in self.directory_walker.walk():
-            for file in files:
-                file_path = os.path.join(root, file)
+        for file_path in self.directory_walker.walk():
+            if os.path.isfile(file_path):
                 relative_path = os.path.relpath(file_path, self.root_dir)
                 with open(file_path, 'r', encoding='utf-8') as f:
-                    prompt += '{}{}:\n'.format('=' * 10, relative_path)
-                    prompt += f.read() + '\n\n'
+                    file_content = f.read()
+                    prompt += f"=========={relative_path}:\n{file_content}\n\n"
         return prompt
