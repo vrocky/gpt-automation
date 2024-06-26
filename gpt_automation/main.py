@@ -1,7 +1,6 @@
 import argparse
 
 from gpt_automation.config.config_manager import ConfigManager
-from gpt_automation.profile_manager import init_profiles
 from gpt_automation.prompt_generator import PromptGenerator
 
 def main():
@@ -24,24 +23,28 @@ def main():
         if not args.profiles:
             config_manager.initialize_configurations()  # Initialize default configurations
         else:
-            for profile in args.profiles:
+            for profile in set(args.profiles):  # Use a set to avoid initializing the same profile more than once
                 config_manager.initialize_profile_config(profile)
     elif args.command == "prompt":
         prompt_generator = PromptGenerator(config_manager)
         generate_dir = args.dir is not None
         generate_content = args.content is not None
-        both_profiles = args.profiles or []
-        dir_profiles = args.dir if generate_dir else []
-        content_profiles = args.content if generate_content else []
 
-        # Default to both if neither flag is provided
+        # Combine all profile lists and remove duplicates using set
+        all_profiles = set(args.profiles or [])
+        dir_profiles = set(args.dir or [])
+        content_profiles = set(args.content or [])
+
+        # Combine all sets into one to ensure all profiles are unique
+        combined_profiles = all_profiles | dir_profiles | content_profiles
+
+        # Pass the combined and unique profiles to generate prompts
         if not generate_dir and not generate_content:
-            generate_dir = generate_content = True
-            dir_profiles = content_profiles = []
-        dir_profiles.extend(both_profiles)
-        content_profiles.extend(both_profiles)
+            generate_dir = generate_content = True  # Default to both if neither flag is provided
 
-        prompt_generator.generate_prompt(dir_profiles=dir_profiles, content_profiles=content_profiles, generate_dir=generate_dir, generate_content=generate_content)
+        prompt_generator.generate_prompt(dir_profiles=combined_profiles if generate_dir else set(),
+                                         content_profiles=combined_profiles if generate_content else set(),
+                                         generate_dir=generate_dir, generate_content=generate_content)
     else:
         parser.print_help()
 

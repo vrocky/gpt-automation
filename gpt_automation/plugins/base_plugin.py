@@ -1,5 +1,6 @@
 class BasePlugin:
-    def __init__(self, settings):
+    def __init__(self, env, settings):
+        self.env = env
         self.settings = settings
 
     def get_visitors(self):

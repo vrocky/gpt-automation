@@ -6,5 +6,5 @@ class IncludeOnlyPlugin(BasePlugin):
     def get_visitors(self):
         include_only_visitor = IncludeOnlyVisitor(
             include_only_filenames=self.settings.get('include_only_filenames', []),
-            profile_names=self.settings.get('profile_names', []))
+            profile_names=self.env.get('profile_names', []))
         return [include_only_visitor]

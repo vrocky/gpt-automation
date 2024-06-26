@@ -1,6 +1,7 @@
 # gpt_automation/directory_walker.py
 import os
 
+
 class DirectoryWalker:
     def __init__(self, path, plugin_manager):
         self.path = path

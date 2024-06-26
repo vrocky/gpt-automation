@@ -17,8 +17,6 @@ pyproject.toml
 
 [plugins]
 gpt_automation
-project_info.py
-plugin_manager.py
 
 
 

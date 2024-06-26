@@ -9,11 +9,17 @@ class PromptGenerator:
 
     def create_directory_prompt(self, profile_names):
         project_info = ProjectInfo(self.project_path,self.config_manager, profile_names)
-        return project_info.create_directory_structure_prompt()
+        if project_info.initialize():
+            return project_info.create_directory_structure_prompt()
+        else:
+            return ""
 
     def create_content_prompt(self, profile_names):
         project_info = ProjectInfo(self.project_path,self.config_manager, profile_names)
-        return project_info.create_file_contents_prompt()
+        if project_info.initialize():
+            return project_info.create_file_contents_prompt()
+        else:
+            return ""
 
     def generate_prompt(self, dir_profiles=None, content_profiles=None, generate_dir=False, generate_content=False):
         dir_prompt = ""
