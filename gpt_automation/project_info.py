@@ -1,30 +1,39 @@
 import os
+
+from gpt_automation.config.config_manager import ConfigManager
 from gpt_automation.directory_walker import DirectoryWalker
 from gpt_automation.plugin_manager import PluginManager
-from gpt_automation.plugins.Ignore_plugin import IgnorePlugin
+from gpt_automation.plugins.ignore_plugin import IgnorePlugin
 from gpt_automation.plugins.include_only_plugin import IncludeOnlyPlugin
 from gpt_automation.visitor.ignore_visitor import IgnoreVisitor
 from gpt_automation.visitor.includeonly_visitor import IncludeOnlyVisitor
 
 
 class ProjectInfo:
-    def __init__(self, root_dir, black_list=None, white_list=None, profile_names=None):
-
+    def __init__(self, root_dir, config_manager: ConfigManager, profile_names=None):
 
         self.root_dir = root_dir.strip(os.sep)
-        self.plugin_manager = PluginManager()
 
-        # Setup plugins with settings
-        self.plugin_manager.register_plugin(IgnorePlugin({
+        self.config_manager = config_manager
 
-            "ignore_filenames": ['.gitignore', '.gptignore'],
-            "profile_names": profile_names
+        config = config_manager.resolve_configs(profile_names)
+        #if config is None:
+           # throw Exception("e")
 
-        }))
-        self.plugin_manager.register_plugin(IncludeOnlyPlugin({
-            'include_only_filenames': ['.gptincludeonly'],
-            'profile_names': profile_names
-        }))
+        self.plugin_manager = PluginManager(config)
+
+        # Manually Setup plugins with settings
+        # self.plugin_manager.register_plugin(IgnorePlugin({
+        #
+        #     "ignore_filenames": ['.gitignore', '.gptignore'],
+        #     "profile_names": profile_names
+        #
+        # }))
+        # self.plugin_manager.register_plugin(IncludeOnlyPlugin({
+        #     'include_only_filenames': ['.gptincludeonly'],
+        #     'profile_names': profile_names
+        # }))
+
         self.directory_walker = DirectoryWalker(path=root_dir, plugin_manager=self.plugin_manager)
 
     def create_directory_structure_prompt(self):

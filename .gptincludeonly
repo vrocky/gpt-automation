@@ -24,3 +24,13 @@ plugin_manager.py
 
 [config]
 gpt_automation
+
+
+[prompt_generator]
+gpt_automation
+
+[profile_manager]
+gpt_automation
+
+[project_info]
+gpt_automation

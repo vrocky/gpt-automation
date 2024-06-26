@@ -26,7 +26,25 @@ project_info.py
 
 [plugins]
 plugins
+plugin_manager.py
+project_info.py
 
 [config]
 config
 resources
+
+
+[prompt_generator]
+prompt_generator.py
+main.py
+
+
+[profile_manager]
+profile_manager.py
+main.py
+
+
+[project_info]
+prompt_generator.py
+project_info.py
+
