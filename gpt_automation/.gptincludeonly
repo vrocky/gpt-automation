@@ -22,3 +22,11 @@ ignore_file_parser.py
 [cli]
 main.py
 project_info.py
+
+
+[plugins]
+plugins
+
+[config]
+config
+resources

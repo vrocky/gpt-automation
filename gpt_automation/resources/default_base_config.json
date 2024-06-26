@@ -1,0 +1,18 @@
+{
+    "extends": "none",
+    "override": false,
+    "plugins": [
+        {
+        "class": "gpt_automation.plugins.ignore_visitor.IgnoreVisitor",
+        "settings": {
+            "ignore_filenames": [".gitignore", ".gptignore"]
+        }
+        },
+        {
+        "class": "gpt_automation.plugins.includeonly_visitor.IncludeOnlyVisitor",
+        "settings": {
+            "include_only_filenames": [".gptincludeonly"]
+        }
+        }
+    ]
+  }

@@ -12,3 +12,15 @@ tests/*/ignore_walk*
 setup.py
 setup.cfg
 pyproject.toml
+
+
+
+[plugins]
+gpt_automation
+project_info.py
+plugin_manager.py
+
+
+
+[config]
+gpt_automation
