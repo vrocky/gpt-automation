@@ -2,8 +2,9 @@
 import os
 
 class DirectoryWalker:
-    def __init__(self, path, visitors):
+    def __init__(self, path, plugin_manager):
         self.path = path
+        visitors = plugin_manager.get_all_visitors()
         self.visitors = visitors if isinstance(visitors, list) else [visitors]
 
     def walk(self):

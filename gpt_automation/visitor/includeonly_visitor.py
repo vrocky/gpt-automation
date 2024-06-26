@@ -28,12 +28,9 @@ class IncludeOnlyVisitor(BaseVisitor):
     def should_visit_subdirectory(self, subdir_path):
         return should_include_by_include_only_list(subdir_path, self.include_only_patterns_stack)
 
-
-
     def before_traverse_directory(self, directory_path):
         # Potential pre-processing before entering a directory
         print(f"Preparing to traverse {directory_path}")
-
 
     def visit_file(self, file_path):
         # Handle visiting a file

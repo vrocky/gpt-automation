@@ -1,16 +1,31 @@
 import os
 from gpt_automation.directory_walker import DirectoryWalker
+from gpt_automation.plugin_manager import PluginManager
+from gpt_automation.plugins.Ignore_plugin import IgnorePlugin
+from gpt_automation.plugins.include_only_plugin import IncludeOnlyPlugin
 from gpt_automation.visitor.ignore_visitor import IgnoreVisitor
 from gpt_automation.visitor.includeonly_visitor import IncludeOnlyVisitor
 
 
 class ProjectInfo:
     def __init__(self, root_dir, black_list=None, white_list=None, profile_names=None):
-        ignore_visitor = IgnoreVisitor(ignore_filenames=['.gitignore', '.gptignore'], profile_names=profile_names)
-        include_only_visitor = IncludeOnlyVisitor(include_only_filenames=['.gptincludeonly'],
-                                                  profile_names=profile_names)
-        self.directory_walker = DirectoryWalker(path=root_dir, visitors=[ignore_visitor,include_only_visitor])
+
+
         self.root_dir = root_dir.strip(os.sep)
+        self.plugin_manager = PluginManager()
+
+        # Setup plugins with settings
+        self.plugin_manager.register_plugin(IgnorePlugin({
+
+            "ignore_filenames": ['.gitignore', '.gptignore'],
+            "profile_names": profile_names
+
+        }))
+        self.plugin_manager.register_plugin(IncludeOnlyPlugin({
+            'include_only_filenames': ['.gptincludeonly'],
+            'profile_names': profile_names
+        }))
+        self.directory_walker = DirectoryWalker(path=root_dir, plugin_manager=self.plugin_manager)
 
     def create_directory_structure_prompt(self):
         """
@@ -19,7 +34,7 @@ class ProjectInfo:
         tree = {}
         for file_path in sorted(self.directory_walker.walk()):
             if file_path.startswith(self.root_dir):
-                relative_path = file_path[len(self.root_dir)+1:]
+                relative_path = file_path[len(self.root_dir) + 1:]
                 parts = relative_path.split(os.sep)
                 current_level = tree
                 for part in parts[:-1]:  # Navigate/create to the correct location in the dictionary
