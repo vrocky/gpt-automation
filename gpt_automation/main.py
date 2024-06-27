@@ -3,32 +3,38 @@ import argparse
 from gpt_automation.config.config_manager import ConfigManager
 from gpt_automation.prompt_generator import PromptGenerator
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Generate directory structure and file contents prompt for a GPT model.")
+    parser = argparse.ArgumentParser(
+        description="Generate directory structure and file contents prompt for a GPT model.")
     subparsers = parser.add_subparsers(dest='command', help='Select a command to execute', required=True)
 
-    init_parser = subparsers.add_parser('init', help='Initialize the .gpt directory with sample black and white list files.')
+    init_parser = subparsers.add_parser('init',
+                                        help='Initialize the .gpt directory with sample black and white list files.')
     init_parser.add_argument("profiles", nargs='*', default=[], help="Names of the profiles to initialize.")
 
     prompt_parser = subparsers.add_parser('prompt', help='Generate prompts for directory and/or file contents.')
     prompt_parser.add_argument("profiles", nargs='*', help="Profiles to generate prompts for.")
-    prompt_parser.add_argument("--dir", nargs='*', default=None, help="Generate directory structure prompt for these profiles.")
-    prompt_parser.add_argument("--content", nargs='*', default=None, help="Generate file contents prompt for these profiles.")
+    prompt_parser.add_argument("--dir", nargs='*', default=None,
+                               help="Generate directory structure prompt for these profiles.")
+    prompt_parser.add_argument("--content", nargs='*', default=None,
+                               help="Generate file contents prompt for these profiles.")
 
     args = parser.parse_args()
 
-    config_manager = ConfigManager()
-
     if args.command == "init":
+        config_manager = ConfigManager()
         if not args.profiles:
             config_manager.initialize_configurations()  # Initialize default configurations
         else:
             for profile in set(args.profiles):  # Use a set to avoid initializing the same profile more than once
                 config_manager.initialize_profile_config(profile)
     elif args.command == "prompt":
-        prompt_generator = PromptGenerator(config_manager)
         generate_dir = args.dir is not None
         generate_content = args.content is not None
+        dir_path = args.dir if args.dir is not None else "."
+        config_manager = ConfigManager(dir_path)
+        prompt_generator = PromptGenerator(config_manager)
 
         # Combine all profile lists and remove duplicates using set
         all_profiles = set(args.profiles or [])
@@ -47,6 +53,7 @@ def main():
                                          generate_dir=generate_dir, generate_content=generate_content)
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,12 @@
+{
+    "plugins": [
+        {
+            "name": "IgnorePlugin",
+            "path": "./plugins/ignore_plugin/"
+        },
+        {
+            "name": "IncludeOnlyPlugin",
+            "path": "./plugins/include_only_plugin/"
+        }
+    ]
+}

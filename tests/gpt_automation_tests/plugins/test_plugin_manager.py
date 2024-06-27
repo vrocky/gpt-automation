@@ -1,5 +1,5 @@
 import unittest
-from gpt_automation.plugin_manager import PluginManager
+from gpt_automation.plugin_impl import PluginManager
 from gpt_automation.config.config import Config
 import gpt_automation.plugins.ignore_plugin
 

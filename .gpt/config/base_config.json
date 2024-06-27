@@ -3,12 +3,12 @@
     "override": false,
     "plugins": [
                 {
-                    "module": "gpt_automation.plugins.ignore_plugin",
+                    "module": "gpt_automation.plugins.ignore_plugin.plugin",
                     "class": "IgnorePlugin",
                     "settings": {"ignore_filenames": [".gitignore", ".gptignore"]}
                 },
                 {
-                    "module": "gpt_automation.plugins.include_only_plugin",
+                    "module": "gpt_automation.plugins.include_only_plugin.plugin",
                     "class": "IncludeOnlyPlugin",
                     "settings": {
                         "include_only_filenames": [".gptincludeonly"]

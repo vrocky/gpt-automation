@@ -6,6 +6,7 @@ class PathManager:
         self.generate_dir = generate_dir
         self.base_dir = os.path.join(self.generate_dir, '.gpt', 'config')
         self.profile_dir = os.path.join(self.generate_dir, '.gpt', 'profiles')
+        self.plugins_dir = os.path.join(self.generate_dir, '.gpt', 'plugins')
         self.resources_dir = os.path.join(os.path.dirname(__file__), '..', 'resources')
 
     def get_base_config_path(self):
@@ -16,3 +17,6 @@ class PathManager:
 
     def get_profile_config_path(self, profile_name):
         return os.path.join(self.profile_dir, profile_name, 'config.json')
+
+    def get_plugin_settings_path(self, plugin_module,plugin_class):
+        return os.path.join(self.plugins_dir, plugin_module,plugin_class)

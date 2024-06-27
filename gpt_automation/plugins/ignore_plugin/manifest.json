@@ -1,0 +1,9 @@
+{
+    "name": "IgnorePlugin",
+    "description": "A plugin to ignore specified files based on patterns.",
+    "module_name": "gpt_automation.plugins.ignore_plugin.plugin",
+    "class_name": "IgnorePlugin",
+    "version": "1.0.0",
+    "author": "Your Organization",
+    "package_name": "gpt_automation"
+}

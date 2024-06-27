@@ -32,3 +32,6 @@ gpt_automation
 
 [project_info]
 gpt_automation
+
+[plugin_manager]
+gpt_automation

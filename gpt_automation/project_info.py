@@ -1,9 +1,8 @@
 import os
 
-from gpt_automation.config.config import Config
 from gpt_automation.config.config_manager import ConfigManager
 from gpt_automation.directory_walker import DirectoryWalker
-from gpt_automation.plugin_manager import PluginManager
+from gpt_automation.plugin_impl.plugin_manager import PluginManager
 
 
 class ProjectInfo:
@@ -20,12 +19,16 @@ class ProjectInfo:
         Returns True if initialization is successful, False otherwise.
         """
         try:
-            config = self.config_manager.resolve_configs(self.profile_names)
-            if config is None:
-                print("Configuration resolution failed; necessary profiles might be missing.")
-                return False
+            # config = self.config_manager.resolve_configs(self.profile_names)
+            # if config is None:
+            #     print("Configuration resolution failed; necessary profiles might be missing.")
+            #     return False
 
-            self.plugin_manager = PluginManager({"profile_names": self.profile_names}, config)
+            # self.plugin_impl = PluginManager({"profile_names": self.profile_names}, config)
+            self.plugin_manager = PluginManager(self.config_manager)
+            if not self.plugin_manager.load_plugins(self.profile_names):
+                print("Failed to load plugins")
+
             self.directory_walker = DirectoryWalker(path=self.root_dir, plugin_manager=self.plugin_manager)
             return True
         except Exception as e:

@@ -53,5 +53,6 @@ project_info.py
 
 [plugin_manager]
 plugin_impl
+manager
 
 
