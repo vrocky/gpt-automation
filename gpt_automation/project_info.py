@@ -2,6 +2,7 @@ import os
 
 from gpt_automation.config.config_manager import ConfigManager
 from gpt_automation.directory_walker import DirectoryWalker
+from gpt_automation.plugin_impl.manager.plugin_runtime_manager import PluginRuntimeManager
 from gpt_automation.plugin_impl.plugin_manager import PluginManager
 
 
@@ -25,9 +26,10 @@ class ProjectInfo:
             #     return False
 
             # self.plugin_impl = PluginManager({"profile_names": self.profile_names}, config)
-            self.plugin_manager = PluginManager(self.config_manager)
-            if not self.plugin_manager.load_plugins(self.profile_names):
-                print("Failed to load plugins")
+            self.plugin_manager = PluginRuntimeManager(self.profile_names,self.config_manager)
+            self.plugin_manager.load_plugin_classes()
+            self.plugin_manager.create_plugin_instances()
+
 
             self.directory_walker = DirectoryWalker(path=self.root_dir, plugin_manager=self.plugin_manager)
             return True

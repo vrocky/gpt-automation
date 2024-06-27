@@ -2,17 +2,18 @@
     "extends": "none",
     "override": false,
     "plugins": [
-                {
-                    "module": "gpt_automation.plugins.ignore_plugin.plugin",
-                    "class": "IgnorePlugin",
-                    "settings": {"ignore_filenames": [".gitignore", ".gptignore"]}
-                },
-                {
-                    "module": "gpt_automation.plugins.include_only_plugin.plugin",
-                    "class": "IncludeOnlyPlugin",
-                    "settings": {
-                        "include_only_filenames": [".gptincludeonly"]
-                    }
-                }
-            ]
+        {
+            "plugin_name": "IgnorePlugin",
+            "package_name": "gpt_automation",
+            "enable": true,
+            "settings": {"ignore_filenames": [".gitignore", ".gptignore"]}
+        },
+        {
+            "plugin_name": "IncludeOnlyPlugin",
+            "package_name": "gpt_automation",
+            "enable": true,
+            "settings": {"include_only_filenames": [".gptincludeonly"]}
+        }
+    ]
   }
+
