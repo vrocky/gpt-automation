@@ -3,7 +3,7 @@ import os
 from gpt_automation.config.config_manager import ConfigManager
 from gpt_automation.directory_walker import DirectoryWalker
 from gpt_automation.plugin_impl.manager.plugin_runtime_manager import PluginRuntimeManager
-from gpt_automation.plugin_impl.plugin_manager import PluginManager
+
 
 
 class ProjectInfo:
