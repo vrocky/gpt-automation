@@ -1,2 +1,10 @@
 [plugins]
 #base_plugin.py
+ignore_plugin
+
+
+[filter_plugin]
+filter_plugin
+
+[ignore_plugin]
+ignore_plugin

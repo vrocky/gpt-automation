@@ -18,4 +18,5 @@ class Initializer:
         # Load and initialize plugins after setting up configurations
         self.plugin_manager.load_plugin_classes()
         self.plugin_manager.create_plugin_instances()
+        self.plugin_manager.initialize_plugins()
 

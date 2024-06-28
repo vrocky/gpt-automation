@@ -13,7 +13,15 @@
             "package_name": "gpt_automation",
             "enable": true,
             "settings": {"include_only_filenames": [".gptincludeonly"]}
+        },
+          {
+            "plugin_name": "BlacklistWhitelistPlugin",
+            "package_name": "gpt_automation",
+            "enable": true,
+            "settings": {"back_list": ["blacklist.txt"]}
         }
+
+
     ]
   }
 

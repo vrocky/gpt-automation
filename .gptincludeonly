@@ -1,3 +1,4 @@
+gpt_automation
 
 [cli]
 gpt_automation
@@ -40,3 +41,5 @@ gpt_automation
 [initialize]
 gpt_automation
 main.py
+
+

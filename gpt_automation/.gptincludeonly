@@ -27,6 +27,7 @@ project_info.py
 [plugins]
 base_plugin.py
 plugin_impl
+plugins
 
 [config]
 config
@@ -56,5 +57,19 @@ plugin_impl
 [initialize]
 initializer.py
 main.py
+
+
+
+[filter_plugin]
+visitor
+plugins
+base_plugin.py
+
+[ignore_plugin]
+visitor
+plugins
+base_plugin.py
+
+
 
 

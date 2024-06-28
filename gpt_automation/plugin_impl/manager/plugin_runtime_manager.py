@@ -65,7 +65,7 @@ class PluginRuntimeManager:
             plugin_info = self.plugin_class_registry.plugin_info_registry[key]
             context = self._create_context(plugin_info)
             if hasattr(plugin_instance, 'initialize'):
-                plugin_instance.initialize(context)
+                plugin_instance.initialize(context.to_dict())
                 print(f"Initialized plugin {plugin_info.plugin_name} with key {key}.")
             else:
                 print(f"Plugin {plugin_info.plugin_name} does not have an 'initialize' method.")

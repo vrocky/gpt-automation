@@ -5,7 +5,6 @@ from gpt_automation.directory_walker import DirectoryWalker
 from gpt_automation.plugin_impl.manager.plugin_runtime_manager import PluginRuntimeManager
 
 
-
 class ProjectInfo:
     def __init__(self, root_dir, config_manager: ConfigManager, profile_names=None):
         self.root_dir = root_dir.strip(os.sep)
@@ -26,10 +25,9 @@ class ProjectInfo:
             #     return False
 
             # self.plugin_impl = PluginManager({"profile_names": self.profile_names}, config)
-            self.plugin_manager = PluginRuntimeManager(self.profile_names,self.config_manager)
+            self.plugin_manager = PluginRuntimeManager(self.profile_names, self.config_manager)
             self.plugin_manager.load_plugin_classes()
             self.plugin_manager.create_plugin_instances()
-
 
             self.directory_walker = DirectoryWalker(path=self.root_dir, plugin_manager=self.plugin_manager)
             return True
