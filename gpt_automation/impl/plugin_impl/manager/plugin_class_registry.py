@@ -17,9 +17,6 @@ class PluginInfo:
         return f"{self.package_name}/{self.plugin_name}"
 
 
-from gpt_automation.plugin_impl.reader.plugin_loader import PluginLoader
-
-
 class PluginClassRegistry:
     def __init__(self):
         self.plugin_info_registry = {}
