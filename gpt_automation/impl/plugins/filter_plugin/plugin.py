@@ -1,8 +1,8 @@
 import os
 import shutil
 import fnmatch
-from gpt_automation.base_plugin import BasePlugin
-from gpt_automation.visitor.basevisitor import BaseVisitor
+from gpt_automation.impl.base_plugin import BasePlugin
+from gpt_automation.impl.visitor.basevisitor import BaseVisitor
 
 
 class BlacklistWhitelistPlugin(BasePlugin):

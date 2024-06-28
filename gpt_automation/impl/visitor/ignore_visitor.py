@@ -1,7 +1,7 @@
 # gpt_automation/visitor/ignore_visitor.py
-from gpt_automation.filters import should_ignore_by_ignore_files
-from gpt_automation.visitor.basevisitor import BaseVisitor
-from gpt_automation.ignore_file_parser import collect_patterns_from_ignore_files
+from gpt_automation.impl.filters import should_ignore_by_ignore_files
+from gpt_automation.impl.visitor.basevisitor import BaseVisitor
+from gpt_automation.impl.ignore_file_parser import collect_patterns_from_ignore_files
 
 
 class IgnoreVisitor(BaseVisitor):

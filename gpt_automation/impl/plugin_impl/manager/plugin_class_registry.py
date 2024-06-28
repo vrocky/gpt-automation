@@ -1,7 +1,7 @@
 # gpt_automation/plugin_impl/manager/plugin_class_registry.py
 from dataclasses import dataclass
 
-from gpt_automation.plugin_impl.reader.plugin_loader import PluginLoader
+from gpt_automation.impl.plugin_impl.reader.plugin_loader import PluginLoader
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 

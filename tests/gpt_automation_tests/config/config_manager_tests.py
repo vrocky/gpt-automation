@@ -4,7 +4,7 @@ import unittest
 from tempfile import TemporaryDirectory
 
 from gpt_automation.config.config import Config
-from gpt_automation.config.config_manager import ConfigManager
+from gpt_automation.impl.config.config_manager import ConfigManager
 
 class TestConfigManager(unittest.TestCase):
     def setUp(self):

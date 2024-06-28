@@ -1,7 +1,7 @@
 import os
 
-from gpt_automation.visitor.includeonly_visitor import IncludeOnlyVisitor
-from gpt_automation.base_plugin import BasePlugin
+from gpt_automation.impl.visitor.includeonly_visitor import IncludeOnlyVisitor
+from gpt_automation.impl.base_plugin import BasePlugin
 
 
 class IncludeOnlyPlugin(BasePlugin):

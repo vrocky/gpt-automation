@@ -1,5 +1,5 @@
 import json
-from gpt_automation.config.config import Config
+from gpt_automation.impl.config.config import Config
 
 def load_config_from_json(file_path):
     with open(file_path, 'r') as file:

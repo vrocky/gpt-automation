@@ -1,5 +1,5 @@
-from gpt_automation.plugin_impl.manager.plugin_class_registry import PluginInfo, PluginClassRegistry
-from gpt_automation.plugin_impl.manager.runtime.plugin_context import PluginContext, PluginContextBuilder
+from gpt_automation.impl.plugin_impl.manager.plugin_class_registry import PluginInfo, PluginClassRegistry
+from gpt_automation.impl.plugin_impl.manager.runtime.plugin_context import PluginContext, PluginContextBuilder
 
 
 def start_plugin_instance(plugin_class, context: PluginContext, settings):

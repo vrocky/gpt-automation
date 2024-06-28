@@ -1,5 +1,5 @@
-from gpt_automation.config.config_manager import ConfigManager
-from gpt_automation.plugin_impl.manager.plugin_runtime_manager import PluginRuntimeManager
+from gpt_automation.impl.config.config_manager import ConfigManager
+from gpt_automation.impl.plugin_impl.manager.plugin_runtime_manager import PluginRuntimeManager
 
 
 class Initializer:

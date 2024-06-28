@@ -1,5 +1,5 @@
-from gpt_automation.config.config_manager import ConfigManager
-from gpt_automation.project_info import ProjectInfo
+from gpt_automation.impl.config.config_manager import ConfigManager
+from gpt_automation.impl.project_info import ProjectInfo
 
 
 class PromptGenerator:

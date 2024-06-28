@@ -1,7 +1,7 @@
 import os
 
-from gpt_automation.visitor.ignore_visitor import IgnoreVisitor
-from gpt_automation.base_plugin import BasePlugin
+from gpt_automation.impl.visitor.ignore_visitor import IgnoreVisitor
+from gpt_automation.impl.base_plugin import BasePlugin
 
 
 class IgnorePlugin(BasePlugin):

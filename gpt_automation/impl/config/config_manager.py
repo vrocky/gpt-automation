@@ -1,8 +1,8 @@
 import os
 from shutil import copyfile
-from gpt_automation.config.config_loader import load_config_from_json
-from gpt_automation.config.config_resolver import ConfigResolver
-from gpt_automation.config.paths import PathManager
+from gpt_automation.impl.config.config_loader import load_config_from_json
+from gpt_automation.impl.config.config_resolver import ConfigResolver
+from gpt_automation.impl.config.paths import PathManager
 
 
 class ConfigManager:

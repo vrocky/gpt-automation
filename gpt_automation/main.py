@@ -1,6 +1,6 @@
 import argparse
 
-from gpt_automation.config.config_manager import ConfigManager
+from gpt_automation.impl.config.config_manager import ConfigManager
 
 from gpt_automation.prompt_generator import PromptGenerator
 from gpt_automation.initializer import Initializer

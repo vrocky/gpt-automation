@@ -1,6 +1,6 @@
 import os
-from gpt_automation.config.config_loader import load_config_from_json
-from gpt_automation.config.config import Config
+from gpt_automation.impl.config.config_loader import load_config_from_json
+from gpt_automation.impl.config.config import Config
 
 class ConfigResolver:
     def __init__(self, config_manager):

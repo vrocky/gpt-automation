@@ -1,5 +1,5 @@
-from gpt_automation.Ignore_match import IgnoreMatch
-from gpt_automation.utils.pattern_utils import matches_list_pattern
+from gpt_automation.impl.Ignore_match import IgnoreMatch
+from gpt_automation.impl.utils.pattern_utils import matches_list_pattern
 import logging
 
 # Configure logging
