@@ -18,9 +18,7 @@ of the plugins, which are handled separately by the plugin developers.
 
     
     
-    json
-    
-    Copy code
+```json
     
     {
         "extends": "none",
@@ -38,7 +36,7 @@ of the plugins, which are handled separately by the plugin developers.
             }
         ]
     }
-    
+  ```  
 
 ## Configuration Keys
 
