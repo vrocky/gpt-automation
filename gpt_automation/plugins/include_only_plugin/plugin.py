@@ -6,9 +6,13 @@ from gpt_automation.base_plugin import BasePlugin
 
 class IncludeOnlyPlugin(BasePlugin):
 
+    def initialize(self, context):
+        pass
+
     def __init__(self, context, settings):
         BasePlugin.__init__(self, context, settings)
         self.config_dir = context["plugin_settings_path"]
+
 
     def get_visitors(self):
         include_only_visitor = IncludeOnlyVisitor(

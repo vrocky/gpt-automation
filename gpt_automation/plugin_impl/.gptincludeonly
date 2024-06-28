@@ -25,7 +25,6 @@ project_info.py
 
 
 [plugins]
-plugins
 plugin_manager.py
 #project_info.py
 #main.py

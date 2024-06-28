@@ -56,6 +56,20 @@ class PluginRuntimeManager:
             .build()
         return context
 
+    def initialize_plugins(self):
+        """
+        Initialize each plugin instance using its corresponding context.
+        This assumes that plugin instances have been created and are stored in self.plugin_instances.
+        """
+        for key, plugin_instance in self.plugin_instances.items():
+            plugin_info = self.plugin_class_registry.plugin_info_registry[key]
+            context = self._create_context(plugin_info)
+            if hasattr(plugin_instance, 'initialize'):
+                plugin_instance.initialize(context)
+                print(f"Initialized plugin {plugin_info.plugin_name} with key {key}.")
+            else:
+                print(f"Plugin {plugin_info.plugin_name} does not have an 'initialize' method.")
+
     def get_all_visitors(self):
         visitors = []
         for plugin_instance in self.plugin_instances.values():

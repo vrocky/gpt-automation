@@ -25,11 +25,8 @@ project_info.py
 
 
 [plugins]
-plugins
-plugin_manager.py
-#project_info.py
-#main.py
-#config
+base_plugin.py
+plugin_impl
 
 [config]
 config
@@ -53,5 +50,11 @@ project_info.py
 
 [plugin_manager]
 plugin_impl
+
+
+
+[initialize]
+initializer.py
+main.py
 
 

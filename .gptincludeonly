@@ -35,3 +35,8 @@ gpt_automation
 
 [plugin_manager]
 gpt_automation
+
+
+[initialize]
+gpt_automation
+main.py

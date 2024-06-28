@@ -1,7 +1,10 @@
 import argparse
 
 from gpt_automation.config.config_manager import ConfigManager
+from gpt_automation.plugin_impl.plugin_manager import PluginManager
 from gpt_automation.prompt_generator import PromptGenerator
+from gpt_automation.initializer import Initializer
+
 
 
 def main():
@@ -23,12 +26,9 @@ def main():
     args = parser.parse_args()
 
     if args.command == "init":
-        config_manager = ConfigManager()
-        if not args.profiles:
-            config_manager.initialize_configurations()  # Initialize default configurations
-        else:
-            for profile in set(args.profiles):  # Use a set to avoid initializing the same profile more than once
-                config_manager.initialize_profile_config(profile)
+        initializer = Initializer(args.profiles)
+        initializer.initialize()
+
     elif args.command == "prompt":
         generate_dir = args.dir is not None
         generate_content = args.content is not None

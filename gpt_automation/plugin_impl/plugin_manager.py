@@ -63,3 +63,5 @@ class PluginManager:
             'plugin_settings_path': self.config_manager.path_manager.get_plugin_settings_path(module_path,class_name)
         }
         return context
+
+
