@@ -8,14 +8,14 @@ class BasePlugin(ABC):
         self.settings = settings
 
     @abstractmethod
-    def get_visitors(self):
+    def get_visitors(self, profile_names):
         """
         Return a list of visitor instances that this plugin wants to use.
         """
         pass
 
     @abstractmethod
-    def initialize(self, context):
+    def initialize(self, profile_names):
         """
         Initialize necessary resources or perform setup tasks with provided context.
         """
