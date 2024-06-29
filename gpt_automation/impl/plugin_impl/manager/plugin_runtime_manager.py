@@ -2,10 +2,12 @@ from gpt_automation.impl.plugin_impl.config import PluginInfo, PluginConfig
 from gpt_automation.impl.plugin_impl.reader.plugin_loader import PluginLoader
 from gpt_automation.impl.plugin_impl.manager.runtime.plugin_context import PluginContext, PluginContextBuilder
 
+
 def start_plugin_instance(plugin_class, context: PluginContext, settings):
     context_dict = context.to_dict()
     plugin_instance = plugin_class(context_dict, settings)
     return plugin_instance
+
 
 class PluginRuntimeManager:
     def __init__(self, profile_names, config_manager=None):

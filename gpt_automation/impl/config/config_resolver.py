@@ -2,9 +2,10 @@ import os
 from gpt_automation.impl.config.config_loader import load_config_from_json
 from gpt_automation.impl.config.config import Config
 
+
 class ConfigResolver:
-    def __init__(self, config_manager):
-        self.config_manager = config_manager
+    def __init__(self, path_manager):
+        self.path_manager = path_manager  # Use PathManager directly for resolving paths
 
     def resolve_json_config(self, json_path):
         # Resolve the full initial configuration from a JSON path
@@ -23,7 +24,7 @@ class ConfigResolver:
         extend_path = config.data.get('extends', 'none')
 
         if extend_path == 'none':
-            return config
+            return config  # Return current config if no extension path is specified
 
         if extend_path in visited:
             raise Exception(f"Circular dependency detected in configuration path: {extend_path}")
@@ -35,17 +36,19 @@ class ConfigResolver:
 
         return config.merge(resolved_parent_config)
 
-    def resolve_config_path(self, extend_path, base_path='.'):
+    def resolve_config_path(self, extend_path, base_path):
         """Resolve the correct configuration based on 'extends' path."""
         if extend_path == 'base':
-            base_config = self.config_manager.get_base_config()
-            return base_config, self.config_manager.path_manager.base_dir
+            base_config_path = self.path_manager.get_base_config_path()
+            base_config = load_config_from_json(base_config_path)
+            return Config(base_config.data), self.path_manager.config_base_dir
         elif extend_path == 'global':
-            global_config = self.config_manager.get_global_config()
-            return global_config, self.config_manager.path_manager.base_dir
+            global_config_path = self.path_manager.get_global_config_path()
+            global_config = load_config_from_json(global_config_path)
+            return Config(global_config.data), self.path_manager.config_base_dir
         else:
-            # Resolve the path relative to the base path if it's not a known keyword
+            # If extend_path is not a special keyword, resolve it relative to the base path
             if not os.path.isabs(extend_path):
                 extend_path = os.path.join(base_path, extend_path)
             config = load_config_from_json(extend_path)
-            return config, os.path.dirname(extend_path)
+            return Config(config.data), os.path.dirname(extend_path)

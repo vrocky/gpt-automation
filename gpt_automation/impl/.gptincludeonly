@@ -73,6 +73,7 @@ base_plugin.py
 
 [plugin_impl]
 plugin_impl
+project_info.py
 
 
 

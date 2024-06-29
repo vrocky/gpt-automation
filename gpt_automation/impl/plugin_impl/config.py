@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
+from gpt_automation.impl.config.config_manager import ConfigManager
+
 
 @dataclass
 class PluginInfo:
@@ -23,13 +25,13 @@ class PluginInfo:
 
 
 class PluginConfig:
-    def __init__(self, config_manager=None):
+    def __init__(self, config_manager:ConfigManager=None):
         self.config_manager = config_manager
 
     def resolve_and_load_configs(self, profile_names):
         if not self.config_manager:
             raise ValueError("Config manager is required to load configurations.")
-        config = self.config_manager.resolve_configs(profile_names)
+        config = self.config_manager.get_config(profile_names)
         return config.data['plugins']
 
     def get_all_plugins(self, profile_names):

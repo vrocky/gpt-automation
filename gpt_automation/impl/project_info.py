@@ -1,4 +1,5 @@
 import os
+import traceback
 
 from gpt_automation.impl.config.config_manager import ConfigManager
 from gpt_automation.impl.directory_walker import DirectoryWalker
@@ -33,6 +34,8 @@ class ProjectInfo:
             return True
         except Exception as e:
             print(f"Initialization failed with an error: {e}")
+            traceback_str = traceback.format_exc()
+            print(traceback_str)
             return False
 
     def create_directory_structure_prompt(self):
