@@ -1,21 +1,21 @@
-from gpt_automation.impl.config.config_manager import ConfigManager
+from gpt_automation.impl.app_context import AppContext
 from gpt_automation.impl.project_info import ProjectInfo
 
-
 class PromptGenerator:
-    def __init__(self, config_manager: ConfigManager, project_path='.'):
-        self.project_path = project_path
-        self.config_manager = config_manager
+    def __init__(self, root_dir='.'):
+        self.root_dir = root_dir
 
     def create_directory_prompt(self, profile_names):
-        project_info = ProjectInfo(self.project_path,self.config_manager, profile_names)
+        app_context = AppContext(self.root_dir, profile_names)
+        project_info = ProjectInfo(app_context)
         if project_info.initialize():
             return project_info.create_directory_structure_prompt()
         else:
             return ""
 
     def create_content_prompt(self, profile_names):
-        project_info = ProjectInfo(self.project_path,self.config_manager, profile_names)
+        app_context = AppContext(self.root_dir, profile_names)
+        project_info = ProjectInfo(app_context)
         if project_info.initialize():
             return project_info.create_file_contents_prompt()
         else:

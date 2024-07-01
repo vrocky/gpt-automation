@@ -6,7 +6,6 @@ from gpt_automation.prompt_generator import PromptGenerator
 from gpt_automation.initializer import Initializer
 
 
-
 def main():
     parser = argparse.ArgumentParser(
         description="Generate directory structure and file contents prompt for a GPT model.")
@@ -26,15 +25,17 @@ def main():
     args = parser.parse_args()
 
     if args.command == "init":
-        initializer = Initializer(args.profiles)
+        dir_path = "."
+        root_dir = dir_path
+        initializer = Initializer(root_dir, args.profiles)
         initializer.initialize()
 
     elif args.command == "prompt":
         generate_dir = args.dir is not None
         generate_content = args.content is not None
-        dir_path = args.dir if args.dir is not None else "."
-        config_manager = ConfigManager(dir_path)
-        prompt_generator = PromptGenerator(config_manager)
+        dir_path = "."
+
+        prompt_generator = PromptGenerator(dir_path)
 
         # Combine all profile lists and remove duplicates using set
         all_profiles = set(args.profiles or [])

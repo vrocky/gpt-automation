@@ -6,8 +6,8 @@ from gpt_automation.impl.config.paths import PathManager
 
 
 class ConfigManager:
-    def __init__(self, generate_dir='.'):
-        self.path_manager = PathManager(generate_dir)
+    def __init__(self, path_manager):
+        self.path_manager = path_manager
         self.config_resolver = ConfigResolver(self.path_manager)
 
     def ensure_profiles_initialized(self, profile_names):
@@ -73,7 +73,8 @@ class ConfigManager:
 
 # Example usage
 if __name__ == "__main__":
-    cm = ConfigManager(generate_dir='/path/to/desired/location')
+    pathmanager = PathManager('/path/to/desired/location')
+    cm = ConfigManager(pathmanager)
     cm.initialize_base_config_if_needed()
     final_config = cm.getConfig(['example_profile'])
     if final_config:

@@ -1,18 +1,15 @@
 import os
 import traceback
 
-from gpt_automation.impl.config.config_manager import ConfigManager
+from gpt_automation.impl.app_context import AppContext
 from gpt_automation.impl.directory_walker import DirectoryWalker
-from gpt_automation.impl.plugin_impl.manager.plugin_runtime_manager import PluginRuntimeManager
-
 
 class ProjectInfo:
-    def __init__(self, root_dir, config_manager: ConfigManager, profile_names=None):
-        self.root_dir = root_dir.strip(os.sep)
-        self.config_manager = config_manager
-        self.plugin_manager = None
+    def __init__(self, app_context):
+        self.app_context = app_context
+        self.root_dir = app_context.get_root_dir().strip(os.sep)  # Retrieve root directory from AppContext
         self.directory_walker = None
-        self.profile_names = profile_names
+        self.profile_names = app_context.profile_names  # Optionally maintain a local reference if needed
 
     def initialize(self):
         """
@@ -20,17 +17,8 @@ class ProjectInfo:
         Returns True if initialization is successful, False otherwise.
         """
         try:
-            # config = self.config_manager.resolve_configs(self.profile_names)
-            # if config is None:
-            #     print("Configuration resolution failed; necessary profiles might be missing.")
-            #     return False
-
-            # self.plugin_impl = PluginManager({"profile_names": self.profile_names}, config)
-            self.plugin_manager = PluginRuntimeManager(self.profile_names, self.config_manager)
-            self.plugin_manager.load_plugin_classes()
-            self.plugin_manager.create_plugin_instances()
-
-            self.directory_walker = DirectoryWalker(path=self.root_dir, plugin_manager=self.plugin_manager)
+            # Since AppContext should already handle initialization, we just need to set up the directory walker
+            self.directory_walker = DirectoryWalker(path=self.root_dir, plugin_manager=self.app_context.get_plugin_manager())
             return True
         except Exception as e:
             print(f"Initialization failed with an error: {e}")

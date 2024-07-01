@@ -1,22 +1,20 @@
-from gpt_automation.impl.config.config_manager import ConfigManager
-from gpt_automation.impl.plugin_impl.manager.plugin_runtime_manager import PluginRuntimeManager
-
+from gpt_automation.impl.app_context import AppContext
 
 class Initializer:
-    def __init__(self, profile_names):
+    def __init__(self, root_dir, profile_names):
+        self.root_dir = root_dir
         self.profile_names = profile_names
-        self.config_manager = ConfigManager()
-        self.plugin_manager = PluginRuntimeManager(self.profile_names, self.config_manager)
+        self.app_context = AppContext(root_dir, profile_names)
 
     def initialize(self):
-        if not self.profile_names:
-            self.config_manager.initialize_configurations()  # Initialize default configurations
-        else:
-            for profile in set(self.profile_names):  # Use a set to avoid initializing the same profile more than once
-                self.config_manager.initialize_profile_config(profile)
+        """
+        Initialize the system configurations and plugins based on specified profiles.
+        """
+        # Ensure that all profiles are initialized, configuration and plugins are loaded and set up.
+        if not self.app_context.initialize_context(self.profile_names):
+            print("Initialization of configurations and plugins failed.")
+            return False
 
-        # Load and initialize plugins after setting up configurations
-        self.plugin_manager.load_plugin_classes()
-        self.plugin_manager.create_plugin_instances()
-        self.plugin_manager.initialize_plugins()
-
+        # Initialization was successful
+        print("System configurations and plugins have been successfully initialized.")
+        return True
