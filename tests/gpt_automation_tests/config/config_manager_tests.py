@@ -33,10 +33,10 @@ class TestConfigManager(unittest.TestCase):
         cm.initialize_base_config()  # Initialize base config explicitly for test clarity
 
         # Initialize profile config
-        cm.initialize_profile_config(profile_name)
+        cm.create_profile_config(profile_name)
 
         # Check if the profile config was initialized
-        self.assertTrue(cm.is_profile_config_initialized(profile_name), "Profile config should be initialized.")
+        self.assertTrue(cm.is_profile_config_created(profile_name), "Profile config should be initialized.")
 
         # Check the contents of the profile config file
         profile_config_path = cm.path_manager.get_profile_config_path(profile_name)
@@ -50,7 +50,7 @@ class TestConfigManager(unittest.TestCase):
         profile_name = 'test_profile'
         cm = ConfigManager(generate_dir=self.temp_dir.name)
         cm.initialize_base_config()
-        cm.initialize_profile_config(profile_name)
+        cm.create_profile_config(profile_name)
 
         # Resolve the final configuration
         final_config = cm.resolve_final_config(profile_name)

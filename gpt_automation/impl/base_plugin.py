@@ -15,7 +15,7 @@ class BasePlugin(ABC):
         pass
 
     @abstractmethod
-    def initialize(self, profile_names):
+    def initialize_config(self, profile_names):
         """
         Initialize necessary resources or perform setup tasks with provided context.
         """

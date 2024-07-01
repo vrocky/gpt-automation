@@ -6,7 +6,7 @@ from gpt_automation.impl.base_plugin import BasePlugin
 
 class IncludeOnlyPlugin(BasePlugin):
 
-    def initialize(self, context):
+    def initialize_config(self, context):
         pass
 
     def __init__(self, context, settings):

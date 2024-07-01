@@ -5,20 +5,24 @@ from gpt_automation.impl.app_context import AppContext
 from gpt_automation.impl.directory_walker import DirectoryWalker
 
 class ProjectInfo:
-    def __init__(self, app_context):
+    def __init__(self, app_context: AppContext):
         self.app_context = app_context
-        self.root_dir = app_context.get_root_dir().strip(os.sep)  # Retrieve root directory from AppContext
+        self.root_dir = app_context.get_root_dir().strip(os.sep)
         self.directory_walker = None
-        self.profile_names = app_context.profile_names  # Optionally maintain a local reference if needed
+        self.profile_names = app_context.app.profile_names
+
+    def are_profiles_initialized(self):
+        return self.app_context.check_profile_created()
 
     def initialize(self):
-        """
-        Initialize the ProjectInfo with the necessary configurations and plugins.
-        Returns True if initialization is successful, False otherwise.
-        """
         try:
-            # Since AppContext should already handle initialization, we just need to set up the directory walker
-            self.directory_walker = DirectoryWalker(path=self.root_dir, plugin_manager=self.app_context.get_plugin_manager())
+            if not self.are_profiles_initialized():
+                print("Please run init command.")
+                return False
+            self.directory_walker = DirectoryWalker(
+                path=self.root_dir,
+                plugin_manager=self.app_context.get_plugin_manager()
+            )
             return True
         except Exception as e:
             print(f"Initialization failed with an error: {e}")

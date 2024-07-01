@@ -8,18 +8,24 @@ class PromptGenerator:
     def create_directory_prompt(self, profile_names):
         app_context = AppContext(self.root_dir, profile_names)
         project_info = ProjectInfo(app_context)
-        if project_info.initialize():
-            return project_info.create_directory_structure_prompt()
+        if project_info.are_profiles_initialized():
+            if project_info.initialize():
+                return project_info.create_directory_structure_prompt()
+            else:
+                return "Initialization of directory walker failed."
         else:
-            return ""
+            return "Profiles are not initialized. Please run the init command."
 
     def create_content_prompt(self, profile_names):
         app_context = AppContext(self.root_dir, profile_names)
         project_info = ProjectInfo(app_context)
-        if project_info.initialize():
-            return project_info.create_file_contents_prompt()
+        if project_info.are_profiles_initialized():
+            if project_info.initialize():
+                return project_info.create_file_contents_prompt()
+            else:
+                return "Initialization of directory walker failed."
         else:
-            return ""
+            return "Profiles are not initialized. Please run the init command."
 
     def generate_prompt(self, dir_profiles=None, content_profiles=None, generate_dir=False, generate_content=False):
         dir_prompt = ""

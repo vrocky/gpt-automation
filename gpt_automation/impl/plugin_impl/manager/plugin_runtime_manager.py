@@ -49,12 +49,12 @@ class PluginRuntimeManager:
             .build()
         return context
 
-    def initialize_plugins(self):
+    def register_plugin_and_create_config(self):
         for key, plugin_instance in self.plugin_instances.items():
             plugin_info = self.plugin_info_registry[key]
             context = self._create_context(plugin_info)
             if hasattr(plugin_instance, 'initialize'):
-                plugin_instance.initialize(context.to_dict())
+                plugin_instance.create_config(context.to_dict())
                 print(f"Initialized plugin {plugin_info.plugin_name} with key {key}.")
             else:
                 print(f"Plugin {plugin_info.plugin_name} does not have an 'initialize' method.")

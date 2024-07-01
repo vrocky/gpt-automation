@@ -3,3 +3,11 @@ impl
 
 [plugin_impl]
 impl
+
+
+[front]
+main.py
+config_initializer.py
+gpt_automation
+impl
+prompt_generator.py

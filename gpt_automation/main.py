@@ -3,7 +3,7 @@ import argparse
 from gpt_automation.impl.config.config_manager import ConfigManager
 
 from gpt_automation.prompt_generator import PromptGenerator
-from gpt_automation.initializer import Initializer
+from gpt_automation.config_creator import ConfigCreator
 
 
 def main():
@@ -27,8 +27,8 @@ def main():
     if args.command == "init":
         dir_path = "."
         root_dir = dir_path
-        initializer = Initializer(root_dir, args.profiles)
-        initializer.initialize()
+        config_creator = ConfigCreator(root_dir, args.profiles)
+        config_creator.create_config()
 
     elif args.command == "prompt":
         generate_dir = args.dir is not None
