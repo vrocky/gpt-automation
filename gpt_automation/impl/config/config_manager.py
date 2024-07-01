@@ -10,8 +10,6 @@ class ConfigManager:
         self.path_manager = path_manager
         self.config_resolver = ConfigResolver(self.path_manager)
 
-
-
     def check_profiles_created(self, profile_names):
         """ Ensure all specified profiles are initialized. """
         uninitialized_profiles = [name for name in profile_names if not self.is_profile_config_created(name)]
@@ -20,6 +18,7 @@ class ConfigManager:
 
             return False
         return True
+
     def get_config(self, profile_names):
         """ Resolve and merge configurations for given profiles. """
 
@@ -47,9 +46,12 @@ class ConfigManager:
 
     def create_profiles(self, profile_names):
         """ Initialize multiple profiles, ensuring base configuration is initialized first. """
-        if self.create_base_config_if_needed():
-            for profile_name in profile_names:
-                self.create_profile_config(profile_name)
+        self.create_base_config_if_needed()
+
+        for profile_name in profile_names:
+            self.create_profile_config(profile_name)
+
+        return True
 
     def create_profile_config(self, profile_name):
         """ Initialize a single profile configuration if it's not already initialized. """

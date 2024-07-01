@@ -1,3 +1,4 @@
+from gpt_automation.impl.config import config_manager
 from gpt_automation.impl.config.config_manager import ConfigManager
 from gpt_automation.impl.plugin_impl.plugin_manager import PluginManager
 from gpt_automation.impl.config.paths import PathManager
@@ -10,8 +11,11 @@ class App:
         self.path_manager = PathManager(root_dir)
         self.config_manager = ConfigManager(self.path_manager)
         self.config = self.load_config()
-        self.plugin_manager = PluginManager(profile_names, self.config,self.path_manager)
-        self.load_plugins()
+        if self.config is not None:
+            self.plugin_manager = PluginManager(profile_names, self.config, self.path_manager)
+            self.load_plugins()
+        else:
+            self.plugin_manager = None
 
     def load_config(self):
         """ Load and resolve configuration for the specified profiles. """
@@ -27,6 +31,7 @@ class App:
             print("Configuration not loaded. Cannot proceed with loading plugins.")
             return False
         try:
+
             self.plugin_manager.load_plugin_classes()
             self.plugin_manager.create_plugin_instances()
             print("Plugins loaded successfully.")
@@ -39,14 +44,17 @@ class App:
         """ Initialize configurations and load plugins. """
         if not self.config_manager.create_profiles(self.profile_names):
             return False
+
         self.config = self.load_config()
         if not self.config:
             return False
+        self.plugin_manager = PluginManager(self.profile_names, self.config, self.path_manager)
         self.load_plugins()
-        self.plugin_manager.configure_all_plugins()
+        if not self.plugin_manager.is_all_plugin_configured():
+            self.plugin_manager.configure_all_plugins()
         return True
 
     def check_profiles_created(self):
         """ Check if profiles are created. """
-        return self.config_manager.check_profiles_created(self.profile_names) and self.plugin_manager.is_all_plugin_configured()
-
+        return self.config_manager.check_profiles_created(
+            self.profile_names) and self.plugin_manager.is_all_plugin_configured()

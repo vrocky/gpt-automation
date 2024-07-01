@@ -57,11 +57,11 @@ class PluginManager:
         for key, plugin_instance in self.plugin_instances.items():
             plugin_info = self.plugin_info_registry[key]
             context = self._create_context(plugin_info)
-            if hasattr(plugin_instance, 'initialize'):
+            if hasattr(plugin_instance, 'configure'):
                 plugin_instance.configure(context.to_dict())
                 print(f"Initialized plugin {plugin_info.plugin_name} with key {key}.")
             else:
-                print(f"Plugin {plugin_info.plugin_name} does not have an 'initialize' method.")
+                print(f"Plugin {plugin_info.plugin_name} does not have an 'configure' method.")
 
     def is_all_plugin_configured(self):
         # Check if all plugin instances are correctly configured.
