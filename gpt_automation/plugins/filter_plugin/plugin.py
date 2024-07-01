@@ -6,14 +6,32 @@ from gpt_automation.impl.visitor.basevisitor import BaseVisitor
 
 
 class BlacklistWhitelistPlugin(BasePlugin):
+    def configure(self, profile_names):
+        print("Initializing BlacklistWhitelistPlugin with profiles:", profile_names)
+        self.configure_profiles(self.profile_names)
+
+    def is_plugin_configured(self):
+        # Check if all specified profiles have been properly configured with necessary files.
+        for profile_name in self.profile_names:
+            profile_dir = self.get_profile_config_path(profile_name)
+            blacklist_path = os.path.join(profile_dir, "black_list.txt")
+            whitelist_path = os.path.join(profile_dir, "white_list.txt")
+
+            # Check if both blacklist and whitelist files exist in the profile directory.
+            if not (os.path.exists(blacklist_path) and os.path.exists(whitelist_path)):
+                print(f"Configuration files missing in profile: {profile_name}")
+                return False
+
+        # If all profiles are correctly configured.
+        return True
+
     def __init__(self, context, settings):
         super().__init__(context, settings)
         self.config_dir = context["plugin_settings_path"]
         self.profile_names = context.get("profile_names", [])
 
-    def initialize(self, context):
-        print("Initializing BlacklistWhitelistPlugin with context:", context)
-        self.init_profiles(self.profile_names)
+
+
 
     def get_visitors(self):
         visitors = []
@@ -40,7 +58,7 @@ class BlacklistWhitelistPlugin(BasePlugin):
                 return file.read().strip().split('\n')
         return []
 
-    def init_profiles(self, profile_names):
+    def configure_profiles(self, profile_names):
         sample_config_dir = os.path.join(os.path.dirname(__file__), "sample_config")
         for profile_name in profile_names:
             profile_dir = self.get_profile_config_path(profile_name)

@@ -8,6 +8,10 @@ class BasePlugin(ABC):
         self.settings = settings
 
     @abstractmethod
+    def is_plugin_configured(self):
+        pass
+
+    @abstractmethod
     def get_visitors(self, profile_names):
         """
         Return a list of visitor instances that this plugin wants to use.
@@ -15,7 +19,7 @@ class BasePlugin(ABC):
         pass
 
     @abstractmethod
-    def create_config(self, profile_names):
+    def configure(self, profile_names):
         """
         Initialize necessary resources or perform setup tasks with provided context.
         """

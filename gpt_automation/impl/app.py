@@ -10,7 +10,7 @@ class App:
         self.path_manager = PathManager(root_dir)
         self.config_manager = ConfigManager(self.path_manager)
         self.config = self.load_config()
-        self.plugin_manager = PluginManager(profile_names, self.config)
+        self.plugin_manager = PluginManager(profile_names, self.config,self.path_manager)
         self.load_plugins()
 
     def load_config(self):
@@ -43,9 +43,10 @@ class App:
         if not self.config:
             return False
         self.load_plugins()
-        self.plugin_manager.register_plugin_and_create_config()
+        self.plugin_manager.configure_all_plugins()
         return True
 
     def check_profiles_created(self):
         """ Check if profiles are created. """
-        return self.config_manager.check_profiles_created(self.profile_names)
+        return self.config_manager.check_profiles_created(self.profile_names) and self.plugin_manager.is_all_plugin_configured()
+

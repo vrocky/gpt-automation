@@ -25,8 +25,9 @@ class PluginInfo:
 
 
 class PluginConfig:
-    def __init__(self, config):
+    def __init__(self, config,path_manager):
         self.config = config
+        self.path_manager = path_manager
 
     def get_plugin_config(self):
         # This method is simplified as we now expect the entire config to be loaded and handled outside this class
@@ -39,4 +40,4 @@ class PluginConfig:
     def get_plugin_settings_path(self, package_name, plugin_name):
         # This method will need to be implemented based on how paths are managed in your new Config structure
         # The example below assumes there is a straightforward mapping to retrieve paths.
-        return self.config.data.get('plugin_paths', {}).get(package_name, {}).get(plugin_name, '')
+        return self.path_manager.get_plugin_settings_path(package_name, plugin_name)
