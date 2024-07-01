@@ -2,6 +2,7 @@ from gpt_automation.impl.config.config_manager import ConfigManager
 from gpt_automation.impl.plugin_impl.plugin_manager import PluginManager
 from gpt_automation.impl.config.paths import PathManager
 
+
 class App:
     def __init__(self, root_dir, profile_names):
         self.root_dir = root_dir

@@ -6,7 +6,7 @@ from gpt_automation.impl.base_plugin import BasePlugin
 
 class IgnorePlugin(BasePlugin):
 
-    def initialize_config(self, context):
+    def create_config(self, context):
         print("Received init", context)
 
     def __init__(self, context, settings):
