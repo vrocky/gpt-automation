@@ -4,6 +4,7 @@ import traceback
 from gpt_automation.impl.app_context import AppContext
 from gpt_automation.impl.directory_walker import DirectoryWalker
 
+
 class ProjectInfo:
     def __init__(self, app_context: AppContext):
         self.app_context = app_context

@@ -10,16 +10,18 @@ def start_plugin_instance(plugin_class, context: PluginContext, settings):
 
 
 class PluginRuntimeManager:
-    def __init__(self, profile_names, config_manager=None):
+    def __init__(self, profile_names, config=None):
+        if not config:
+            raise ValueError("Config is required to initialize PluginRuntimeManager.")
         self.profile_names = profile_names
-        self.config_manager = config_manager
-        self.plugin_config = PluginConfig(config_manager)
+        self.config = config
+        self.plugin_config = PluginConfig(config)
         self.plugin_info_registry = {}
         self.plugin_classes = {}
         self.plugin_instances = {}
 
     def load_plugin_classes(self):
-        plugins_config = self.plugin_config.get_all_plugins(self.profile_names)
+        plugins_config = self.plugin_config.get_all_plugins()
         for plugin_info in plugins_config:
             self.plugin_info_registry[plugin_info.key()] = plugin_info
             print(f"Saved info for plugin {plugin_info.plugin_name}.")

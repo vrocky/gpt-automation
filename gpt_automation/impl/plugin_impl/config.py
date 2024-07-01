@@ -25,20 +25,18 @@ class PluginInfo:
 
 
 class PluginConfig:
-    def __init__(self, config_manager:ConfigManager=None):
-        self.config_manager = config_manager
+    def __init__(self, config):
+        self.config = config
 
-    def resolve_and_load_configs(self, profile_names):
-        if not self.config_manager:
-            raise ValueError("Config manager is required to load configurations.")
-        config = self.config_manager.get_config(profile_names)
-        return config.data['plugins']
+    def get_plugin_config(self):
+        # This method is simplified as we now expect the entire config to be loaded and handled outside this class
+        return self.config.data.get('plugins', [])
 
-    def get_all_plugins(self, profile_names):
-        plugins_config = self.resolve_and_load_configs(profile_names)
+    def get_all_plugins(self):
+        plugins_config = self.get_plugin_config()
         return [PluginInfo.from_config(pc) for pc in plugins_config]
 
     def get_plugin_settings_path(self, package_name, plugin_name):
-        if not self.config_manager:
-            raise ValueError("Config manager is required to retrieve settings path.")
-        return self.config_manager.path_manager.get_plugin_settings_path(package_name, plugin_name)
+        # This method will need to be implemented based on how paths are managed in your new Config structure
+        # The example below assumes there is a straightforward mapping to retrieve paths.
+        return self.config.data.get('plugin_paths', {}).get(package_name, {}).get(plugin_name, '')
