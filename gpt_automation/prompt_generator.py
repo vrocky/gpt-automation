@@ -1,5 +1,5 @@
 from gpt_automation.impl.app_context import AppContext
-from gpt_automation.impl.project_info import ProjectInfo
+from gpt_automation.project_info import ProjectInfo
 
 class PromptGenerator:
     def __init__(self, root_dir='.'):
