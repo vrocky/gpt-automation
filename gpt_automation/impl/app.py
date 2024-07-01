@@ -1,5 +1,5 @@
 from gpt_automation.impl.config.config_manager import ConfigManager
-from gpt_automation.impl.plugin_impl.manager.plugin_runtime_manager import PluginRuntimeManager
+from gpt_automation.impl.plugin_impl.plugin_manager import PluginManager
 from gpt_automation.impl.config.paths import PathManager
 
 class App:
@@ -9,7 +9,7 @@ class App:
         self.path_manager = PathManager(root_dir)
         self.config_manager = ConfigManager(self.path_manager)
         self.config = self.load_config()
-        self.plugin_manager = PluginRuntimeManager(profile_names, self.config)
+        self.plugin_manager = PluginManager(profile_names, self.config)
         self.load_plugins()
 
     def load_config(self):

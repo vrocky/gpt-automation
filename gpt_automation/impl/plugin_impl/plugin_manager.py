@@ -1,6 +1,6 @@
-from gpt_automation.impl.plugin_impl.config import PluginInfo, PluginConfig
-from gpt_automation.impl.plugin_impl.reader.plugin_loader import PluginLoader
-from gpt_automation.impl.plugin_impl.manager.runtime.plugin_context import PluginContext, PluginContextBuilder
+from gpt_automation.impl.plugin_impl.plugin_config import PluginInfo, PluginConfig
+from gpt_automation.impl.plugin_impl.plugin_loader import PluginLoader
+from gpt_automation.impl.plugin_impl.plugin_context import PluginContext, PluginContextBuilder
 
 
 def start_plugin_instance(plugin_class, context: PluginContext, settings):
@@ -9,7 +9,7 @@ def start_plugin_instance(plugin_class, context: PluginContext, settings):
     return plugin_instance
 
 
-class PluginRuntimeManager:
+class PluginManager:
     def __init__(self, profile_names, config=None):
         if not config:
             raise ValueError("Config is required to initialize PluginRuntimeManager.")
