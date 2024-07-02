@@ -1,58 +1,82 @@
 import argparse
 
-from gpt_automation.impl.config.config_manager import ConfigManager
-
-from gpt_automation.prompt_generator import PromptGenerator
 from gpt_automation.config_creator import ConfigCreator
+from gpt_automation.prompt_generator import PromptGenerator
+
+
+def setup_cli_parser():
+    """
+    Sets up the command line interface parser with all the necessary subparsers and arguments.
+
+    Returns:
+        argparse.ArgumentParser: Configured parser with all commands and options.
+    """
+    parser = argparse.ArgumentParser(description="Automates project structure and file content generation.")
+
+    # Create subparsers for each command (init, prompt)
+    subparsers = parser.add_subparsers(dest='command', required=True, help='Commands')
+
+    # Setup 'init' command to initialize configuration files and directories
+    init_parser = subparsers.add_parser('init', help='Set up initial configuration files and directories.')
+    init_parser.add_argument("profiles", nargs='*', default=[], help="Profile names for initial setup.")
+
+    # Setup 'prompt' command to generate structure and content prompts
+    prompt_parser = subparsers.add_parser('prompt', help='Generate structure and content prompts for profiles.')
+    prompt_parser.add_argument("profiles", nargs='*', help="Profile names for generating prompts.")
+    prompt_parser.add_argument("--dir", nargs='*', help="Generate directory structure for these profiles.")
+    prompt_parser.add_argument("--content", nargs='*', help="Generate content for these profiles.")
+
+    return parser
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Generate directory structure and file contents prompt for a GPT model.")
-    subparsers = parser.add_subparsers(dest='command', help='Select a command to execute', required=True)
-
-    init_parser = subparsers.add_parser('init',
-                                        help='Initialize the .gpt directory with sample black and white list files.')
-    init_parser.add_argument("profiles", nargs='*', default=[], help="Names of the profiles to initialize.")
-
-    prompt_parser = subparsers.add_parser('prompt', help='Generate prompts for directory and/or file contents.')
-    prompt_parser.add_argument("profiles", nargs='*', help="Profiles to generate prompts for.")
-    prompt_parser.add_argument("--dir", nargs='*', default=None,
-                               help="Generate directory structure prompt for these profiles.")
-    prompt_parser.add_argument("--content", nargs='*', default=None,
-                               help="Generate file contents prompt for these profiles.")
-
+    """
+    Main function to parse command line arguments and execute corresponding functionality.
+    """
+    parser = setup_cli_parser()
     args = parser.parse_args()
 
+    # Directory where the configuration is to be created or used
+    config_dir = "."
+
+    # Execute based on the command specified
     if args.command == "init":
-        dir_path = "."
-        root_dir = dir_path
-        config_creator = ConfigCreator(root_dir, args.profiles)
+        # Initialize profiles using the ConfigCreator
+        config_creator = ConfigCreator(config_dir, args.profiles)
         config_creator.create_config()
-
     elif args.command == "prompt":
-        generate_dir = args.dir is not None
-        generate_content = args.content is not None
-        dir_path = "."
+        # Initialize the PromptGenerator with the configuration directory
+        prompt_generator = PromptGenerator(config_dir)
 
-        prompt_generator = PromptGenerator(dir_path)
+        # Check if specific options for directory or content generation are provided
+        if args.dir or args.content:
+            # Set directory profiles to the ones specified in --dir or default to general profiles
+            dir_profiles = args.dir if args.dir else args.profiles
+            # Set content profiles to the ones specified in --content or default to general profiles
+            content_profiles = args.content if args.content else args.profiles
 
-        # Combine all profile lists and remove duplicates using set
-        all_profiles = set(args.profiles or [])
-        dir_profiles = set(args.dir or [])
-        content_profiles = set(args.content or [])
-
-        # Combine all sets into one to ensure all profiles are unique
-        combined_profiles = all_profiles | dir_profiles | content_profiles
-
-        # Pass the combined and unique profiles to generate prompts
-        if not generate_dir and not generate_content:
-            generate_dir = generate_content = True  # Default to both if neither flag is provided
-
-        prompt_generator.generate_prompt(dir_profiles=combined_profiles if generate_dir else set(),
-                                         content_profiles=combined_profiles if generate_content else set(),
-                                         generate_dir=generate_dir, generate_content=generate_content)
+            # Generate prompts based on the specified profiles
+            # `generate_dir` is True if --dir is explicitly mentioned,
+            # indicating the intention to generate directory prompts
+            # `generate_content` is True if --content is explicitly mentioned,
+            # indicating the intention to generate content prompts
+            prompt_generator.generate_prompts(
+                dir_profiles=dir_profiles,
+                content_profiles=content_profiles,
+                generate_dir=bool(args.dir),
+                generate_content=bool(args.content)
+            )
+        else:
+            # If no specific flags are provided, use the profiles for both directory and content generation
+            # This defaults to generating both directory and content prompts for the specified profiles
+            prompt_generator.generate_prompt(
+                dir_profiles=args.profiles,
+                content_profiles=args.profiles,
+                generate_dir=True,
+                generate_content=True
+            )
     else:
+        # Display help if command is not recognized
         parser.print_help()
 
 

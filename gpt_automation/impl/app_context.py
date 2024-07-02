@@ -14,14 +14,17 @@ class AppContext:
     def get_plugin_manager(self):
         return self.app.plugin_manager
 
+    def get_directory_walker(self):
+        return self.app.directory_walker  # Access the directory walker through the app
+
     def get_root_dir(self):
         return self.app.root_dir
 
-    def check_profile_created(self):
-        return self.app.check_profiles_created()
-
     def create_profiles(self):
         return self.app.create_profiles()
+
+    def check_profile_created(self):
+        return self.app.check_profiles_created()
 
     def load_plugins(self):
         return self.app.load_plugins()

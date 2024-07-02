@@ -20,10 +20,7 @@ class ProjectInfo:
             if not self.are_profiles_initialized():
                 print("Please run init command.")
                 return False
-            self.directory_walker = DirectoryWalker(
-                path=self.root_dir,
-                plugin_manager=self.app_context.get_plugin_manager()
-            )
+            self.directory_walker = self.app_context.get_directory_walker()
             return True
         except Exception as e:
             print(f"Initialization failed with an error: {e}")

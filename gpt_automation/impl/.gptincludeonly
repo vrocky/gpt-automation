@@ -80,4 +80,6 @@ project_info.py
 [front]
 app_context.py
 project_info.py
+app.py
+directory_walker.py
 
