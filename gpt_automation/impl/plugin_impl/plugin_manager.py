@@ -39,7 +39,8 @@ class PluginManager:
             plugin_info: PluginInfo = self.plugin_info_registry[plugin_name]
             context = self._create_context(plugin_info)
             settings = plugin_info.settings
-            plugin_instance = start_plugin_instance(plugin_class, context,args=args,file_args=file_args, settings=settings)
+            plugin_instance = start_plugin_instance(plugin_class, context,
+                                                    args=args,file_args=file_args, settings=settings)
             print(f"Created instance for plugin {plugin_info.plugin_name}.")
             self.plugin_instances[plugin_info.key()] = plugin_instance
 

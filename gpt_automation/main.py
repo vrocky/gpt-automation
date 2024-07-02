@@ -1,7 +1,16 @@
 import argparse
 
+from gpt_automation.arg_file_parser import ArgFileParser
 from gpt_automation.setup_settings import SettingsSetup
 from gpt_automation.prompt_generator import PromptGenerator
+
+
+class KeyValueAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, dict())
+        for item in values:
+            key, value = item.split('=')
+            getattr(namespace, self.dest)[key] = value
 
 
 def setup_cli_parser():
@@ -19,12 +28,20 @@ def setup_cli_parser():
     # Setup 'init' command to initialize configuration files and directories
     init_parser = subparsers.add_parser('init', help='Set up initial configuration files and directories.')
     init_parser.add_argument("profiles", nargs='*', default=[], help="Profile names for initial setup.")
+    init_parser.add_argument('--args', nargs='*', action=KeyValueAction,
+                               help='Plugin arguments in key=value format')
+    init_parser.add_argument('--arg_files', nargs='*', help='List of files containing plugin arguments')
+    init_parser.add_argument('--plugin-file-args', nargs='*', help='List of files containing plugin arguments')
 
     # Setup 'prompt' command to generate structure and content prompts
     prompt_parser = subparsers.add_parser('prompt', help='Generate structure and content prompts for profiles.')
     prompt_parser.add_argument("profiles", nargs='*', help="Profile names for generating prompts.")
     prompt_parser.add_argument("--dir", nargs='*', help="Generate directory structure for these profiles.")
     prompt_parser.add_argument("--content", nargs='*', help="Generate content for these profiles.")
+    prompt_parser.add_argument('--args', nargs='*', action=KeyValueAction,
+                             help='Plugin arguments in key=value format')
+    prompt_parser.add_argument('--arg_files', nargs='*', help='List of files containing plugin arguments')
+    prompt_parser.add_argument('--plugin-file-args', nargs='*', help='List of files containing plugin arguments')
 
     return parser
 
@@ -36,17 +53,23 @@ def main():
     parser = setup_cli_parser()
     args = parser.parse_args()
 
+    if args.arg_files:
+        arg_parser = ArgFileParser(args.arg_files)
+        combined_args = arg_parser.merge_args(getattr(args, 'args', {}))
+    else :
+        combined_args = args.args
+
     # Directory where the configuration is to be created or used
     settings_dir = "."
 
     # Execute based on the command specified
     if args.command == "init":
         # Initialize profiles using the ConfigCreator
-        config_creator = SettingsSetup(settings_dir, args.profiles, plugin_args=[], plugin_file_args=[])
+        config_creator = SettingsSetup(settings_dir, args.profiles, combined_args, args.plugin_file_args)
         config_creator.create_settings()
     elif args.command == "prompt":
         # Initialize the PromptGenerator with the configuration directory
-        prompt_generator = PromptGenerator(settings_dir,plugin_args=[],plugin_file_args=[])
+        prompt_generator = PromptGenerator(settings_dir,  combined_args, args.plugin_file_args)
 
         # Check if specific options for directory or content generation are provided
         if args.dir or args.content:

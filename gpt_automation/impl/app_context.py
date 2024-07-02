@@ -2,8 +2,8 @@ from gpt_automation.impl.app import App
 
 
 class AppContext:
-    def __init__(self, root_dir, profile_names, plugin_args, plugin_file_args):
-        self.app = App(root_dir, profile_names, plugin_args, plugin_file_args)
+    def __init__(self, root_dir, profile_names, conf_args, plugin_file_args):
+        self.app = App(root_dir, profile_names, conf_args, plugin_file_args)
 
     def get_path_manager(self):
         return self.app.path_manager

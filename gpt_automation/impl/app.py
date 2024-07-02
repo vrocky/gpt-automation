@@ -5,7 +5,7 @@ from gpt_automation.impl.directory_walker import DirectoryWalker
 
 
 class App:
-    def __init__(self, root_dir, profile_names, plugin_args, plugin_file_args):
+    def __init__(self, root_dir, profile_names, conf_args, plugin_file_args):
         self.root_dir = root_dir
         self.profile_names = profile_names
         self.path_manager = PathManager(root_dir)
@@ -13,7 +13,7 @@ class App:
         self.settings = self.load_settings()
         self.plugin_manager = None
         self.directory_walker = None  # Initialize the directory walker to None
-        self.plugin_args = plugin_args
+        self.conf_args = conf_args
         self.plugin_file_args = plugin_file_args
 
         if self.settings:
@@ -36,7 +36,7 @@ class App:
             return False
         try:
             self.plugin_manager.load_plugin_classes()
-            self.plugin_manager.create_plugin_instances(args=self.plugin_args,
+            self.plugin_manager.create_plugin_instances(args=self.conf_args,
                                                         file_args=self.plugin_file_args)
             print("Plugins loaded successfully.")
         except Exception as e:

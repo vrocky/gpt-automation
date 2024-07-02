@@ -2,16 +2,16 @@ from gpt_automation.impl.app_context import AppContext
 
 
 class SettingsSetup:
-    def __init__(self, root_dir, profile_names, plugin_args=None, plugin_file_args=None):
+    def __init__(self, root_dir, profile_names, config_args=None, plugin_file_args=None):
         if plugin_file_args is None:
             plugin_file_args = []
-        if plugin_args is None:
-            plugin_args = []
+        if config_args is None:
+            config_args = []
         self.root_dir = root_dir
         self.profile_names = profile_names
         self.app_context = AppContext(root_dir,
                                       profile_names,
-                                      plugin_args=plugin_args,
+                                      conf_args=config_args,
                                       plugin_file_args=plugin_file_args)
 
     def create_settings(self):
