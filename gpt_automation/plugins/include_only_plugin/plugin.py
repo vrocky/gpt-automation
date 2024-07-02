@@ -12,8 +12,8 @@ class IncludeOnlyPlugin(BasePlugin):
     def configure(self, context):
         pass
 
-    def __init__(self, context, settings):
-        BasePlugin.__init__(self, context, settings)
+    def __init__(self, context, config_args, file_args, settings):
+        super().__init__(context, config_args, file_args, settings)
         self.config_dir = context["plugin_settings_path"]
 
 

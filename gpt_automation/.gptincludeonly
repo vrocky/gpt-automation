@@ -11,3 +11,4 @@ config_initializer.py
 gpt_automation
 impl
 prompt_generator.py
+project_info.py

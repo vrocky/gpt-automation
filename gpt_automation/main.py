@@ -42,11 +42,11 @@ def main():
     # Execute based on the command specified
     if args.command == "init":
         # Initialize profiles using the ConfigCreator
-        config_creator = ConfigCreator(config_dir, args.profiles)
+        config_creator = ConfigCreator(config_dir, args.profiles,plugin_args=[],plugin_file_args=[])
         config_creator.create_config()
     elif args.command == "prompt":
         # Initialize the PromptGenerator with the configuration directory
-        prompt_generator = PromptGenerator(config_dir)
+        prompt_generator = PromptGenerator(config_dir,plugin_args=[],plugin_file_args=[])
 
         # Check if specific options for directory or content generation are provided
         if args.dir or args.content:

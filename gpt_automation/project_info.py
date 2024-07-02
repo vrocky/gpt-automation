@@ -2,7 +2,6 @@ import os
 import traceback
 
 from gpt_automation.impl.app_context import AppContext
-from gpt_automation.impl.directory_walker import DirectoryWalker
 
 
 class ProjectInfo:

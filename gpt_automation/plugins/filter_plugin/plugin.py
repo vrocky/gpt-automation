@@ -25,13 +25,10 @@ class BlacklistWhitelistPlugin(BasePlugin):
         # If all profiles are correctly configured.
         return True
 
-    def __init__(self, context, settings):
-        super().__init__(context, settings)
+    def __init__(self, context, config_args, file_args, settings):
+        super().__init__(context, config_args, file_args, settings)
         self.config_dir = context["plugin_settings_path"]
         self.profile_names = context.get("profile_names", [])
-
-
-
 
     def get_visitors(self):
         visitors = []

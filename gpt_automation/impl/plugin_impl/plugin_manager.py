@@ -1,22 +1,23 @@
+from gpt_automation.impl.base_plugin import BasePlugin
 from gpt_automation.impl.config.paths import PathManager
 from gpt_automation.impl.plugin_impl.plugin_config import PluginInfo, PluginConfig
 from gpt_automation.impl.plugin_impl.plugin_loader import PluginLoader
 from gpt_automation.impl.plugin_impl.plugin_context import PluginContext, PluginContextBuilder
 
 
-def start_plugin_instance(plugin_class, context: PluginContext, settings):
+def start_plugin_instance(plugin_class: BasePlugin.__class__, context: PluginContext, args, file_args, settings):
     context_dict = context.to_dict()
-    plugin_instance = plugin_class(context_dict, settings)
+    plugin_instance = plugin_class(context_dict, args, file_args, settings)
     return plugin_instance
 
 
 class PluginManager:
-    def __init__(self, profile_names, config=None, path_manager:PathManager=None):
+    def __init__(self, profile_names, config=None, path_manager: PathManager = None):
         if not config:
             raise ValueError("Config is required to initialize PluginRuntimeManager.")
         self.profile_names = profile_names
         self.config = config
-        self.plugin_config = PluginConfig(config,path_manager)
+        self.plugin_config = PluginConfig(config, path_manager)
         self.plugin_info_registry = {}
         self.plugin_classes = {}
         self.plugin_instances = {}
@@ -33,12 +34,12 @@ class PluginManager:
             self.plugin_classes[plugin_info.key()] = plugin_class
             print(f"Loaded class for plugin {plugin_info.plugin_name}.")
 
-    def create_plugin_instances(self):
+    def create_plugin_instances(self, args, file_args):
         for plugin_name, plugin_class in self.plugin_classes.items():
             plugin_info: PluginInfo = self.plugin_info_registry[plugin_name]
             context = self._create_context(plugin_info)
             settings = plugin_info.settings
-            plugin_instance = start_plugin_instance(plugin_class, context, settings=settings)
+            plugin_instance = start_plugin_instance(plugin_class, context,args=args,file_args=file_args, settings=settings)
             print(f"Created instance for plugin {plugin_info.plugin_name}.")
             self.plugin_instances[plugin_info.key()] = plugin_instance
 

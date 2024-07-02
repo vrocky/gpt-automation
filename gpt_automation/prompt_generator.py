@@ -3,8 +3,15 @@ from gpt_automation.project_info import ProjectInfo
 
 
 class PromptGenerator:
-    def __init__(self, root_dir='.'):
+    def __init__(self, root_dir='.', plugin_args=None, plugin_file_args=None):
+        if plugin_args is None:
+            plugin_args = []
+        if plugin_file_args is None:
+            plugin_file_args = []
+
         self.root_dir = root_dir
+        self.plugin_args = plugin_args
+        self.plugin_file_args = plugin_file_args
 
     def generate_prompt(self, dir_profiles=None, content_profiles=None, generate_dir=False, generate_content=False):
         dir_prompt = ""
@@ -44,7 +51,7 @@ class PromptGenerator:
         return self.create_prompt(profile_names, prompt_type='content')
 
     def create_prompt(self, profile_names, prompt_type):
-        app_context = AppContext(self.root_dir, profile_names)
+        app_context = AppContext(self.root_dir, profile_names, self.plugin_args, self.plugin_file_args)
         project_info = ProjectInfo(app_context)
         if project_info.are_profiles_initialized():
             if project_info.initialize():

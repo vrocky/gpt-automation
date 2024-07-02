@@ -2,10 +2,17 @@ from gpt_automation.impl.app_context import AppContext
 
 
 class ConfigCreator:
-    def __init__(self, root_dir, profile_names):
+    def __init__(self, root_dir, profile_names, plugin_args=None, plugin_file_args=None):
+        if plugin_file_args is None:
+            plugin_file_args = []
+        if plugin_args is None:
+            plugin_args = []
         self.root_dir = root_dir
         self.profile_names = profile_names
-        self.app_context = AppContext(root_dir, profile_names)
+        self.app_context = AppContext(root_dir,
+                                      profile_names,
+                                      plugin_args=plugin_args,
+                                      plugin_file_args=plugin_file_args)
 
     def create_config(self):
         """
