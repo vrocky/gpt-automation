@@ -4,7 +4,7 @@ import os
 class PathManager:
     def __init__(self, base_directory):
         self.base_directory = os.path.abspath(base_directory)
-        self.config_base_dir = os.path.join(self.base_directory, '.gpt', 'config')
+        self.config_base_dir = os.path.join(self.base_directory, '.gpt', 'setting')
         self.profiles_dir = os.path.join(self.base_directory, '.gpt', 'profiles')
         self.plugins_dir = os.path.join(self.base_directory, '.gpt', 'plugins')
         self.resources_dir = os.path.join(os.path.dirname(__file__),'..', '..', 'resources')
@@ -26,7 +26,7 @@ class PathManager:
 
     def get_profile_config_path(self, profile_name):
         """ Returns the path to the configuration file for a specific profile. """
-        profile_path = os.path.join(self.profiles_dir, profile_name, 'config.json')
+        profile_path = os.path.join(self.profiles_dir, profile_name, 'setting.json')
         os.makedirs(os.path.dirname(profile_path), exist_ok=True)
         return profile_path
 

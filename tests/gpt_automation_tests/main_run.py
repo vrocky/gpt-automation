@@ -6,7 +6,7 @@ from gpt_automation.main import main
 
 def read_config(section, key):
     config = configparser.ConfigParser()
-    config.read("config.ini")  # Adjust path as necessary
+    config.read("setting.ini")  # Adjust path as necessary
     if config.has_section(section) and config.has_option(section, key):
         return config.get(section, key)
     else:

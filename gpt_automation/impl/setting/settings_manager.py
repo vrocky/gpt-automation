@@ -1,14 +1,14 @@
 import os
 from shutil import copyfile
-from gpt_automation.impl.config.config_loader import load_config_from_json
-from gpt_automation.impl.config.config_resolver import ConfigResolver
-from gpt_automation.impl.config.paths import PathManager
+from gpt_automation.impl.setting.settings_loader import load_config_from_json
+from gpt_automation.impl.setting.settings_resolver import SettingsResolver
+from gpt_automation.impl.setting.paths import PathManager
 
 
-class ConfigManager:
+class SettingsManager:
     def __init__(self, path_manager):
         self.path_manager = path_manager
-        self.config_resolver = ConfigResolver(self.path_manager)
+        self.config_resolver = SettingsResolver(self.path_manager)
 
     def check_profiles_created(self, profile_names):
         """ Ensure all specified profiles are initialized. """
@@ -19,7 +19,7 @@ class ConfigManager:
             return False
         return True
 
-    def get_config(self, profile_names):
+    def get_settings(self, profile_names):
         """ Resolve and merge configurations for given profiles. """
 
         merged_config = None
@@ -73,7 +73,7 @@ class ConfigManager:
 # Example usage
 if __name__ == "__main__":
     pathmanager = PathManager('/path/to/desired/location')
-    cm = ConfigManager(pathmanager)
+    cm = SettingsManager(pathmanager)
     cm.create_base_config_if_needed()
     final_config = cm.getConfig(['example_profile'])
     if final_config:

@@ -9,7 +9,7 @@ class AppContext:
         return self.app.path_manager
 
     def get_config_manager(self):
-        return self.app.config_manager
+        return self.app.settings_manager
 
     def get_plugin_manager(self):
         return self.app.plugin_manager

@@ -108,7 +108,7 @@ configuration:
         "package_name": "advanced_data_processing",
         "configFilePatterns": [
             ".cfg.json",
-            ".config.json"
+            ".setting.json"
             ]
     }
 ```

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from gpt_automation.impl.config.config_manager import ConfigManager
+from gpt_automation.impl.setting.settings_manager import SettingsManager
 
 
 @dataclass
@@ -30,7 +30,7 @@ class PluginConfig:
         self.path_manager = path_manager
 
     def get_plugin_config(self):
-        # This method is simplified as we now expect the entire config to be loaded and handled outside this class
+        # This method is simplified as we now expect the entire setting to be loaded and handled outside this class
         return self.config.data.get('plugins', [])
 
     def get_all_plugins(self):

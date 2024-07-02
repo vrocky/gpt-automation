@@ -25,7 +25,7 @@ class TestPluginManager(unittest.TestCase):
 
         config = Config(config_data)
 
-        # Create the PluginManager with this config
+        # Create the PluginManager with this setting
         plugin_manager = PluginManager(config)
 
         # Retrieve all visitors from the plugins

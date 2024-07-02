@@ -1,6 +1,6 @@
 import argparse
 
-from gpt_automation.config_creator import ConfigCreator
+from gpt_automation.setup_settings import SettingsSetup
 from gpt_automation.prompt_generator import PromptGenerator
 
 
@@ -37,16 +37,16 @@ def main():
     args = parser.parse_args()
 
     # Directory where the configuration is to be created or used
-    config_dir = "."
+    settings_dir = "."
 
     # Execute based on the command specified
     if args.command == "init":
         # Initialize profiles using the ConfigCreator
-        config_creator = ConfigCreator(config_dir, args.profiles,plugin_args=[],plugin_file_args=[])
-        config_creator.create_config()
+        config_creator = SettingsSetup(settings_dir, args.profiles, plugin_args=[], plugin_file_args=[])
+        config_creator.create_settings()
     elif args.command == "prompt":
         # Initialize the PromptGenerator with the configuration directory
-        prompt_generator = PromptGenerator(config_dir,plugin_args=[],plugin_file_args=[])
+        prompt_generator = PromptGenerator(settings_dir,plugin_args=[],plugin_file_args=[])
 
         # Check if specific options for directory or content generation are provided
         if args.dir or args.content:
@@ -60,7 +60,7 @@ def main():
             # indicating the intention to generate directory prompts
             # `generate_content` is True if --content is explicitly mentioned,
             # indicating the intention to generate content prompts
-            prompt_generator.generate_prompts(
+            prompt_generator.generate_prompt(
                 dir_profiles=dir_profiles,
                 content_profiles=content_profiles,
                 generate_dir=bool(args.dir),

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class ConfigInterface(ABC):
+class SettingsInterface(ABC):
     @abstractmethod
     def load(self, path):
         """ Load a configuration from a given path. """

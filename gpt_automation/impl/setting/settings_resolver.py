@@ -1,17 +1,17 @@
 import os
-from gpt_automation.impl.config.config_loader import load_config_from_json
-from gpt_automation.impl.config.config import Config
+from gpt_automation.impl.setting.settings_loader import load_config_from_json
+from gpt_automation.impl.setting.settings import Settings
 
 
-class ConfigResolver:
+class SettingsResolver:
     def __init__(self, path_manager):
         self.path_manager = path_manager  # Use PathManager directly for resolving paths
 
     def resolve_json_config(self, json_path):
         # Resolve the full initial configuration from a JSON path
         initial_config = load_config_from_json(json_path)
-        # Start the recursive resolution using the loaded config, passing the directory of the current file
-        resolved_config = self._recursive_resolve(Config(initial_config.data), os.path.dirname(json_path))
+        # Start the recursive resolution using the loaded setting, passing the directory of the current file
+        resolved_config = self._recursive_resolve(Settings(initial_config.data), os.path.dirname(json_path))
         return resolved_config
 
     def _recursive_resolve(self, config, base_path='.'):
@@ -24,7 +24,7 @@ class ConfigResolver:
         extend_path = config.data.get('extends', 'none')
 
         if extend_path == 'none':
-            return config  # Return current config if no extension path is specified
+            return config  # Return current setting if no extension path is specified
 
         if extend_path in visited:
             raise Exception(f"Circular dependency detected in configuration path: {extend_path}")
@@ -32,7 +32,7 @@ class ConfigResolver:
 
         # Resolve the configuration path, using the base path for relative path resolution
         parent_config, parent_base_path = self.resolve_config_path(extend_path, base_path)
-        resolved_parent_config = self._resolve_recursive_helper(Config(parent_config.data), visited, parent_base_path)
+        resolved_parent_config = self._resolve_recursive_helper(Settings(parent_config.data), visited, parent_base_path)
 
         return config.merge(resolved_parent_config)
 
@@ -41,14 +41,14 @@ class ConfigResolver:
         if extend_path == 'base':
             base_config_path = self.path_manager.get_base_config_path()
             base_config = load_config_from_json(base_config_path)
-            return Config(base_config.data), self.path_manager.config_base_dir
+            return Settings(base_config.data), self.path_manager.config_base_dir
         elif extend_path == 'global':
             global_config_path = self.path_manager.get_global_config_path()
             global_config = load_config_from_json(global_config_path)
-            return Config(global_config.data), self.path_manager.config_base_dir
+            return Settings(global_config.data), self.path_manager.config_base_dir
         else:
             # If extend_path is not a special keyword, resolve it relative to the base path
             if not os.path.isabs(extend_path):
                 extend_path = os.path.join(base_path, extend_path)
             config = load_config_from_json(extend_path)
-            return Config(config.data), os.path.dirname(extend_path)
+            return Settings(config.data), os.path.dirname(extend_path)

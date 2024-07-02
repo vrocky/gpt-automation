@@ -75,7 +75,7 @@ Additional metadata that might be crucial for more advanced plugin handling:
       "package_name": "advanced_data_processing",
       "configFilePatterns": [
         ".cfg.json",
-        ".config.json"
+        ".setting.json"
       ]
     }
 ```  

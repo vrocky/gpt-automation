@@ -1,5 +1,5 @@
 from gpt_automation.impl.base_plugin import BasePlugin
-from gpt_automation.impl.config.paths import PathManager
+from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.plugin_impl.plugin_config import PluginInfo, PluginConfig
 from gpt_automation.impl.plugin_impl.plugin_loader import PluginLoader
 from gpt_automation.impl.plugin_impl.plugin_context import PluginContext, PluginContextBuilder

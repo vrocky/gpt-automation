@@ -1,6 +1,6 @@
-from gpt_automation.impl.config.config_manager import ConfigManager
+from gpt_automation.impl.setting.settings_manager import SettingsManager
 from gpt_automation.impl.plugin_impl.plugin_manager import PluginManager
-from gpt_automation.impl.config.paths import PathManager
+from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.directory_walker import DirectoryWalker
 
 
@@ -9,8 +9,8 @@ class App:
         self.root_dir = root_dir
         self.profile_names = profile_names
         self.path_manager = PathManager(root_dir)
-        self.config_manager = ConfigManager(self.path_manager)
-        self.config = self.load_config()
+        self.settings_manager = SettingsManager(self.path_manager)
+        self.config = self.load_settings()
         self.plugin_manager = None
         self.directory_walker = None  # Initialize the directory walker to None
         self.plugin_args = plugin_args
@@ -45,23 +45,23 @@ class App:
 
     def create_profiles(self):
         """ Initialize configurations and load plugins. """
-        if not self.config_manager.create_profiles(self.profile_names):
+        if not self.settings_manager.create_profiles(self.profile_names):
             print("Failed to create profiles.")
             return False
 
-        self.config = self.load_config()
+        self.config = self.load_settings()
         if self.config:
             self.initialize_components()
         return True
 
     def check_profiles_created(self):
         """Check if the necessary profiles are created."""
-        return self.config_manager.check_profiles_created(self.profile_names)
+        return self.settings_manager.check_profiles_created(self.profile_names)
 
-    def load_config(self):
+    def load_settings(self):
         """ Load and resolve configuration for the specified profiles. """
         try:
-            return self.config_manager.get_config(self.profile_names)
+            return self.settings_manager.get_settings(self.profile_names)
         except Exception as e:
             print(f"Error loading configuration: {str(e)}")
             return None
