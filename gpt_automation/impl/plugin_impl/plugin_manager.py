@@ -1,5 +1,6 @@
 from gpt_automation.impl.base_plugin import BasePlugin
 from gpt_automation.impl.plugin_impl.plugin_arg_filter import PluginArgFilter
+from gpt_automation.impl.plugin_impl.utils.file_pattern_filter import FilePatternFilter
 from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.plugin_impl.plugin_config import PluginInfo, PluginConfig
 from gpt_automation.impl.plugin_impl.plugin_loader import PluginLoader
@@ -33,14 +34,20 @@ class PluginManager:
 
             loader = PluginLoader(plugin_info.package_name)
             plugin_class = loader.get_plugin_class(plugin_info.plugin_name)
+            manifest = loader.get_manifest(plugin_info.plugin_name)
             print(f"Loaded class for plugin {plugin_info.plugin_name}.")
 
             context = self._create_context(plugin_info)
             configs = plugin_info.config
             filtered_args = arg_filter.get_plugin_args(plugin_info.package_name, plugin_info.plugin_name)
             configs.update(filtered_args)
+
+            # Create an instance of FilePatternFilter and filter file arguments
+            file_pattern_filter = FilePatternFilter(manifest.get('configFilePatterns', []))
+            matched_files = file_pattern_filter.filter_files(file_args)
+
             plugin_instance = start_plugin_instance(plugin_class, context,
-                                                    config=filtered_args, file_args=file_args)
+                                                    config=filtered_args, file_args=matched_files)
             print(f"Created instance for plugin {plugin_info.plugin_name}.")
             self.plugin_instances[plugin_info.key()] = plugin_instance
 

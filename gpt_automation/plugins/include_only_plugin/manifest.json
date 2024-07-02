@@ -5,5 +5,10 @@
     "class_name": "IncludeOnlyPlugin",
     "version": "1.0.0",
     "author": "Your Organization",
-    "package_name": "gpt_automation"
+    "package_name": "gpt_automation",
+    "configFilePatterns": [
+            ".cfg.json",
+            ".setting.json"
+            ]
+
 }
