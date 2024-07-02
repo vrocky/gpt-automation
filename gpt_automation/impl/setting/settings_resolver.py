@@ -39,13 +39,13 @@ class SettingsResolver:
     def resolve_config_path(self, extend_path, base_path):
         """Resolve the correct configuration based on 'extends' path."""
         if extend_path == 'base':
-            base_config_path = self.path_manager.get_base_config_path()
+            base_config_path = self.path_manager.get_base_settings_path()
             base_config = load_config_from_json(base_config_path)
-            return Settings(base_config.data), self.path_manager.config_base_dir
+            return Settings(base_config.data), self.path_manager.settings_base_dir
         elif extend_path == 'global':
-            global_config_path = self.path_manager.get_global_config_path()
+            global_config_path = self.path_manager.get_global_settings_path()
             global_config = load_config_from_json(global_config_path)
-            return Settings(global_config.data), self.path_manager.config_base_dir
+            return Settings(global_config.data), self.path_manager.settings_base_dir
         else:
             # If extend_path is not a special keyword, resolve it relative to the base path
             if not os.path.isabs(extend_path):

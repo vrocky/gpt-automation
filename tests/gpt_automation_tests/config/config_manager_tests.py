@@ -20,7 +20,7 @@ class TestConfigManager(unittest.TestCase):
         self.assertTrue(cm.is_base_config_initialized(), "Base setting should be initialized.")
 
         # Check the contents of the base setting file
-        base_config_path = cm.path_manager.get_base_config_path()
+        base_config_path = cm.path_manager.get_base_settings_path()
         with open(base_config_path, 'r') as file:
             data = json.load(file)
         self.assertIn('extends', data, "Base setting should have an 'extends' key.")
@@ -39,7 +39,7 @@ class TestConfigManager(unittest.TestCase):
         self.assertTrue(cm.is_profile_config_created(profile_name), "Profile setting should be initialized.")
 
         # Check the contents of the profile setting file
-        profile_config_path = cm.path_manager.get_profile_config_path(profile_name)
+        profile_config_path = cm.path_manager.get_profile_settings_path(profile_name)
         with open(profile_config_path, 'r') as file:
             data = json.load(file)
         self.assertIn('extends', data, "Profile setting should have an 'extends' key.")

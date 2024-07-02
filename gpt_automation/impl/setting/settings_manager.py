@@ -24,7 +24,7 @@ class SettingsManager:
 
         merged_config = None
         for profile_name in profile_names:
-            profile_json = self.path_manager.get_profile_config_path(profile_name)
+            profile_json = self.path_manager.get_profile_settings_path(profile_name)
             config = self.config_resolver.resolve_json_config(profile_json)
             if merged_config is None:
                 merged_config = config
@@ -34,7 +34,7 @@ class SettingsManager:
 
     def create_base_config_if_needed(self):
         """ Ensure the base configuration is initialized if not already. """
-        base_config_path = self.path_manager.get_base_config_path()
+        base_config_path = self.path_manager.get_base_settings_path()
         if not os.path.exists(base_config_path):
             os.makedirs(os.path.dirname(base_config_path), exist_ok=True)
             template_path = os.path.join(self.path_manager.resources_dir, 'default_base_config.json')
@@ -55,7 +55,7 @@ class SettingsManager:
 
     def create_profile_config(self, profile_name):
         """ Initialize a single profile configuration if it's not already initialized. """
-        profile_config_path = self.path_manager.get_profile_config_path(profile_name)
+        profile_config_path = self.path_manager.get_profile_settings_path(profile_name)
         if not os.path.exists(profile_config_path):
             profile_dir = os.path.dirname(profile_config_path)
             os.makedirs(profile_dir, exist_ok=True)
@@ -67,7 +67,7 @@ class SettingsManager:
 
     def is_profile_config_created(self, profile_name):
         """ Check if a specific profile configuration file has been initialized. """
-        return os.path.exists(self.path_manager.get_profile_config_path(profile_name))
+        return os.path.exists(self.path_manager.get_profile_settings_path(profile_name))
 
 
 # Example usage
