@@ -12,13 +12,13 @@ class IncludeOnlyPlugin(BasePlugin):
     def configure(self, context):
         pass
 
-    def __init__(self, context, config_args, file_args, settings):
-        super().__init__(context, config_args, file_args, settings)
+    def __init__(self, context, configs, file_args):
+        super().__init__(context, configs, file_args)
         self.config_dir = context["plugin_settings_path"]
 
 
     def get_visitors(self):
         include_only_visitor = IncludeOnlyVisitor(
-            include_only_filenames=self.settings.get('include_only_filenames', []),
+            include_only_filenames=self.configs.get('include_only_filenames', []),
             profile_names=self.context.get('profile_names', []))
         return [include_only_visitor]

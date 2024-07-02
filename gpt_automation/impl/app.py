@@ -35,7 +35,7 @@ class App:
             print("Configuration not loaded. Cannot proceed with loading plugins.")
             return False
         try:
-            self.plugin_manager.load_plugin_classes()
+
             self.plugin_manager.create_plugin_instances(args=self.conf_args,
                                                         file_args=self.plugin_file_args)
             print("Plugins loaded successfully.")

@@ -1,13 +1,14 @@
 from gpt_automation.impl.base_plugin import BasePlugin
+from gpt_automation.impl.plugin_impl.plugin_arg_filter import PluginArgFilter
 from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.plugin_impl.plugin_config import PluginInfo, PluginConfig
 from gpt_automation.impl.plugin_impl.plugin_loader import PluginLoader
 from gpt_automation.impl.plugin_impl.plugin_context import PluginContext, PluginContextBuilder
 
 
-def start_plugin_instance(plugin_class: BasePlugin.__class__, context: PluginContext, args, file_args, settings):
+def start_plugin_instance(plugin_class: BasePlugin.__class__, context: PluginContext, config, file_args):
     context_dict = context.to_dict()
-    plugin_instance = plugin_class(context_dict, args, file_args, settings)
+    plugin_instance = plugin_class(context_dict, config,file_args)
     return plugin_instance
 
 
@@ -19,28 +20,27 @@ class PluginManager:
         self.config = config
         self.plugin_config = PluginConfig(config, path_manager)
         self.plugin_info_registry = {}
-        self.plugin_classes = {}
         self.plugin_instances = {}
         self.path_manager = path_manager
 
-    def load_plugin_classes(self):
+    def create_plugin_instances(self, args, file_args):
+        arg_filter = PluginArgFilter(args or {})
         plugins_config = self.plugin_config.get_all_plugins()
+
         for plugin_info in plugins_config:
             self.plugin_info_registry[plugin_info.key()] = plugin_info
             print(f"Saved info for plugin {plugin_info.plugin_name}.")
 
             loader = PluginLoader(plugin_info.package_name)
             plugin_class = loader.get_plugin_class(plugin_info.plugin_name)
-            self.plugin_classes[plugin_info.key()] = plugin_class
             print(f"Loaded class for plugin {plugin_info.plugin_name}.")
 
-    def create_plugin_instances(self, args, file_args):
-        for plugin_name, plugin_class in self.plugin_classes.items():
-            plugin_info: PluginInfo = self.plugin_info_registry[plugin_name]
             context = self._create_context(plugin_info)
-            settings = plugin_info.settings
+            configs = plugin_info.config
+            filtered_args = arg_filter.get_plugin_args(plugin_info.package_name, plugin_info.plugin_name)
+            configs.update(filtered_args)
             plugin_instance = start_plugin_instance(plugin_class, context,
-                                                    args=args,file_args=file_args, settings=settings)
+                                                    config=filtered_args, file_args=file_args)
             print(f"Created instance for plugin {plugin_info.plugin_name}.")
             self.plugin_instances[plugin_info.key()] = plugin_instance
 
@@ -63,10 +63,9 @@ class PluginManager:
                 plugin_instance.configure(context.to_dict())
                 print(f"Initialized plugin {plugin_info.plugin_name} with key {key}.")
             else:
-                print(f"Plugin {plugin_info.plugin_name} does not have an 'configure' method.")
+                print(f"Plugin {plugin_info.plugin_name} does not have a 'configure' method.")
 
     def is_all_plugin_configured(self):
-        # Check if all plugin instances are correctly configured.
         for key, plugin_instance in self.plugin_instances.items():
             if hasattr(plugin_instance, 'is_plugin_configured'):
                 if not plugin_instance.is_plugin_configured():
@@ -75,12 +74,9 @@ class PluginManager:
             else:
                 print(f"No configuration check method for plugin {self.plugin_info_registry[key].plugin_name}.")
                 return False
-
-        # If all plugin instances have been correctly configured.
         return True
 
     def get_all_visitors(self):
-        # First, check if all plugins are correctly configured
         if self.is_all_plugin_configured():
             visitors = []
             for plugin_instance in self.plugin_instances.values():

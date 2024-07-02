@@ -6,6 +6,7 @@ def parse_key_value_string(data):
         result[key] = value
     return result
 
+
 def parse_key_value_file(filename):
     result = {}
     with open(filename, 'r') as f:
@@ -15,6 +16,7 @@ def parse_key_value_file(filename):
                 key, value = parse_key_value_line(line)
                 result[key] = value
     return result
+
 
 def parse_key_value_line(line):
     key, value = line.split('=')

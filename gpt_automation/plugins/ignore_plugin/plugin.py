@@ -12,11 +12,11 @@ class IgnorePlugin(BasePlugin):
     def configure(self, context):
         print("Received init", context)
 
-    def __init__(self, context, config_args, file_args, settings):
-        super().__init__(context, config_args, file_args, settings)
+    def __init__(self, context, configs, settings):
+        super().__init__(context, configs, settings)
         self.config_dir = context["plugin_settings_path"]
 
     def get_visitors(self):
-        ignore_visitor = IgnoreVisitor(ignore_filenames=self.settings.get('ignore_filenames', []),
+        ignore_visitor = IgnoreVisitor(ignore_filenames=self.configs.get('ignore_filenames', []),
                                        profile_names=self.context.get('profile_names', []))
         return [ignore_visitor]

@@ -3,10 +3,9 @@ from abc import ABC, abstractmethod
 
 
 class BasePlugin(ABC):
-    def __init__(self, context, args, file_args, settings):
+    def __init__(self, context, configs, file_args):
         self.context = context
-        self.settings = settings
-        self.args = args
+        self.configs = configs
         self.file_args = file_args
 
     @abstractmethod

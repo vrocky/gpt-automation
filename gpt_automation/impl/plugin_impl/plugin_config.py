@@ -8,7 +8,7 @@ from gpt_automation.impl.setting.settings_manager import SettingsManager
 class PluginInfo:
     package_name: str
     plugin_name: str
-    settings: Optional[Dict[str, List[str]]] = None
+    config: Optional[Dict[str, List[str]]] = None
 
     def key(self):
         return f"{self.package_name}/{self.plugin_name}"
@@ -18,7 +18,7 @@ class PluginInfo:
         return PluginInfo(
             package_name=plugin_config["package_name"],
             plugin_name=plugin_config["plugin_name"],
-            settings=plugin_config.get("config"),
+            config=plugin_config.get("config"),
             #enable=plugin_config.get("enable", False),
         )
 
