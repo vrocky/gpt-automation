@@ -10,18 +10,18 @@ class App:
         self.profile_names = profile_names
         self.path_manager = PathManager(root_dir)
         self.settings_manager = SettingsManager(self.path_manager)
-        self.config = self.load_settings()
+        self.settings = self.load_settings()
         self.plugin_manager = None
         self.directory_walker = None  # Initialize the directory walker to None
         self.plugin_args = plugin_args
         self.plugin_file_args = plugin_file_args
 
-        if self.config:
+        if self.settings:
             self.initialize_components()
 
     def initialize_components(self):
         """ Initialize and configure all related components. """
-        self.plugin_manager = PluginManager(self.profile_names, self.config, self.path_manager)
+        self.plugin_manager = PluginManager(self.profile_names, self.settings, self.path_manager)
         self.load_plugins()
         if self.plugin_manager.is_all_plugin_configured():
             self.directory_walker = DirectoryWalker(self.root_dir, self.plugin_manager)
@@ -31,7 +31,7 @@ class App:
 
     def load_plugins(self):
         """ Load and initialize plugins. """
-        if not self.config:
+        if not self.settings:
             print("Configuration not loaded. Cannot proceed with loading plugins.")
             return False
         try:
@@ -49,8 +49,8 @@ class App:
             print("Failed to create profiles.")
             return False
 
-        self.config = self.load_settings()
-        if self.config:
+        self.settings = self.load_settings()
+        if self.settings:
             self.initialize_components()
         return True
 

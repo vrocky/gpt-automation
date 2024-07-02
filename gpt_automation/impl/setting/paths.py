@@ -18,15 +18,15 @@ class PathManager:
 
     def get_base_config_path(self):
         """ Returns the path to the base configuration file. """
-        return os.path.join(self.config_base_dir, 'base_config.json')
+        return os.path.join(self.config_base_dir, 'base_settings.json')
 
     def get_global_config_path(self):
         """ Returns the path to the global configuration file. """
-        return os.path.join(self.config_base_dir, 'global_config.json')
+        return os.path.join(self.config_base_dir, 'global_settings.json')
 
     def get_profile_config_path(self, profile_name):
         """ Returns the path to the configuration file for a specific profile. """
-        profile_path = os.path.join(self.profiles_dir, profile_name, 'setting.json')
+        profile_path = os.path.join(self.profiles_dir, profile_name, 'settings.json')
         os.makedirs(os.path.dirname(profile_path), exist_ok=True)
         return profile_path
 
