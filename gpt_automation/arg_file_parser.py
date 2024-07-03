@@ -1,6 +1,6 @@
 import configparser
 
-from gpt_automation.impl.conf.config import parse_key_value_file
+from gpt_automation.impl.conf.conf_reader import parse_key_value_file
 
 
 class ArgFileParser:

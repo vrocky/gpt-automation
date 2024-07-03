@@ -5,10 +5,14 @@ class PathManager:
     def __init__(self, base_directory):
         self.base_directory = os.path.abspath(base_directory)
         self.settings_base_dir = os.path.join(self.base_directory, '.gpt', 'settings')
+        self.config_dir = os.path.join(self.base_directory, '.gpt', 'conf')
         self.profiles_dir = os.path.join(self.base_directory, '.gpt', 'profiles')
         self.plugins_dir = os.path.join(self.base_directory, '.gpt', 'plugins')
-        self.resources_dir = os.path.join(os.path.dirname(__file__),'..', '..', 'resources')
+        self.resources_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'resources')
         self.ensure_directories()
+
+    def get_config_dir(self):
+        return self.config_dir
 
     def ensure_directories(self):
         """ Ensure that all required directories exist, or create them. """

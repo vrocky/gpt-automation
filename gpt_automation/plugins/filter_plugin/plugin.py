@@ -29,6 +29,8 @@ class BlacklistWhitelistPlugin(BasePlugin):
         super().__init__(context, configs, settings)
         self.config_dir = context["plugin_settings_path"]
         self.profile_names = context.get("profile_names", [])
+        self.root_dir = context["root_dir"]
+        self.prompt_dir = context["prompt_dir"]
 
     def get_visitors(self):
         visitors = []

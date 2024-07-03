@@ -7,8 +7,8 @@ impl
 
 [front]
 main.py
-config_initializer.py
-gpt_automation
-impl
+#config_initializer.py
+#gpt_automation
+#impl
 prompt_generator.py
-project_info.py
+#project_info.py

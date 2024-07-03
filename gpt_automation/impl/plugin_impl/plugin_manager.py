@@ -9,12 +9,12 @@ from gpt_automation.impl.plugin_impl.plugin_context import PluginContext, Plugin
 
 def start_plugin_instance(plugin_class: BasePlugin.__class__, context: PluginContext, config, file_args):
     context_dict = context.to_dict()
-    plugin_instance = plugin_class(context_dict, config,file_args)
+    plugin_instance = plugin_class(context_dict, config, file_args)
     return plugin_instance
 
 
 class PluginManager:
-    def __init__(self, profile_names, config=None, path_manager: PathManager = None):
+    def __init__(self, profile_names, root_dir=None, prompt_dir=None, config=None, path_manager: PathManager = None):
         if not config:
             raise ValueError("Config is required to initialize PluginRuntimeManager.")
         self.profile_names = profile_names
@@ -23,6 +23,8 @@ class PluginManager:
         self.plugin_info_registry = {}
         self.plugin_instances = {}
         self.path_manager = path_manager
+        self.root_dir = root_dir
+        self.prompt_dir = prompt_dir
 
     def create_plugin_instances(self, args, file_args):
         arg_filter = PluginArgFilter(args or {})
@@ -32,24 +34,29 @@ class PluginManager:
             self.plugin_info_registry[plugin_info.key()] = plugin_info
             print(f"Saved info for plugin {plugin_info.plugin_name}.")
 
-            loader = PluginLoader(plugin_info.package_name)
-            plugin_class = loader.get_plugin_class(plugin_info.plugin_name)
-            manifest = loader.get_manifest(plugin_info.plugin_name)
-            print(f"Loaded class for plugin {plugin_info.plugin_name}.")
-
-            context = self._create_context(plugin_info)
-            configs = plugin_info.config
+            config = plugin_info.config
             filtered_args = arg_filter.get_plugin_args(plugin_info.package_name, plugin_info.plugin_name)
-            configs.update(filtered_args)
+            config.update(filtered_args)
 
-            # Create an instance of FilePatternFilter and filter file arguments
-            file_pattern_filter = FilePatternFilter(manifest.get('configFilePatterns', []))
-            matched_files = file_pattern_filter.filter_files(file_args)
+            # Ensure 'enabled' key exists and check its value
+            if config.get('enable', False):  # Defaults to False if 'enabled' key is missing
+                loader = PluginLoader(plugin_info.package_name)
+                manifest = loader.get_manifest(plugin_info.plugin_name)
+                print(f"Loaded class for plugin {plugin_info.plugin_name}.")
 
-            plugin_instance = start_plugin_instance(plugin_class, context,
-                                                    config=filtered_args, file_args=matched_files)
-            print(f"Created instance for plugin {plugin_info.plugin_name}.")
-            self.plugin_instances[plugin_info.key()] = plugin_instance
+                context = self._create_context(plugin_info)
+
+                # Create an instance of FilePatternFilter and filter file arguments
+                file_pattern_filter = FilePatternFilter(manifest.get('configFilePatterns', []))
+                matched_files = file_pattern_filter.filter_files(file_args)
+
+                plugin_class = loader.get_plugin_class(plugin_info.plugin_name)
+                plugin_instance = start_plugin_instance(plugin_class, context,
+                                                        config=config, file_args=matched_files)
+                print(f"Created instance for plugin {plugin_info.plugin_name}.")
+                self.plugin_instances[plugin_info.key()] = plugin_instance
+            else:
+                print(f"Plugin {plugin_info.plugin_name} is disabled.")
 
     def _create_context(self, plugin_info):
         path = self.plugin_config.get_plugin_settings_path(plugin_info.package_name, plugin_info.plugin_name)
@@ -58,6 +65,8 @@ class PluginManager:
             .set_package_name(plugin_info.package_name) \
             .set_plugin_name(plugin_info.plugin_name) \
             .set_profile_names(self.profile_names) \
+            .set_root_dir(root_dir=self.root_dir)\
+            .set_prompt_dir(prompt_dir=self.prompt_dir)\
             .set_plugin_settings_path(path) \
             .build()
         return context

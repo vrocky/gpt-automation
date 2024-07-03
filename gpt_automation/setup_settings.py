@@ -6,10 +6,10 @@ class SettingsSetup:
         if plugin_file_args is None:
             plugin_file_args = []
         if config_args is None:
-            config_args = []
+            config_args = {}
         self.root_dir = root_dir
         self.profile_names = profile_names
-        self.app_context = AppContext(root_dir,
+        self.app_context = AppContext(root_dir, root_dir,
                                       profile_names,
                                       conf_args=config_args,
                                       plugin_file_args=plugin_file_args)

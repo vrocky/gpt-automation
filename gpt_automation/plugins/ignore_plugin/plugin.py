@@ -15,8 +15,10 @@ class IgnorePlugin(BasePlugin):
     def __init__(self, context, configs, settings):
         super().__init__(context, configs, settings)
         self.config_dir = context["plugin_settings_path"]
+        self.root_dir = context["root_dir"]
+        self.prompt_dir = context["prompt_dir"]
 
     def get_visitors(self):
-        ignore_visitor = IgnoreVisitor(ignore_filenames=self.configs.get('ignore_filenames', []),
+        ignore_visitor = IgnoreVisitor(self.root_dir,self.prompt_dir,ignore_filenames=self.configs.get('ignore_filenames', []),
                                        profile_names=self.context.get('profile_names', []))
         return [ignore_visitor]

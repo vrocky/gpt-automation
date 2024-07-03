@@ -2,14 +2,24 @@ from gpt_automation.impl.app_context import AppContext
 from gpt_automation.project_info import ProjectInfo
 
 
+def combine_prompts(dir_prompt, content_prompt):
+    combined_prompt = ""
+    if dir_prompt:
+        combined_prompt += "Directory Structure:\n" + dir_prompt + "\n"
+    if content_prompt:
+        combined_prompt += "File Contents:\n" + content_prompt.strip()
+    return combined_prompt
+
+
 class PromptGenerator:
-    def __init__(self, root_dir='.', conf_args=None, plugin_file_args=None):
+    def __init__(self, root_dir='.', prompt_dir= ".", conf_args=None, plugin_file_args=None):
         if conf_args is None:
-            conf_args = []
+            conf_args = {}
         if plugin_file_args is None:
             plugin_file_args = []
 
         self.root_dir = root_dir
+        self.prompt_dir = prompt_dir
         self.conf_args = conf_args
         self.plugin_file_args = plugin_file_args
 
@@ -40,7 +50,7 @@ class PromptGenerator:
             print(content_prompt_dir_preview)
 
         # Combine and copy prompts to the clipboard
-        combined_prompt = self.combine_prompts(dir_prompt, content_prompt)
+        combined_prompt = combine_prompts(dir_prompt, content_prompt)
         if combined_prompt:
             self.copy_to_clipboard(combined_prompt)
 
@@ -51,7 +61,7 @@ class PromptGenerator:
         return self.create_prompt(profile_names, prompt_type='content')
 
     def create_prompt(self, profile_names, prompt_type):
-        app_context = AppContext(self.root_dir, profile_names, self.conf_args, self.plugin_file_args)
+        app_context = AppContext(self.root_dir,self.prompt_dir, profile_names, self.conf_args, self.plugin_file_args)
         project_info = ProjectInfo(app_context)
         if project_info.are_profiles_initialized():
             if project_info.initialize():
@@ -63,14 +73,6 @@ class PromptGenerator:
                 return "Initialization of directory walker failed."
         else:
             return "Profiles are not initialized. Please run the 'init' command."
-
-    def combine_prompts(self, dir_prompt, content_prompt):
-        combined_prompt = ""
-        if dir_prompt:
-            combined_prompt += "Directory Structure:\n" + dir_prompt + "\n"
-        if content_prompt:
-            combined_prompt += "File Contents:\n" + content_prompt.strip()
-        return combined_prompt
 
     def copy_to_clipboard(self, prompt):
         import pyperclip
