@@ -15,7 +15,7 @@ class AppContext:
         return self.app.plugin_manager
 
     def get_directory_walker(self):
-        return self.app.directory_walker  # Access the directory walker through the app
+        return self.app.get_directory_walker()  # Access the directory walker through the app
 
     def get_root_dir(self):
         return self.app.root_dir

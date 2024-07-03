@@ -16,7 +16,6 @@ class App:
         self.settings_manager = SettingsManager(self.path_manager)
         self.settings = self.load_settings()
         self.plugin_manager = None
-        self.directory_walker = None
         self.conf_args = conf_args
         self.plugin_file_args = plugin_file_args
 
@@ -26,8 +25,9 @@ class App:
         self.config_loader = ConfigLoader(self.path_manager.get_config_dir())
         self.load_and_merge_configs()
 
-        if self.settings:
-            self.initialize_components()
+        self.plugin_manager = PluginManager(self.profile_names, self.root_dir,
+                                            self.prompt_dir, self.settings, self.path_manager)
+        self.load_plugins()
 
     def is_valid_directory_structure(self):
         """ Validate that prompt_dir is a subdirectory of root_dir or the same. """
@@ -35,20 +35,13 @@ class App:
         return relative_path == '.' or not relative_path.startswith('..')
 
     def load_and_merge_configs(self):
-        """ Load .conf files and merge them into conf_args """
+        """ Load .conf files and merge them into conf_args. """
         self.config_loader.load_configs()
         self.conf_args.update(self.config_loader.get_config())  # Merge external config into internal conf_args
 
-    def initialize_components(self):
-        """ Initialize and configure all related components. """
-        self.plugin_manager = PluginManager(self.profile_names, self.root_dir,
-                                            self.prompt_dir, self.settings, self.path_manager)
-        self.load_plugins()
-        if self.plugin_manager.is_all_plugin_configured():
-            self.directory_walker = DirectoryWalker(self.prompt_dir, self.plugin_manager)
-            print("Components initialized successfully.")
-        else:
-            print("Error: Not all plugins could be configured properly.")
+
+
+
 
     def load_plugins(self):
         """ Load and initialize plugins. """
@@ -76,13 +69,27 @@ class App:
         if not self.settings_manager.create_profiles(self.profile_names):
             print("Failed to create profiles.")
             return False
-
-        self.settings = self.load_settings()
-        if self.settings:
-            self.initialize_components()
+        self.plugin_manager.configure_all_plugins()
         return True
 
     def check_profiles_created(self):
-        """Check if the necessary profiles are created."""
+        """ Check if the necessary profiles are created. """
         return self.settings_manager.check_profiles_created(self.profile_names)
 
+    def get_directory_walker(self):
+        """ Gets a DirectoryWalker instance if plugins are correctly configured. """
+        if self.plugin_manager and self.plugin_manager.is_all_plugin_configured():
+            print("Components initialized successfully.")
+            return DirectoryWalker(self.prompt_dir, self.plugin_manager)
+        else:
+            print("Error: Not all plugins could be configured properly.")
+            return None
+
+# Example usage of the modified App class
+if __name__ == "__main__":
+    app = App('/path/to/root', '/path/to/prompt', ['profile1', 'profile2'], {}, {})
+    if app.get_directory_walker():
+        # Proceed with using the directory walker
+        print("Directory walker is ready to use.")
+    else:
+        print("Directory walker is not available.")

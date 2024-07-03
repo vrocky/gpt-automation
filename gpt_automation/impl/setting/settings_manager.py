@@ -37,13 +37,13 @@ class SettingsManager:
 
         config_dir = self.path_manager.get_config_dir()
         if not os.path.exists(config_dir):
-            os.makedirs(os.path.dirname(config_dir), exist_ok=True)
+            os.makedirs(config_dir, exist_ok=True)
 
-        base_settting_path = self.path_manager.get_base_settings_path()
-        if not os.path.exists(base_settting_path):
-            os.makedirs(os.path.dirname(base_settting_path), exist_ok=True)
+        base_setting_path = self.path_manager.get_base_settings_path()
+        if not os.path.exists(base_setting_path):
+            os.makedirs(os.path.dirname(base_setting_path), exist_ok=True)
             template_path = os.path.join(self.path_manager.resources_dir, 'default_base_config.json')
-            copyfile(template_path, base_settting_path)
+            copyfile(template_path, base_setting_path)
             print(f"Initialized base configuration folder with 'base_config.json'.")
             return True
         print("Base configuration already exists.")

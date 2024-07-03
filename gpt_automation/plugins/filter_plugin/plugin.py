@@ -13,7 +13,7 @@ class BlacklistWhitelistPlugin(BasePlugin):
     def is_plugin_configured(self):
         # Check if all specified profiles have been properly configured with necessary files.
         for profile_name in self.profile_names:
-            profile_dir = self.get_profile_config_path(profile_name)
+            profile_dir = os.path.join(self.config_dir, profile_name)
             blacklist_path = os.path.join(profile_dir, "black_list.txt")
             whitelist_path = os.path.join(profile_dir, "white_list.txt")
 
@@ -60,7 +60,7 @@ class BlacklistWhitelistPlugin(BasePlugin):
     def configure_profiles(self, profile_names):
         sample_config_dir = os.path.join(os.path.dirname(__file__), "sample_config")
         for profile_name in profile_names:
-            profile_dir = self.get_profile_config_path(profile_name)
+            profile_dir = os.path.join(self.config_dir, profile_name)
             if not os.path.exists(profile_dir):
                 os.makedirs(profile_dir)
                 shutil.copyfile(os.path.join(sample_config_dir, "black_list.txt"),
