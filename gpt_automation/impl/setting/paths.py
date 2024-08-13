@@ -7,7 +7,7 @@ class PathManager:
         self.settings_base_dir = os.path.join(self.base_directory, '.gpt', 'settings')
         self.config_dir = os.path.join(self.base_directory, '.gpt', 'conf')
         self.profiles_dir = os.path.join(self.base_directory, '.gpt', 'profiles')
-        self.plugins_dir = os.path.join(self.base_directory, '.gpt', 'plugins')
+        self.plugins_dir = os.path.join(self.base_directory, '.gpt', 'config')
         self.resources_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'resources')
         self.ensure_directories()
 

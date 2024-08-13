@@ -1,31 +1,37 @@
 import configparser
 
-from gpt_automation.impl.conf.conf_reader import parse_key_value_file
 
-
-class ArgFileParser:
+class ConfigurationLoader:
     """
-    Parses configuration files and merges them with command line arguments.
+    Loads and merges configuration from files and command line arguments.
     """
+    def __init__(self, file_paths):
+        self.file_paths = file_paths if file_paths is not None else []
+        self.file_configurations = self.load_file_configurations()
 
-    def __init__(self, arg_files):
-        self.arg_files = arg_files
-        self.file_args = self.load_conf_files()
+    def load_file_configurations(self):
+        """
+        Loads configurations from specified file paths.
+        """
+        configurations = {}
+        for path in self.file_paths:
+            configurations.update(self.parse_configuration_file(path))
+        return configurations
 
-    def load_conf_files(self):
+    @staticmethod
+    def parse_configuration_file(file_path):
         """
-        Load and parse .conf files to extract arguments.
+        Parses a key-value configuration file into a dictionary.
         """
-        config = {}
-        for filename in self.arg_files:
-            config.update(parse_key_value_file(filename))
-        return config
+        parser = configparser.ConfigParser()
+        parser.read(file_path)
+        # Assuming standard INI file format for simplicity
+        return {section: dict(parser.items(section)) for section in parser.sections()}
 
-    def merge_args(self, cmdline_args):
+    def merge_with_command_line(self, cmd_args):
         """
-        Merge command line arguments with file arguments.
+        Merges command line arguments with file-based configurations.
         """
-        merged_args = self.file_args.copy()  # Start with file-based arguments
-        # Command-line args overwrite file-based args if they exist
-        merged_args.update(cmdline_args)
-        return merged_args
+        merged_config = self.file_configurations.copy()
+        merged_config.update(cmd_args)  # Command-line arguments override file configurations
+        return merged_config
