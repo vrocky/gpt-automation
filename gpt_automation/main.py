@@ -39,7 +39,6 @@ def setup_cli_parser():
     prompt_parser.add_argument("--content", nargs='*', help="Generate content for these profiles.")
     prompt_parser.add_argument('--args', nargs='*', action=KeyValueAction, help='Plugin arguments in key=value format')
     prompt_parser.add_argument('--arg_files', nargs='*', help='List of files containing plugin arguments')
-    prompt_parser.add_argument('--plugin-file-args', nargs='*', help='List of files containing plugin arguments')
 
     return parser
 

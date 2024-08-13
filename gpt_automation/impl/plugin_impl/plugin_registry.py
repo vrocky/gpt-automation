@@ -13,21 +13,22 @@ class PluginRegistry:
         self.plugin_map = self.parse_registry()
 
     def find_registry_path(self):
-        # Use importlib to find the path to plugin_registry.json
         package = importlib.import_module(self.package_name)
         package_path = Path(package.__file__).resolve().parent
         self.package_path = package_path
         return package_path / 'plugin_registry.json'
 
     def parse_registry(self):
-        # Create a map from plugin name to path
         return {item['name']: item['path'] for item in self.registry_data['plugins']}
 
     def get_plugin_path(self, plugin_name):
         if plugin_name in self.plugin_map:
             return self.package_path / self.plugin_map[plugin_name]
-        else:
-            return None  # or raise an exception, depending on your error handling strategy
+        return None  # Plugin not found
+
+    def plugin_exists(self, plugin_name):
+        return plugin_name in self.plugin_map
+
 
 
 class ManifestParser:
@@ -66,34 +67,35 @@ class PluginClassLoader:
         module = importlib.import_module(module_name)
         return getattr(module, class_name)
 
-
 class PluginLoader:
     def __init__(self, package_name):
         self.package_name = package_name
         self.registry = PluginRegistry(self.package_name)
 
     def get_plugin_path(self, plugin_name):
-        # Retrieve the path of the plugin from the registry
         plugin_path = self.registry.get_plugin_path(plugin_name)
         if not plugin_path:
             raise FileNotFoundError(f"Plugin {plugin_name} not found in the registry for package {self.package_name}.")
         return plugin_path
 
     def get_manifest(self, plugin_name):
-        # Get the plugin path and load the manifest file
         plugin_path = self.get_plugin_path(plugin_name)
         manifest_path = Path(plugin_path) / 'manifest.json'
         manifest_data = json.loads(manifest_path.read_text())
         return manifest_data
 
     def get_plugin_class(self, plugin_name):
-        # Get the manifest data using the new get_manifest method
         manifest_data = self.get_manifest(plugin_name)
         manifest_parser = ManifestParser(manifest_data)
-
-        # Get the module name and class name from the manifest
         module_name = manifest_parser.get_module_name()
         class_name = manifest_parser.get_class_name()
-
-        # Use the PluginClassLoader to load the class
         return PluginClassLoader.get_class(module_name, class_name)
+
+    def get_plugin_args(self, plugin_name):
+        """ Retrieve the configuration arguments for a specific plugin. """
+        plugin_path = self.get_plugin_path(plugin_name)
+        if plugin_path:
+            args_path = plugin_path / 'config.json'
+            if args_path.exists():
+                return json.loads(args_path.read_text())
+        return {}  # Return empty dict if no configuration found

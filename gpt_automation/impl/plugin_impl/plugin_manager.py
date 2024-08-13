@@ -2,8 +2,8 @@ from gpt_automation.impl.base_plugin import BasePlugin
 from gpt_automation.impl.plugin_impl.plugin_arg_filter import PluginArgFilter
 from gpt_automation.impl.plugin_impl.utils.file_pattern_filter import FilePatternFilter
 from gpt_automation.impl.setting.paths import PathManager
-from gpt_automation.impl.plugin_impl.plugin_config import PluginInfo, PluginConfig
-from gpt_automation.impl.plugin_impl.plugin_loader import PluginLoader
+from gpt_automation.impl.plugin_impl.plugin_settings import PluginInfo, PluginSettings
+from gpt_automation.impl.plugin_impl.plugin_registry import PluginLoader
 from gpt_automation.impl.plugin_impl.plugin_context import PluginContext, PluginContextBuilder
 
 
@@ -19,7 +19,7 @@ class PluginManager:
             raise ValueError("Config is required to initialize PluginRuntimeManager.")
         self.profile_names = profile_names
         self.config = config
-        self.plugin_config = PluginConfig(config, path_manager)
+        self.plugin_config = PluginSettings(config, path_manager)
         self.plugin_info_registry = {}
         self.plugin_instances = {}
         self.path_manager = path_manager
@@ -34,7 +34,7 @@ class PluginManager:
             self.plugin_info_registry[plugin_info.key()] = plugin_info
             print(f"Saved info for plugin {plugin_info.plugin_name}.")
 
-            config = plugin_info.config
+            config = plugin_info.settings
             filtered_args = arg_filter.get_plugin_args(plugin_info.package_name, plugin_info.plugin_name)
             config.update(filtered_args)
 

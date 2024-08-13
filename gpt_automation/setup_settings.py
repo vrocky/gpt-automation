@@ -1,4 +1,6 @@
-from gpt_automation.impl.app_context import AppContext
+import traceback
+
+from gpt_automation.init_config import InitConfig
 
 
 class SettingsSetup:
@@ -7,22 +9,28 @@ class SettingsSetup:
             plugin_file_args = []
         if config_args is None:
             config_args = {}
+
         self.root_dir = root_dir
         self.profile_names = profile_names
-        self.app_context = AppContext(root_dir, root_dir,
-                                      profile_names,
-                                      conf_args=config_args,
-                                      plugin_file_args=plugin_file_args)
+        self.config_args = config_args
+        self.plugin_file_args = plugin_file_args
+        self.init_config = InitConfig(self.root_dir, self.profile_names, self.config_args, self.plugin_file_args)
 
     def create_settings(self):
         """
-        Initialize the system configurations and plugins based on specified profiles.
+        Initialize the system configurations and plugins based on specified profiles
+        using the InitConfig class.
         """
-        # Ensure that all profiles are initialized, configuration and plugins are loaded and set up.
-        if not self.app_context.create_profiles():
-            print("Initialization of configurations and plugins failed.")
+        # Directly call the setup_initial_config method from InitConfig
+        try:
+            self.init_config.setup_initial_config(self.config_args, self.plugin_file_args)
+            print("System configurations and plugins have been successfully initialized.")
+            return True
+        except Exception as e:
+            # Print the error message
+            print(f"Initialization failed with an error: {str(e)}")
+            # Print the stack trace
+            print("Stack trace:")
+            traceback.print_exc()
             return False
 
-        # Initialization was successful
-        print("System configurations and plugins have been successfully initialized.")
-        return True
