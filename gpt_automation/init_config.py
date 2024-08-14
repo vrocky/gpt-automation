@@ -19,7 +19,6 @@ class InitConfig:
         self.plugin_initializer = PluginConfigurationManager(
             self.context.profile_names,
             self.context.root_dir,
-            self.path_manager,
             settings=self.load_settings()
         )
         self.initialize_and_configure_plugins(plugin_args.args, plugin_args.config_file_args)

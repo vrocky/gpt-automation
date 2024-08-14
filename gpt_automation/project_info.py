@@ -1,25 +1,36 @@
 import os
 import traceback
 
-from gpt_automation.impl.app_context import AppContext
+from gpt_automation.impl.directory_walker import DirectoryWalker
+from gpt_automation.impl.plugin_impl.plugin_init import PluginManager
+from gpt_automation.impl.setting.paths import PathManager
+from gpt_automation.impl.setting.settings_manager import SettingsManager
+from gpt_automation.setup_settings import SetupContext, PluginArguments
 
 
 class ProjectInfo:
-    def __init__(self, app_context: AppContext):
-        self.app_context = app_context
-        self.root_dir = app_context.get_root_dir().strip(os.sep)
-        self.directory_walker = None
-        self.profile_names = app_context.app.profile_names
-
-    def are_profiles_initialized(self):
-        return self.app_context.check_profile_created()
+    def __init__(self, context: SetupContext, plugin_args: PluginArguments):
+        self.root_dir = context.root_dir.strip(os.sep)
+        self.profile_names = context.profile_names
+        path_manager = PathManager(self.root_dir)
+        self.settings_manager = SettingsManager(path_manager)
+        self.plugin_manager = PluginManager(context.profile_names, context.root_dir,
+                                            settings=self.settings_manager.get_settings(context.profile_names))
+        self.plugin_manager.setup_and_activate_plugins(plugin_args.args, plugin_args.config_file_args)
+        self.directory_walker = DirectoryWalker(self.root_dir, self.plugin_manager.get_all_plugin_visitors())
 
     def initialize(self):
         try:
-            if not self.are_profiles_initialized():
+            # Check if base and profile configurations are initialized
+            if not self.settings_manager.is_base_config_initialized() or not self.settings_manager.check_profiles_created(self.profile_names):
                 print("Please run init command.")
                 return False
-            self.directory_walker = self.app_context.get_directory_walker()
+
+            # Ensure all plugins are properly configured
+            if not self.plugin_manager.is_all_plugin_configured():
+                print("Some plugins are not properly configured.")
+                return False
+
             return True
         except Exception as e:
             print(f"Initialization failed with an error: {e}")
@@ -28,9 +39,10 @@ class ProjectInfo:
             return False
 
     def create_directory_structure_prompt(self):
-        if not self.directory_walker:
-            print("ProjectInfo is not initialized.")
+        if not self.plugin_manager.is_all_plugin_configured():
+            print("Not all plugins are properly configured. Unable to create directory structure prompt.")
             return ""
+
         tree = {}
         for file_path in sorted(self.directory_walker.walk()):
             if file_path.startswith(self.root_dir):
@@ -54,9 +66,10 @@ class ProjectInfo:
         return "\n".join(lines)
 
     def create_file_contents_prompt(self):
-        if not self.directory_walker:
-            print("ProjectInfo is not initialized.")
+        if not self.plugin_manager.is_all_plugin_configured():
+            print("Not all plugins are properly configured. Unable to create file contents prompt.")
             return ""
+
         prompt = ""
         for file_path in self.directory_walker.walk():
             if os.path.isfile(file_path):

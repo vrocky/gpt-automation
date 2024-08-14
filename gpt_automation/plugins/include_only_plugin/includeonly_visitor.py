@@ -54,5 +54,6 @@ class IncludeOnlyVisitor(BaseVisitor):
         print(f"Preparing to traverse {directory_path}")
 
     def visit_file(self, file_path):
+        pass
         # Handle visiting a file
-        print(f"Visiting file: {file_path}")
+        #print(f"Visiting file: {file_path}")

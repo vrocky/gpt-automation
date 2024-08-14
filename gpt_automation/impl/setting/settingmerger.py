@@ -2,13 +2,13 @@ import json
 from copy import deepcopy
 
 
-class Settings:
+class SettingMerger:
     def __init__(self, data):
         self.data = deepcopy(data)
 
     def merge(self, other):
         merged_data = self._merge_dicts(self.data, other.data)
-        return Settings(merged_data)
+        return SettingMerger(merged_data)
 
     def _merge_dicts(self, base, other):
         result = deepcopy(base)

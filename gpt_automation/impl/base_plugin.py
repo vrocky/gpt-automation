@@ -13,7 +13,7 @@ class BasePlugin(ABC):
         pass
 
     @abstractmethod
-    def get_visitors(self, profile_names):
+    def get_visitors(self):
         """
         Return a list of visitor instances that this plugin wants to use.
         """

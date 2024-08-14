@@ -1,6 +1,4 @@
-import os
-
-from gpt_automation.impl.visitor.includeonly_visitor import IncludeOnlyVisitor
+from gpt_automation.plugins.include_only_plugin.includeonly_visitor import IncludeOnlyVisitor
 from gpt_automation.impl.base_plugin import BasePlugin
 
 
