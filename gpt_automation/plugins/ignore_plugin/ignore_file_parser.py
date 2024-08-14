@@ -2,16 +2,9 @@ import os
 
 
 def parse_gptignore_file(ignore_file_path, profile_names=None):
-    """
-    Parses a .gptignore file, returning patterns applicable globally and for the specified profiles.
-
-    :param ignore_file_path: Path to the .gptignore file.
-    :param profile_names: List of names of the profiles to filter for specific patterns.
-    :return: A dictionary containing global patterns and profile-specific patterns for each requested profile.
-    """
     global_patterns = []
     profiles_patterns = {}
-    current_profile = None
+    active_profiles = []
 
     with open(ignore_file_path, 'r') as file:
         for line in file:
@@ -19,10 +12,16 @@ def parse_gptignore_file(ignore_file_path, profile_names=None):
             if not line or line.startswith('#'):
                 continue
             if line.startswith('[') and line.endswith(']'):
+                # Starting a new profile block, flush previous active profiles
+                if line != active_profiles[-1] if active_profiles else None:
+                    active_profiles = []
                 current_profile = line[1:-1]
-                profiles_patterns[current_profile] = []
-            elif current_profile:
-                profiles_patterns[current_profile].append(line)
+                active_profiles.append(current_profile)
+                if current_profile not in profiles_patterns:
+                    profiles_patterns[current_profile] = []
+            elif active_profiles:
+                for profile in active_profiles:
+                    profiles_patterns[profile].append(line)
             else:
                 global_patterns.append(line)
 
@@ -31,6 +30,8 @@ def parse_gptignore_file(ignore_file_path, profile_names=None):
     for profile in profile_names or []:
         output_patterns[profile] = global_patterns + profiles_patterns.get(profile, [])
     return output_patterns
+
+
 
 
 def generate_pattern_pairs(directory_path, patterns):

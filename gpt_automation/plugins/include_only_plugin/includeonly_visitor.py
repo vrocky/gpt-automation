@@ -1,7 +1,7 @@
 import os
-from gpt_automation.impl.filters import should_include_by_include_only_list
+from gpt_automation.plugins.ignore_plugin.filters import should_include_by_include_only_list
 from gpt_automation.impl.visitor.basevisitor import BaseVisitor
-from gpt_automation.impl.ignore_file_parser import collect_patterns_from_ignore_files, generate_pattern_pairs
+from gpt_automation.plugins.ignore_plugin.ignore_file_parser import collect_patterns_from_ignore_files, generate_pattern_pairs
 
 
 class IncludeOnlyVisitor(BaseVisitor):
