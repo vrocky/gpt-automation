@@ -1,15 +1,15 @@
 {
     "plugins": [
         {
-            "name": "IgnorePlugin",
+            "name": "gpt_ignore",
             "path": "./plugins/ignore_plugin/"
         },
         {
-            "name": "IncludeOnlyPlugin",
+            "name": "gpt_include_only",
             "path": "./plugins/include_only_plugin/"
         },
        {
-            "name": "BlacklistWhitelistPlugin",
+            "name": "bw_filter",
             "path": "./plugins/filter_plugin/"
         }
     ]

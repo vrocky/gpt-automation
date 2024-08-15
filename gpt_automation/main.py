@@ -70,8 +70,13 @@ def setup_cli_parser():
     return parser
 
 def handle_init(args):
-    print(f"Root Directory: {os.path.abspath(args.root_dir)}")
-    setup_context = SettingContext(root_dir=args.root_dir, profile_names=args.profiles)
+    if args.root_dir:
+        root_dir = os.path.abspath(args.root_dir)
+    else:
+        root_dir = os.getcwd()
+
+    print(f"Root Directory: {root_dir}")
+    setup_context = SettingContext(root_dir=root_dir, profile_names=args.profiles)
     plugin_arguments = parse_and_load_plugin_arguments(args)
     config_creator = SettingsSetup(setup_context, plugin_arguments)
     config_creator.create_settings()

@@ -52,9 +52,12 @@ class BlacklistWhitelistPlugin(BasePlugin):
         return visitors
 
     def init_default_config(self):
+        if not os.path.exists(self.config_dir):
+            os.makedirs(self.config_dir)
         default_blacklist = os.path.join(self.config_dir, "black_list.txt")
         default_whitelist = os.path.join(self.config_dir, "white_list.txt")
         sample_config_dir = os.path.join(os.path.dirname(__file__), "sample_config")
+
         if not os.path.exists(default_blacklist):
             shutil.copyfile(os.path.join(sample_config_dir, "black_list.txt"), default_blacklist)
         if not os.path.exists(default_whitelist):
