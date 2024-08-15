@@ -1,3 +1,6 @@
+[impl]
+base_plugin.py
+
 [filters]
 filters.py
 ignore_match.py

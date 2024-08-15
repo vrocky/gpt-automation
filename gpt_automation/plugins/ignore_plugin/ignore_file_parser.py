@@ -2,34 +2,60 @@ import os
 
 
 def parse_gptignore_file(ignore_file_path, profile_names=None):
+    """
+    Parses a .gptignore file, storing and returning patterns applicable globally and for specified profiles,
+    with proper handling for grouped headers sharing patterns.
+
+    :param ignore_file_path: Path to the .gptignore file.
+    :param profile_names: List of profile names to specifically filter patterns for.
+    :return: A dictionary containing global patterns and profile-specific patterns for each requested profile.
+    """
     global_patterns = []
-    profiles_patterns = {}
-    active_profiles = []
+    profile_map = {}
+    current_profiles = []
 
     with open(ignore_file_path, 'r') as file:
-        for line in file:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            if line.startswith('[') and line.endswith(']'):
-                # Starting a new profile block, flush previous active profiles
-                if line != active_profiles[-1] if active_profiles else None:
-                    active_profiles = []
-                current_profile = line[1:-1]
-                active_profiles.append(current_profile)
-                if current_profile not in profiles_patterns:
-                    profiles_patterns[current_profile] = []
-            elif active_profiles:
-                for profile in active_profiles:
-                    profiles_patterns[profile].append(line)
-            else:
-                global_patterns.append(line)
+        lines = file.readlines()
 
-    # Prepare the output dictionary
+    # Remove leading and trailing whitespaces and filter out empty lines and comments
+    lines = [line.strip() for line in lines if line.strip() and not line.startswith('#')]
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith('[') and line.endswith(']'):
+            # New header found, start collecting new set of headers
+            current_profiles = [line[1:-1]]
+            i += 1
+            # Collect all consecutive headers
+            while i < len(lines) and lines[i].startswith('[') and lines[i].endswith(']'):
+                current_profiles.append(lines[i][1:-1])
+                i += 1
+
+            # Collect patterns for all these headers
+            while i < len(lines) and not lines[i].startswith('['):
+                for profile in current_profiles:
+                    if profile in profile_map:
+                        profile_map[profile].append(lines[i])
+                    else:
+                        profile_map[profile] = [lines[i]]
+                i += 1
+        else:
+            # Global patterns
+            global_patterns.append(line)
+            i += 1
+
+    # Prepare output dictionary, merging global and profile-specific patterns
     output_patterns = {'global': global_patterns}
     for profile in profile_names or []:
-        output_patterns[profile] = global_patterns + profiles_patterns.get(profile, [])
+        output_patterns[profile] = global_patterns + profile_map.get(profile, [])
+
     return output_patterns
+
+
+
+
+
 
 
 
@@ -63,3 +89,8 @@ def collect_patterns_from_ignore_files(directory_path, ignore_filenames, profile
                 for patterns in profiles_patterns.values():
                     pattern_pairs.extend(generate_pattern_pairs(directory_path, patterns))
     return pattern_pairs
+
+
+if __name__ == '__main__':
+    print(parse_gptignore_file(r"C:\Users\vinit\OneDrive\Documents\repo\gpt-automation\.gptincludeonly",["plugins"]))
+    print(parse_gptignore_file(r"C:\Users\vinit\OneDrive\Documents\repo\gpt-automation\.gptincludeonly",["impl"]))

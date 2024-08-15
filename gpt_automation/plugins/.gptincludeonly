@@ -1,6 +1,5 @@
 [plugins]
-#base_plugin.py
-ignore_plugin
+__init__.py
 
 
 [filter_plugin]
