@@ -1,6 +1,6 @@
 import traceback
 
-from gpt_automation.init_config import InitConfig
+from gpt_automation.setup_config import SetupConfig
 
 
 class SetupContext:
@@ -30,7 +30,7 @@ class SettingsSetup:
     def __init__(self, setup_context, plugin_arguments):
         self.context = setup_context
         self.arguments = plugin_arguments
-        self.init_config = InitConfig(setup_context)
+        self.init_config = SetupConfig(setup_context)
 
     def create_settings(self):
         """

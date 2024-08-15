@@ -1,8 +1,8 @@
 import argparse
 import os
 
-from gpt_automation.arg_file_parser import ConfigurationLoader
-from gpt_automation.prompt_generator import PromptGenerator
+from gpt_automation.utils.arg_file_parser import ConfigurationLoader
+from gpt_automation.prompt_manager import PromptManager
 from gpt_automation.setup_settings import SettingsSetup, SetupContext, PluginArguments
 
 
@@ -85,10 +85,10 @@ def main():
         config_creator.create_settings()
     elif args.command == "prompt":
         prompt_dir = args.prompt_dir
-        prompt_generator = PromptGenerator(root_dir=setup_context.root_dir,
-                                           prompt_dir=prompt_dir,
-                                           conf_args=plugin_arguments.args,
-                                           plugin_file_args=plugin_arguments.config_file_args)
+        prompt_generator = PromptManager(root_dir=setup_context.root_dir,
+                                         prompt_dir=prompt_dir,
+                                         conf_args=plugin_arguments.args,
+                                         plugin_file_args=plugin_arguments.config_file_args)
 
         generate_dir, generate_content, dir_profiles, content_profiles = determine_generation_options(args)
         prompt_generator.generate_prompt(

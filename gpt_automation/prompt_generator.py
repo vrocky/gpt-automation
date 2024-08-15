@@ -1,77 +1,80 @@
+import os
+import traceback
+
+from gpt_automation.impl.directory_walker import DirectoryWalker
+from gpt_automation.impl.plugin_impl.plugin_init import PluginManager
 from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.setting.settings_manager import SettingsManager
-from gpt_automation.project_info import ProjectInfo
 from gpt_automation.setup_settings import SetupContext, PluginArguments
 
 
-def combine_prompts(dir_prompt, content_prompt):
-    combined_prompt = ""
-    if dir_prompt:
-        combined_prompt += "Directory Structure:\n" + dir_prompt + "\n"
-    if content_prompt:
-        combined_prompt += "File Contents:\n" + content_prompt.strip()
-    return combined_prompt
-
-
 class PromptGenerator:
-    def __init__(self, root_dir='.', prompt_dir=".", conf_args=None, plugin_file_args=None):
-        self.root_dir = root_dir
-        self.prompt_dir = prompt_dir
-        self.conf_args = conf_args if conf_args is not None else {}
-        self.plugin_file_args = plugin_file_args if plugin_file_args is not None else []
-        self.settings_manager = SettingsManager(PathManager(root_dir))
+    def __init__(self, context: SetupContext, plugin_args: PluginArguments):
+        self.root_dir = context.root_dir.strip(os.sep)
+        self.profile_names = context.profile_names
+        path_manager = PathManager(self.root_dir)
+        self.settings_manager = SettingsManager(path_manager)
+        self.plugin_manager = PluginManager(context.profile_names, context.root_dir,
+                                            settings=self.settings_manager.get_settings(context.profile_names))
+        self.plugin_manager.setup_and_activate_plugins(plugin_args.args, plugin_args.config_file_args)
+        self.directory_walker = DirectoryWalker(self.root_dir, self.plugin_manager.get_all_plugin_visitors())
 
-    def generate_prompt(self, dir_profiles=None, content_profiles=None, generate_dir=False, generate_content=False):
-        if generate_dir:
-            dir_prompt = self.generate_directory_prompt(dir_profiles)
-        else:
-            dir_prompt = ""
-
-        if generate_content:
-            content_prompt = self.generate_content_prompt(content_profiles)
-        else:
-            content_prompt = ""
-
-        if dir_prompt or content_prompt:
-            self.display_prompts(dir_prompt, content_prompt)
-
-    def generate_directory_prompt(self, profile_names):
-        prompt = self.create_prompt(profile_names, 'directory')
-        print("\nDirectory Structure Preview:")
-        print(prompt)
-        return prompt
-
-    def generate_content_prompt(self, profile_names):
-        dir_preview = self.create_prompt(profile_names, 'directory')
-        print("\nDirectory Preview for Content (to indicate what has been copied):")
-        print(dir_preview)
-
-        content_prompt = self.create_prompt(profile_names, 'content')
-        return content_prompt
-
-    def create_prompt(self, profile_names, prompt_type):
-        project_info = ProjectInfo(SetupContext(self.root_dir, profile_names),
-                                   PluginArguments(self.conf_args, self.plugin_file_args))
-        if project_info.initialize():
-            if prompt_type == 'directory':
-                return project_info.create_directory_structure_prompt()
-            elif prompt_type == 'content':
-                return project_info.create_file_contents_prompt()
-        return "Initialization of directory walker failed."
-
-    def display_prompts(self, dir_prompt, content_prompt):
-        combined_prompt = combine_prompts(dir_prompt, content_prompt)
-        if combined_prompt:
-            self.copy_to_clipboard(combined_prompt)
-
-    def copy_to_clipboard(self, prompt):
+    def initialize(self):
         try:
-            import pyperclip
-            pyperclip.copy(prompt)
-            print("\nPrompt has been copied to the clipboard.")
-        except ImportError:
-            print("\nFailed to copy prompt to clipboard. Pyperclip module not installed.")
+            # Check if base and profile configurations are initialized
+            if not self.settings_manager.is_base_config_initialized() or not self.settings_manager.check_profiles_created(self.profile_names):
+                print("Please run init command.")
+                return False
 
-# Usage example (this would be outside this code snippet in actual use):
-# generator = PromptGenerator()
-# generator.generate_prompt(dir_profiles=["profile1"], generate_dir=True)
+            # Ensure all plugins are properly configured
+            if not self.plugin_manager.is_all_plugin_configured():
+                print("Some plugins are not properly configured.")
+                return False
+
+            return True
+        except Exception as e:
+            print(f"Initialization failed with an error: {e}")
+            traceback_str = traceback.format_exc()
+            print(traceback_str)
+            return False
+
+    def create_directory_structure_prompt(self):
+        if not self.plugin_manager.is_all_plugin_configured():
+            print("Not all plugins are properly configured. Unable to create directory structure prompt.")
+            return ""
+
+        tree = {}
+        for file_path in sorted(self.directory_walker.walk()):
+            if file_path.startswith(self.root_dir):
+                relative_path = file_path[len(self.root_dir) + 1:]
+                parts = relative_path.split(os.sep)
+                current_level = tree
+                for part in parts[:-1]:
+                    current_level = current_level.setdefault(part, {})
+                current_level[parts[-1]] = {}
+        return "\n./\n" + self.format_output(tree, 0)
+
+    def format_output(self, node, indent_level):
+        lines = []
+        for name, subdict in sorted(node.items()):
+            indent = '    ' * indent_level
+            if subdict:
+                lines.append(f"{indent}{name}/")
+                lines.append(self.format_output(subdict, indent_level + 1))
+            else:
+                lines.append(f"{indent}{name}")
+        return "\n".join(lines)
+
+    def create_file_contents_prompt(self):
+        if not self.plugin_manager.is_all_plugin_configured():
+            print("Not all plugins are properly configured. Unable to create file contents prompt.")
+            return ""
+
+        prompt = ""
+        for file_path in self.directory_walker.walk():
+            if os.path.isfile(file_path):
+                relative_path = os.path.relpath(file_path, self.root_dir)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_content = f.read()
+                    prompt += f"=========={relative_path}:\n{file_content}\n\n"
+        return prompt

@@ -3,7 +3,7 @@ from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.setting.settings_manager import SettingsManager
 
 
-class InitConfig:
+class SetupConfig:
     def __init__(self, setup_context):
         self.context = setup_context
         self.path_manager = PathManager(self.context.root_dir)
