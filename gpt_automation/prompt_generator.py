@@ -10,7 +10,7 @@ from gpt_automation.setup_settings import SettingContext, PluginArguments
 
 class PromptGenerator:
     def __init__(self, prompt_dir ,context: SettingContext, plugin_args: PluginArguments):
-        self.root_dir = context.root_dir.strip(os.sep)
+        self.root_dir = context.root_dir.rstrip(os.sep)
         self.profile_names = context.profile_names
         path_manager = PathManager(self.root_dir)
         self.settings_manager = SettingsManager(path_manager)
