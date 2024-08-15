@@ -39,7 +39,7 @@ class BlacklistWhitelistPlugin(BasePlugin):
         # Initialize default configuration if not present
         self.init_default_config()
 
-    def get_visitors(self):
+    def get_visitors(self,prompt_dir):
         visitors = []
         if not self.profile_names:  # If no profiles specified, use default configuration
             blacklist, whitelist = self.load_filter_lists(self.config_dir)

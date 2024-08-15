@@ -13,14 +13,14 @@ class BasePlugin(ABC):
         pass
 
     @abstractmethod
-    def get_visitors(self):
+    def get_visitors(self, prompt_dir):
         """
         Return a list of visitor instances that this plugin wants to use.
         """
         pass
 
     @abstractmethod
-    def configure(self, profile_names):
+    def configure(self, context):
         """
         Initialize necessary resources or perform setup tasks with provided context.
         """

@@ -20,12 +20,12 @@ class PluginInstanceManager:
         self.plugin_instances[context.plugin_key] = plugin_instance
         return plugin_instance
 
-    def get_all_plugin_visitors(self):
+    def get_all_plugin_visitors(self, prompt_dir):
         """Return visitors from all plugins if they have a 'get_visitors' method."""
         visitors = []
         for plugin_instance in self.plugin_instances.values():
             if hasattr(plugin_instance, 'get_visitors'):
-                visitors.extend(plugin_instance.get_visitors())
+                visitors.extend(plugin_instance.get_visitors(prompt_dir))
         return visitors
 
     def verify_all_plugins_are_configured(self):
@@ -124,9 +124,9 @@ class PluginManager(BasePluginManager):
                         plugin_instance.activate(context.to_dict())
                         print(f"Activated plugin {context.plugin_name} with key {context.plugin_key}.")
 
-    def get_all_plugin_visitors(self):
+    def get_all_plugin_visitors(self,prompt_dir):
         """Return visitors from all plugins."""
-        return self.plugin_instance_manager.get_all_plugin_visitors()
+        return self.plugin_instance_manager.get_all_plugin_visitors(prompt_dir=prompt_dir)
 
     def is_all_plugin_configured(self):
         """Check if all plugin instances are properly configured."""

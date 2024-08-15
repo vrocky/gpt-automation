@@ -5,11 +5,11 @@ from gpt_automation.impl.directory_walker import DirectoryWalker
 from gpt_automation.impl.plugin_impl.plugin_init import PluginManager
 from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.setting.settings_manager import SettingsManager
-from gpt_automation.setup_settings import SetupContext, PluginArguments
+from gpt_automation.setup_settings import SettingContext, PluginArguments
 
 
 class PromptGenerator:
-    def __init__(self, context: SetupContext, plugin_args: PluginArguments):
+    def __init__(self, prompt_dir ,context: SettingContext, plugin_args: PluginArguments):
         self.root_dir = context.root_dir.strip(os.sep)
         self.profile_names = context.profile_names
         path_manager = PathManager(self.root_dir)
@@ -17,7 +17,7 @@ class PromptGenerator:
         self.plugin_manager = PluginManager(context.profile_names, context.root_dir,
                                             settings=self.settings_manager.get_settings(context.profile_names))
         self.plugin_manager.setup_and_activate_plugins(plugin_args.args, plugin_args.config_file_args)
-        self.directory_walker = DirectoryWalker(self.root_dir, self.plugin_manager.get_all_plugin_visitors())
+        self.directory_walker = DirectoryWalker(prompt_dir, self.plugin_manager.get_all_plugin_visitors(prompt_dir))
 
     def initialize(self):
         try:

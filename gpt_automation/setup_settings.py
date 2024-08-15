@@ -3,7 +3,7 @@ import traceback
 from gpt_automation.setup_config import SetupConfig
 
 
-class SetupContext:
+class SettingContext:
     def __init__(self, root_dir, profile_names):
         self.root_dir = root_dir
         self.profile_names = profile_names

@@ -1,7 +1,7 @@
 from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.setting.settings_manager import SettingsManager
 from gpt_automation.prompt_generator import PromptGenerator
-from gpt_automation.setup_settings import SetupContext, PluginArguments
+from gpt_automation.setup_settings import SettingContext, PluginArguments
 
 
 def combine_prompts(dir_prompt, content_prompt):
@@ -50,7 +50,7 @@ class PromptManager:
         return content_prompt
 
     def create_prompt(self, profile_names, prompt_type):
-        project_info = PromptGenerator(SetupContext(self.root_dir, profile_names),
+        project_info = PromptGenerator(self.prompt_dir,SettingContext(self.root_dir, profile_names),
                                        PluginArguments(self.conf_args, self.plugin_file_args))
         if project_info.initialize():
             if prompt_type == 'directory':
