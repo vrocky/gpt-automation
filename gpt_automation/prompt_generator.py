@@ -6,6 +6,14 @@ from gpt_automation.impl.plugin_impl.plugin_init import PluginManager
 from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.setting.settings_manager import SettingsManager
 from gpt_automation.setup_settings import SettingContext, PluginArguments
+import chardet
+
+
+def detect_file_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        raw_data = f.read(1024)  # Read the first 1024 bytes to detect encoding
+        result = chardet.detect(raw_data)
+        return result['encoding']
 
 
 class PromptGenerator:
@@ -66,15 +74,28 @@ class PromptGenerator:
         return "\n".join(lines)
 
     def create_file_contents_prompt(self):
-        if not self.plugin_manager.is_all_plugin_configured():
-            print("Not all plugins are properly configured. Unable to create file contents prompt.")
-            return ""
+        try:
+            if not self.plugin_manager.is_all_plugin_configured():
+                print("Not all plugins are properly configured. Unable to create file contents prompt.")
+                return ""
 
-        prompt = ""
-        for file_path in self.directory_walker.walk():
-            if os.path.isfile(file_path):
-                relative_path = os.path.relpath(file_path, self.root_dir)
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    file_content = f.read()
-                    prompt += f"=========={relative_path}:\n{file_content}\n\n"
-        return prompt
+            prompt = ""
+            for file_path in self.directory_walker.walk():
+                if os.path.isfile(file_path):
+                    relative_path = os.path.relpath(file_path, self.root_dir)
+                    try:
+                        encoding = detect_file_encoding(file_path)
+                        if encoding is None:
+                            print(f"Could not detect encoding for {file_path}. Skipping file.")
+                            continue
+
+                        with open(file_path, 'r', encoding=encoding) as f:
+                            file_content = f.read()
+                            prompt += f"=========={relative_path}:\n{file_content}\n\n"
+                    except Exception as e:
+                        print(f"Error reading file {file_path}: {e}")
+                        continue
+            return prompt
+        except Exception as e:
+            print(f"An error occurred while creating file contents prompt: {e}")
+            return ""
