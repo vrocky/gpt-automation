@@ -111,7 +111,7 @@ class BlacklistWhitelistVisitor(BaseVisitor):
         return not self.whitelist or any(fnmatch.fnmatch(file_path, pattern) for pattern in self.whitelist)
 
     def should_visit_subdirectory(self, subdir_path):
-        return self.should_visit_file(subdir_path)
+        return True
 
     def before_traverse_directory(self, directory_path):
         print(f"Preparing to traverse {directory_path} with filters")
