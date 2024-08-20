@@ -8,6 +8,7 @@ class PathManager:
         self.config_dir = os.path.join(self.base_directory, '.gpt', 'conf')
         self.profiles_dir = os.path.join(self.base_directory, '.gpt', 'profiles')
         self.plugins_dir = os.path.join(self.base_directory, '.gpt', 'config')
+        self.logs_dir = os.path.join(self.base_directory, '.gpt', 'logs')  # New log directory
         self.resources_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'resources')
         self.ensure_directories()
 
@@ -19,6 +20,11 @@ class PathManager:
         os.makedirs(self.settings_base_dir, exist_ok=True)
         os.makedirs(self.profiles_dir, exist_ok=True)
         os.makedirs(self.plugins_dir, exist_ok=True)
+        os.makedirs(self.logs_dir, exist_ok=True)  # Ensure log directory exists
+
+    def get_logs_dir(self):
+        """ Returns the path to the log directory. """
+        return self.logs_dir
 
     def get_base_settings_path(self):
         """ Returns the path to the base configuration file. """

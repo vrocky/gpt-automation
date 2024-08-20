@@ -1,3 +1,4 @@
+import logging
 import os
 import traceback
 
@@ -9,6 +10,23 @@ from gpt_automation.setup_settings import SettingContext, PluginArguments
 import chardet
 
 
+def setup_logging(log_file):
+    # Create a logger
+    logger = logging.getLogger('PromptGenerator')
+    logger.setLevel(logging.ERROR)
+
+    # Create file handler for warnings and errors
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(logging.WARNING)
+    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(file_formatter)
+
+    # Add the handler to the logger
+    logger.addHandler(file_handler)
+
+    return logger
+
+
 def detect_file_encoding(file_path):
     with open(file_path, 'rb') as f:
         raw_data = f.read(1024)  # Read the first 1024 bytes to detect encoding
@@ -17,7 +35,7 @@ def detect_file_encoding(file_path):
 
 
 class PromptGenerator:
-    def __init__(self, prompt_dir ,context: SettingContext, plugin_args: PluginArguments):
+    def __init__(self, prompt_dir, context: SettingContext, plugin_args: PluginArguments):
         self.root_dir = context.root_dir.rstrip(os.sep)
         self.profile_names = context.profile_names
         path_manager = PathManager(self.root_dir)
@@ -27,28 +45,35 @@ class PromptGenerator:
         self.plugin_manager.setup_and_activate_plugins(plugin_args.args, plugin_args.config_file_args)
         self.directory_walker = DirectoryWalker(prompt_dir, self.plugin_manager.get_all_plugin_visitors(prompt_dir))
 
+        log_file = os.path.join(path_manager.get_logs_dir(), 'prompt_generator.log')
+        self.logger = setup_logging(log_file)
+        self.skipped_files_count = 0
+        self.log_file_path = log_file
+
     def initialize(self):
         try:
             # Check if base and profile configurations are initialized
-            if not self.settings_manager.is_base_config_initialized() or not self.settings_manager.check_profiles_created(self.profile_names):
-                print("Please run init command.")
+            if not self.settings_manager.is_base_config_initialized() or not self.settings_manager.check_profiles_created(
+                    self.profile_names):
+                self.logger.warning("Base or profile configurations are not initialized. Please run init command.")
                 return False
 
             # Ensure all plugins are properly configured
             if not self.plugin_manager.is_all_plugin_configured():
-                print("Some plugins are not properly configured.")
+                self.logger.warning("Some plugins are not properly configured.")
                 return False
 
+            self.logger.info("Initialization successful.")
             return True
         except Exception as e:
-            print(f"Initialization failed with an error: {e}")
+            self.logger.error(f"Initialization failed with an error: {e}")
             traceback_str = traceback.format_exc()
-            print(traceback_str)
+            self.logger.debug(traceback_str)
             return False
 
     def create_directory_structure_prompt(self):
         if not self.plugin_manager.is_all_plugin_configured():
-            print("Not all plugins are properly configured. Unable to create directory structure prompt.")
+            self.logger.warning("Not all plugins are properly configured. Unable to create directory structure prompt.")
             return ""
 
         tree = {}
@@ -60,6 +85,7 @@ class PromptGenerator:
                 for part in parts[:-1]:
                     current_level = current_level.setdefault(part, {})
                 current_level[parts[-1]] = {}
+        self.logger.info("Directory structure prompt created.")
         return "\n./\n" + self.format_output(tree, 0)
 
     def format_output(self, node, indent_level):
@@ -75,27 +101,29 @@ class PromptGenerator:
 
     def create_file_contents_prompt(self):
         try:
-            if not self.plugin_manager.is_all_plugin_configured():
-                print("Not all plugins are properly configured. Unable to create file contents prompt.")
-                return ""
-
             prompt = ""
             for file_path in self.directory_walker.walk():
                 if os.path.isfile(file_path):
                     relative_path = os.path.relpath(file_path, self.root_dir)
-                    try:
-                        encoding = detect_file_encoding(file_path)
-                        if encoding is None:
-                            print(f"Could not detect encoding for {file_path}. Skipping file.")
-                            continue
+                    encoding = detect_file_encoding(file_path)
+                    if encoding is None:
+                        self.logger.warning(f"Could not detect encoding for {file_path}. Skipping file.")
+                        self.skipped_files_count += 1
+                        continue
 
+                    try:
                         with open(file_path, 'r', encoding=encoding) as f:
                             file_content = f.read()
                             prompt += f"=========={relative_path}:\n{file_content}\n\n"
                     except Exception as e:
-                        print(f"Error reading file {file_path}: {e}")
+                        self.logger.error(f"Error reading file {file_path}: {e}")
+                        self.skipped_files_count += 1
                         continue
+
+            if self.skipped_files_count > 0:
+                print(f"{self.skipped_files_count} file(s) have been skipped. Check the logs at: {self.log_file_path}")
+
             return prompt
         except Exception as e:
-            print(f"An error occurred while creating file contents prompt: {e}")
+            self.logger.error(f"An error occurred while creating file contents prompt: {e}")
             return ""
