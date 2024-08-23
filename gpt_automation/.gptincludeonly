@@ -20,3 +20,9 @@ main.py
 #impl
 prompt_generator.py
 #project_info.py
+
+
+[setup]
+*.json
+
+

@@ -1,3 +1,7 @@
 [plugins]
 [impl]
 gpt_automation
+
+
+[setup]
+gpt_automation

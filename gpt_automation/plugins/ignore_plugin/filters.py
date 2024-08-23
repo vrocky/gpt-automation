@@ -1,3 +1,5 @@
+import os.path
+
 from gpt_automation.plugins.ignore_plugin.Ignore_match import IgnoreMatch
 from gpt_automation.plugins.ignore_plugin.utils.pattern_utils import matches_list_pattern
 import logging
@@ -29,6 +31,7 @@ def should_ignore_by_black_list(file_path, black_list_patterns):
 def should_include_by_include_only_list(file_path, include_only_matches_stack):
     logging.debug(f"Starting should_include_by_include_only_list for file_path: {file_path}")
 
+    dir_name = os.path.dirname(file_path)
     # Pre-load IgnoreMatch objects from the stack to avoid repeated loading
     preloaded_include_matches = [
         load_ignore_matches(include_only_paths) for include_only_paths in include_only_matches_stack if
@@ -47,6 +50,7 @@ def should_include_by_include_only_list(file_path, include_only_matches_stack):
         return True
 
     for include_match in reversed(preloaded_include_matches):
+
         if include_match:
             pattern = include_match.base_pattern_pairs
             if include_match.match(file_path):
@@ -54,6 +58,8 @@ def should_include_by_include_only_list(file_path, include_only_matches_stack):
                 return True
             else:
                 logging.debug(f"File path {file_path} does not match include-only pattern {pattern}.")
+                return False # We are matching only top from the stack for include only pattern
+
 
     logging.debug(f"File path {file_path} does not match any include-only patterns, returning False.")
     # If the file does not match any include_only patterns, it should not be included

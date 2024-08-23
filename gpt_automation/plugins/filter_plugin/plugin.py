@@ -78,7 +78,7 @@ class BlacklistWhitelistPlugin(BasePlugin):
                 print(f"Profile {profile_name} already exists.")
 
     def get_profile_config_path(self, profile_name):
-        return os.path.join(self.config_dir, "profiles", profile_name)
+        return os.path.join(self.config_dir, profile_name)
 
     def load_filter_lists(self, profile_path):
         blacklist_path = os.path.join(profile_path, "black_list.txt")
@@ -111,6 +111,8 @@ class BlacklistWhitelistVisitor(BaseVisitor):
         return not self.whitelist or any(fnmatch.fnmatch(file_path, pattern) for pattern in self.whitelist)
 
     def should_visit_subdirectory(self, subdir_path):
+        if any(fnmatch.fnmatch(subdir_path, pattern) for pattern in self.blacklist):
+            return False
         return True
 
     def before_traverse_directory(self, directory_path):

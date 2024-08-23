@@ -36,6 +36,7 @@ class IncludeOnlyVisitor(BaseVisitor):
         local_include_only_patterns = collect_patterns_from_ignore_files(
             directory_path, self.include_only_filenames, self.profile_names)
         # Fallback to include all files if no specific patterns are found
+
         self.include_only_patterns_stack.append(
             local_include_only_patterns if local_include_only_patterns else generate_pattern_pairs(directory_path,
                                                                                                    ["*"]))
@@ -44,6 +45,7 @@ class IncludeOnlyVisitor(BaseVisitor):
         self.include_only_patterns_stack.pop()
 
     def should_visit_file(self, file_path):
+
         return should_include_by_include_only_list(file_path, self.include_only_patterns_stack)
 
     def should_visit_subdirectory(self, subdir_path):
