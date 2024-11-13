@@ -14,8 +14,14 @@ class SetupConfig:
         Setup the initial configuration for the application including directories, profiles,
         and plugins based on provided specifications.
         """
+        # Ensure base configuration and profiles are created if not present
         self.settings_manager.create_base_config_if_needed()
         self.settings_manager.create_profiles(self.context.profile_names)
+
+        # Copy the .gitignore template if it doesn’t already exist in the .gpt directory
+        self.settings_manager.copy_gitignore_template()
+
+        # Initialize plugins with settings
         self.plugin_initializer = PluginConfigurationManager(
             self.context.profile_names,
             self.context.root_dir,

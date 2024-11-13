@@ -106,19 +106,30 @@ class PromptGenerator:
                 if os.path.isfile(file_path):
                     relative_path = os.path.relpath(file_path, self.root_dir)
                     encoding = detect_file_encoding(file_path)
+
+                    # If encoding detection fails, skip the file
                     if encoding is None:
                         self.logger.warning(f"Could not detect encoding for {file_path}. Skipping file.")
                         self.skipped_files_count += 1
                         continue
 
                     try:
+                        # First attempt: use detected encoding
                         with open(file_path, 'r', encoding=encoding) as f:
                             file_content = f.read()
                             prompt += f"=========={relative_path}:\n{file_content}\n\n"
-                    except Exception as e:
-                        self.logger.error(f"Error reading file {file_path}: {e}")
-                        self.skipped_files_count += 1
-                        continue
+                    except (UnicodeDecodeError, IOError) as e:
+                        self.logger.warning(f"Error reading {file_path} with encoding {encoding}. Retrying with UTF-8.")
+
+                        # Second attempt: retry with UTF-8
+                        try:
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                file_content = f.read()
+                                prompt += f"=========={relative_path}:\n{file_content}\n\n"
+                        except (UnicodeDecodeError, IOError) as e:
+                            self.logger.error(f"Failed to read file {file_path} with UTF-8 encoding: {e}")
+                            self.skipped_files_count += 1
+                            continue
 
             if self.skipped_files_count > 0:
                 print(f"{self.skipped_files_count} file(s) have been skipped. Check the logs at: {self.log_file_path}")

@@ -20,7 +20,6 @@ class SettingsManager:
         return True
 
     def get_settings(self, profile_names):
-
         if not profile_names:
             base_config_path = self.path_manager.get_base_settings_path()
             if os.path.exists(base_config_path):
@@ -72,3 +71,20 @@ class SettingsManager:
     def is_base_config_initialized(self):
         """ Check if the base configuration file exists. """
         return os.path.exists(self.path_manager.get_base_settings_path())
+
+    def copy_gitignore_template(self):
+        """ Copy the .gitignore template to the .gpt directory if it doesn’t exist. """
+        gitignore_template_path = os.path.join(self.path_manager.resources_dir, '.gitignore_template')
+
+        # Use get_gpt_dir() to access the .gpt directory
+        gitignore_destination_path = os.path.join(self.path_manager.get_gpt_dir(), '.gitignore')
+
+        # Ensure the .gpt directory exists
+        os.makedirs(os.path.dirname(gitignore_destination_path), exist_ok=True)
+
+        if not os.path.exists(gitignore_destination_path):
+            # Copy the .gitignore template to the destination
+            copyfile(gitignore_template_path, gitignore_destination_path)
+            print(f".gitignore template copied to {gitignore_destination_path}.")
+        else:
+            print(".gitignore already exists in the .gpt directory.")
