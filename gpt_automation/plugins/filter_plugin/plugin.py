@@ -139,8 +139,7 @@ class BlacklistWhitelistVisitor(BaseVisitor):
     def __init__(self, blacklist=None, whitelist=None):
         self.blacklist = blacklist or []
         self.whitelist = whitelist or []
-        print(f"Blacklist: {self.blacklist}")
-        print(f"Whitelist: {self.whitelist}")
+    
 
     def enter_directory(self, directory_path):
         pass
