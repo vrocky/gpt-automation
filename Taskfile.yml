@@ -1,0 +1,54 @@
+version: '3'
+
+vars:
+  ROOT_DIR: "{{.ROOT_DIR | default "."}}"
+  PROMPT_DIR: "{{.PROMPT_DIR | default "prompts"}}"
+
+tasks:
+  install:
+    desc: Install the package in development mode
+    cmds:
+      - pip install -e .
+
+  init:
+    desc: Initialize with default profiles
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} init default web api
+
+  init-custom:
+    desc: Initialize with custom profiles
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} init {{.PROFILES}}
+
+  prompt-all:
+    desc: Generate both directory and content prompts
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} --prompt_dir {{.PROMPT_DIR}} prompt default web api
+
+  prompt-dir:
+    desc: Generate only directory structure prompts
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} --prompt_dir {{.PROMPT_DIR}} prompt --dir default web api
+
+  prompt-content:
+    desc: Generate only content prompts
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} --prompt_dir {{.PROMPT_DIR}} prompt --content default web api
+
+  test-all:
+    desc: Run all test scenarios
+    cmds:
+      - task: init
+      - task: prompt-all
+      - task: clean
+
+  clean:
+    desc: Clean up generated files
+    cmds:
+      - rm -rf {{.ROOT_DIR}}/prompts/*
+      - rm -rf {{.ROOT_DIR}}/config/*

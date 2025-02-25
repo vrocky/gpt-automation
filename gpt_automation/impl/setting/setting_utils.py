@@ -65,10 +65,13 @@ class SettingGenerator:
     def create_base_config_if_needed(self):
         base_settings_path = self.path_manager.get_base_settings_path()
         if not os.path.exists(base_settings_path):
+            # Ensure all parent directories exist
+            os.makedirs(self.path_manager.gpt_dir, exist_ok=True)
             os.makedirs(os.path.dirname(base_settings_path), exist_ok=True)
+            
             default_config_path = os.path.join(self.path_manager.resources_dir, 'default_base_settings.json')
             copyfile(default_config_path, base_settings_path)
-            print("Base configuration initialized.")
+            print(f"Base configuration initialized at {base_settings_path}")
         else:
             print("Base configuration already exists.")
 
@@ -84,4 +87,4 @@ class SettingGenerator:
             copyfile(template_path, dest_path)
             print(f".gitignore template copied to {dest_path}.")
         else:
-            print(".gitignore already exists in the .gpt directory.")
+            print(".gitignore already exists in the .gpt2 directory.")

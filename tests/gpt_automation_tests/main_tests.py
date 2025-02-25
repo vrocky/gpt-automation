@@ -34,7 +34,7 @@ def test_init_with_multiple_profiles(initialized_temp_project_dir):
     print("STDOUT:", stdout)
     print("STDERR:", stderr)
     for profile in profile_names:
-        profile_dir = os.path.join(initialized_temp_project_dir, ".gpt", profile)  # Adjusted path
+        profile_dir = os.path.join(initialized_temp_project_dir, ".gpt2", profile)  # Adjusted path
         assert os.path.exists(profile_dir), f"Profile directory {profile_dir} does not exist"
         assert os.path.isfile(os.path.join(profile_dir, "black_list.txt")), "Blacklist file is missing"
         assert os.path.isfile(os.path.join(profile_dir, "white_list.txt")), "Whitelist file is missing"

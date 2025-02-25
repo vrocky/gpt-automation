@@ -17,30 +17,61 @@ class InitCommand:
         self.logger = logging.getLogger(__name__)
         self.plugin_manager = None
 
+        # Configure logging format
+        logging.basicConfig(
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            level=logging.INFO
+        )
+
     def execute(self):
         try:
+            self.logger.info(f"Initializing GPT Automation in root directory: {self.root_dir}")
+            
             if not os.path.exists(self.root_dir):
                 self.logger.error(f"Root directory does not exist: {self.root_dir}")
                 return False
 
+            # Create necessary directories with logging
+            self.logger.info("Creating required directory structure...")
+            directories = {
+                "GPT base directory": self.path_manager.gpt_dir,
+                "Configuration directory": self.path_manager.config_dir,
+                "Logs directory": self.path_manager.logs_dir,
+                "Settings directory": self.path_manager.settings_base_dir,
+                "Plugins directory": self.path_manager.plugins_dir
+            }
+
+            for dir_name, dir_path in directories.items():
+                if not os.path.exists(dir_path):
+                    os.makedirs(dir_path, exist_ok=True)
+                    self.logger.info(f"Created {dir_name} at: {dir_path}")
+                else:
+                    self.logger.info(f"{dir_name} already exists at: {dir_path}")
+
             # Initialize base configuration
             if not self.setting_generator.is_base_config_initialized():
+                self.logger.info("Initializing base configuration...")
                 self.setting_generator.create_base_config_if_needed()
                 self.setting_generator.copy_gitignore_template()
+            else:
+                self.logger.info("Base configuration already initialized")
 
-            # Load settings using SettingsResolver with correct path
+            # Load settings
+            self.logger.info("Loading settings configuration...")
             settings_resolver = SettingsResolver(self.path_manager.get_base_settings_path())
             settings = settings_resolver.resolve_settings()
 
-            # Update plugin manager initialization
+            # Initialize plugins
+            self.logger.info("Setting up plugin manager...")
             self.plugin_manager = PluginManager(path_manager=self.path_manager, settings=settings)
 
-            # Setup and activate plugins
+            self.logger.info("Setting up and activating plugins...")
             self.plugin_manager.setup_and_activate_plugins({}, [])
 
-            # Configure plugins
+            self.logger.info("Configuring plugins...")
             self._configure_plugins()
 
+            self.logger.info("Initialization completed successfully")
             return True
 
         except Exception as e:
