@@ -117,21 +117,13 @@ class PluginLoader:
         self.context = context
         self.lifecycle_callback = lifecycle_callback
 
-    def load_and_activate_plugin(self, arguments: Dict[str, Any], file_args: List[str]) -> Optional[Any]:
-        """Load and activate plugin using context"""
+    def load_and_activate_plugin(self) -> Optional[Any]:
+        """Load plugin and return instance without initialization"""
         identifier = f"{self.context.package_name}/{self.context.plugin_name}"
 
         try:
-            # Create context with all required fields
-            full_context = self.context.to_dict()
-            full_context.update({
-                'root_dir': arguments.get('root_dir', ''),
-                'profile_names': arguments.get('profile_names', [])
-            })
-            
-            # Create instance and initialize
+            # Create instance only
             instance = self.context.plugin_class()
-            instance.init(full_context)
             
             # Notify lifecycle callback
             if self.lifecycle_callback:

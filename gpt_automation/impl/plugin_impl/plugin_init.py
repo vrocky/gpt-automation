@@ -120,10 +120,25 @@ class PluginManager:
                 context
             )
             loader = PluginLoader(context=context, lifecycle_callback=lifecycle_handler)
-            loader.load_and_activate_plugin(
-                arguments=filtered_plugin_args,
-                file_args=file_args
-            )
+            
+            # Just get the instance first
+            instance = loader.load_and_activate_plugin()
+            
+            if instance:
+                # Create context with all required fields
+                full_context = context.to_dict()
+                full_context.update({
+                    'root_dir': filtered_plugin_args.get('root_dir', ''),
+                    'profile_names': filtered_plugin_args.get('profile_names', [])
+                })
+                
+                # Initialize the plugin
+                try:
+                    instance.init(full_context)
+                except Exception as e:
+                    self.logger.error(f"Failed to initialize plugin {context.plugin_name}: {str(e)}")
+                    if lifecycle_handler:
+                        lifecycle_handler.on_plugin_error(context.plugin_key, str(e))
 
     def get_all_plugin_visitors(self, prompt_dir):
         return self.plugin_instance_manager.get_all_plugin_visitors(prompt_dir)
