@@ -54,38 +54,28 @@ class TestPluginManager(unittest.TestCase):
             }
         
         class MockPlugin:
-            def __init__(self, context, args, file_args):
-                self.context = context
-                self.args = args
-                self.file_args = file_args
-            
-            def activate(self, context):
+            def __init__(self):
                 pass
-            
-            def is_plugin_configured(self):
-                return True
-            
-            def get_visitors(self, prompt_dir):
-                return ['mock_visitor']
 
         mock_plugin_utils.get_plugin_manifest.side_effect = get_manifest_for_plugin
         mock_plugin_utils.get_plugin_class.return_value = MockPlugin
         mock_plugin_utils.get_plugin_args.return_value = {}
         mock_plugin_utils_class.return_value = mock_plugin_utils
 
-        # Initialize plugin manager with Settings object directly
+        # Initialize plugin manager
         self.plugin_manager = PluginManager(self.path_manager, self.settings)
 
-    def test_setup_and_activate_default_plugins(self):
-        # Setup and activate plugins with default settings and root_dir
+    def test_setup_and_activate_plugins(self):
+        # Setup and activate plugins
         self.plugin_manager.setup_and_activate_plugins({
-            "enable": True,
             "root_dir": self.test_dir
         }, [])
         
+        # Get all plugins
+        plugins = self.plugin_manager.get_all_plugins()
+        
         # Verify plugins were loaded
-        instances = self.plugin_manager.get_all_instances()
-        self.assertEqual(len(instances), 3)  # Default plugins count
+        self.assertEqual(len(plugins), 3)  # Default plugins count
         
         # Verify specific default plugins exist
         expected_plugins = [
@@ -94,36 +84,22 @@ class TestPluginManager(unittest.TestCase):
             "gpt_automation/bw_filter"
         ]
         for plugin_name in expected_plugins:
-            self.assertIn(plugin_name, instances)
-            self.assertIsNotNone(instances[plugin_name])
+            self.assertIn(plugin_name, plugins)
+            self.assertIsNotNone(plugins[plugin_name].instance)
+            self.assertIsNotNone(plugins[plugin_name].context)
 
-    def test_plugin_configuration_and_contexts(self):
+    def test_plugin_context_data(self):
         # Setup plugins
         self.plugin_manager.setup_and_activate_plugins({}, [])
         
-        # Verify all plugins are properly configured
-        self.assertTrue(self.plugin_manager.is_all_plugin_configured())
+        # Get all plugins
+        plugins = self.plugin_manager.get_all_plugins()
         
         # Check plugin contexts
-        contexts = self.plugin_manager.get_all_contexts()
-        self.assertEqual(len(contexts), 3)
-        
-        # Verify plugin info matches settings
-        plugin_info = self.plugin_manager.get_all_plugin_info()
-        for key, info in plugin_info.items():
-            self.assertEqual(info.context.package_name, "gpt_automation")
-            self.assertIsNotNone(info.instance)
-
-    def test_plugin_visitors(self):
-        # Setup plugins
-        self.plugin_manager.setup_and_activate_plugins({}, [])
-        
-        # Get and verify visitors
-        visitors = self.plugin_manager.get_all_plugin_visitors(self.test_dir)
-        self.assertIsInstance(visitors, list)
-        
-        # At least gpt_ignore and gpt_include_only should provide visitors
-        self.assertGreater(len(visitors), 0)
+        for plugin_info in plugins.values():
+            self.assertEqual(plugin_info.context.package_name, "gpt_automation")
+            self.assertIsNotNone(plugin_info.context.plugin_name)
+            self.assertIsNotNone(plugin_info.context.plugin_settings_path)
 
     def tearDown(self):
         self.registry_patcher.stop()

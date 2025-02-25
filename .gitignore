@@ -5,3 +5,4 @@ dist/
 build/
 *.egg-info/
 .gpt/logs/prompt_generator.log
+gpt_automation_old/
