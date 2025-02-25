@@ -68,7 +68,18 @@ class PromptCommand:
         self.skipped_files_count = 0
         self.log_file_path = log_file
 
+    def _check_settings_initialized(self) -> bool:
+        """Check if settings are properly initialized."""
+        base_settings_path = self.path_manager.get_base_settings_path()
+        if not os.path.exists(base_settings_path):
+            print("Error: Settings not initialized. Please run 'autogpt init' command first.")
+            return False
+        return True
+
     def execute(self):
+        if not self._check_settings_initialized():
+            return False
+
         if not self._validate_directories():
             print(f"Error: 'prompt_dir' {self.prompt_dir} must be a subdirectory of 'root_dir' {self.root_dir} or the same.")
             return False

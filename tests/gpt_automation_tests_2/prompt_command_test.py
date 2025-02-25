@@ -1,9 +1,9 @@
 import os
 import shutil
 import unittest
-import json
 from unittest.mock import patch
 
+from gpt_automation.commands.init_command import InitCommand
 from gpt_automation.commands.prompt_command import PromptCommand
 from gpt_automation.impl.setting.paths import PathManager
 
@@ -23,8 +23,8 @@ class TestPromptCommand(unittest.TestCase):
         # Create some test files
         self._create_test_files()
         
-        # Initialize base settings
-        self._setup_base_settings()
+        # Initialize settings using InitCommand
+        self._initialize_settings()
 
         # Create command instance
         self.prompt_command = PromptCommand(
@@ -49,25 +49,14 @@ class TestPromptCommand(unittest.TestCase):
             with open(full_path, 'w') as f:
                 f.write(content)
 
-    def _setup_base_settings(self):
-        path_manager = PathManager(self.test_root)
-        base_settings_path = path_manager.get_base_settings_path()
-        os.makedirs(os.path.dirname(base_settings_path), exist_ok=True)
-        
-        test_settings = {
-            "extends": "none",
-            "override": False,
-            "plugins": [
-                {
-                    "plugin_name": "gpt_ignore",
-                    "package_name": "gpt_automation",
-                    "args": {"enable": True}
-                }
-            ]
-        }
-        
-        with open(base_settings_path, 'w') as f:
-            json.dump(test_settings, f)
+    def _initialize_settings(self):
+        init_command = InitCommand(
+            root_dir=self.test_root,
+            profile_names=self.test_profiles
+        )
+        init_result = init_command.execute()
+        if not init_result:
+            raise RuntimeError("Failed to initialize settings")
 
     def tearDown(self):
         # Clean up test directories
@@ -137,6 +126,17 @@ class TestPromptCommand(unittest.TestCase):
         )
         result = command.execute()
         self.assertTrue(result)
+
+    def test_missing_settings(self):
+        # Remove settings directory
+        path_manager = PathManager(self.test_root)
+        settings_dir = path_manager.settings_base_dir
+        if os.path.exists(settings_dir):
+            shutil.rmtree(settings_dir)
+
+        # Test execution with missing settings
+        result = self.prompt_command.execute()
+        self.assertFalse(result)
 
 if __name__ == '__main__':
     unittest.main()
