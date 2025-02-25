@@ -2,7 +2,7 @@ import os
 import json
 from shutil import copyfile
 from gpt_automation.impl.setting.paths import PathManager
-from gpt_automation.impl.setting.settings_manager import SettingsManager
+from gpt_automation.impl.setting.settings_resolver import SettingsManager
 
 
 class InitConfig:

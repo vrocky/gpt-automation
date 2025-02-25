@@ -1,5 +1,5 @@
 from gpt_automation.impl.setting.paths import PathManager
-from gpt_automation.impl.setting.settings_manager import SettingsManager
+from gpt_automation.impl.setting.settings_resolver import SettingsManager
 from gpt_automation.prompt_generator import PromptGenerator
 from gpt_automation.setup_settings import SettingContext, PluginArguments
 

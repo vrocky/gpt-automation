@@ -1,90 +1,78 @@
-import os
-import json
-from shutil import copyfile
+import traceback
+from dataclasses import dataclass
+from typing import Optional, Dict, List
 
+from gpt_automation.impl.plugin_impl.plugin_init import PluginConfigurationManager
 from gpt_automation.impl.setting.paths import PathManager
-from gpt_automation.impl.setting.settings_resolver import SettingsResolver, SettingMerger
+from gpt_automation.impl.setting.settings_resolver import SettingsResolver
+
+
+@dataclass
+class SettingContext:
+    root_dir: str
+    profile_names: List[str]
+
+
+@dataclass
+class PluginArguments:
+    args: Dict = None
+    config_file_args: List = None
+
+    def __post_init__(self):
+        self.args = self.args or {}
+        self.config_file_args = self.config_file_args or []
 
 
 class SettingsManager:
-    def __init__(self, path_manager):
-        self.path_manager = path_manager
-        self.settings_resolver = SettingsResolver(path_manager)
+    def __init__(self, setting_context: SettingContext):
+        self.context = setting_context
+        self.path_manager = PathManager(self.context.root_dir)
+        self.settings_resolver = SettingsResolver(self.path_manager)
+        self.plugin_initializer: Optional[PluginConfigurationManager] = None
 
-    def check_profiles_created(self, profile_names):
-        """ Check if all specified profiles are already initialized. """
-        missing_profiles = [name for name in profile_names if not self.is_profile_config_created(name)]
-        if missing_profiles:
-            print(f"The following profiles need to be initialized: {', '.join(missing_profiles)}")
+    def initialize_settings(self, plugin_arguments: PluginArguments) -> bool:
+        """Initialize the system configurations and plugins based on specified profiles"""
+        try:
+            # Setup base configuration
+            self.settings_resolver.create_base_config_if_needed()
+            self.settings_resolver.create_profiles(self.context.profile_names)
+            self.settings_resolver.copy_gitignore_template()
+
+            # Initialize plugins
+            settings = self._load_settings()
+            self.plugin_initializer = PluginConfigurationManager(
+                self.context.profile_names,
+                self.context.root_dir,
+                settings=settings
+            )
+            self._initialize_plugins(plugin_arguments)
+            print("System configurations and plugins have been successfully initialized.")
+            return True
+        except Exception as e:
+            print(f"Initialization failed with error: {str(e)}")
+            traceback.print_exc()
             return False
+
+    def _load_settings(self):
+        """Load and resolve configuration for the specified profiles"""
+        try:
+            return self.settings_resolver.get_settings(self.context.profile_names)
+        except Exception as e:
+            print(f"Error loading configuration: {str(e)}")
+            return None
+
+    def _initialize_plugins(self, plugin_arguments: PluginArguments):
+        """Initialize and configure plugins"""
+        if self.plugin_initializer:
+            self.plugin_initializer.setup_and_configure_all_plugins(
+                plugin_arguments.args,
+                plugin_arguments.config_file_args
+            )
+
+    def validate_profiles(self) -> bool:
+        """Validate that all profiles are properly initialized and configured"""
+        if not self.settings_resolver.check_profiles_created(self.context.profile_names):
+            print("Some profiles are missing and need to be created.")
+            return False
+        print("All profiles are correctly initialized.")
         return True
-
-    def get_settings(self, profile_names):
-        if not profile_names:
-            base_config_path = self.path_manager.get_base_settings_path()
-            if os.path.exists(base_config_path):
-                return self.settings_resolver.resolve_json_config(base_config_path).data
-            else:
-                print("No base configuration found.")
-                return {}
-
-        """ Resolve and merge configurations for given profiles using SettingsResolver. """
-        merged_config = SettingMerger({})
-        for profile_name in profile_names:
-            profile_path = self.path_manager.get_profile_settings_path(profile_name)
-            if os.path.exists(profile_path):
-                profile_config = self.settings_resolver.resolve_json_config(profile_path)
-                merged_config = merged_config.merge(profile_config)
-        return merged_config.data
-
-    def create_base_config_if_needed(self):
-        """ Ensure the base configuration is initialized if not already. """
-        base_config_path = self.path_manager.get_base_settings_path()
-        if not os.path.exists(base_config_path):
-            os.makedirs(os.path.dirname(base_config_path), exist_ok=True)
-            default_base_config = os.path.join(self.path_manager.resources_dir, 'default_base_settings.json')
-            copyfile(default_base_config, base_config_path)
-            print("Base configuration initialized.")
-        else:
-            print("Base configuration already exists.")
-
-    def create_profiles(self, profile_names):
-        """ Initialize multiple profiles if not already initialized. """
-        for profile_name in profile_names:
-            self.create_profile_config(profile_name)
-
-    def create_profile_config(self, profile_name):
-        """ Initialize a single profile configuration if not already initialized. """
-        profile_config_path = self.path_manager.get_profile_settings_path(profile_name)
-        if not os.path.exists(profile_config_path):
-            os.makedirs(os.path.dirname(profile_config_path), exist_ok=True)
-            default_profile_config = os.path.join(self.path_manager.resources_dir, 'default_profile_settings.json')
-            copyfile(default_profile_config, profile_config_path)
-            print(f"Profile '{profile_name}' initialized.")
-        else:
-            print(f"Configuration for profile '{profile_name}' already exists.")
-
-    def is_profile_config_created(self, profile_name):
-        """ Check if a specific profile configuration file has been initialized. """
-        return os.path.exists(self.path_manager.get_profile_settings_path(profile_name))
-
-    def is_base_config_initialized(self):
-        """ Check if the base configuration file exists. """
-        return os.path.exists(self.path_manager.get_base_settings_path())
-
-    def copy_gitignore_template(self):
-        """ Copy the .gitignore template to the .gpt directory if it doesn’t exist. """
-        gitignore_template_path = os.path.join(self.path_manager.resources_dir, '.gitignore_template')
-
-        # Use get_gpt_dir() to access the .gpt directory
-        gitignore_destination_path = os.path.join(self.path_manager.get_gpt_dir(), '.gitignore')
-
-        # Ensure the .gpt directory exists
-        os.makedirs(os.path.dirname(gitignore_destination_path), exist_ok=True)
-
-        if not os.path.exists(gitignore_destination_path):
-            # Copy the .gitignore template to the destination
-            copyfile(gitignore_template_path, gitignore_destination_path)
-            print(f".gitignore template copied to {gitignore_destination_path}.")
-        else:
-            print(".gitignore already exists in the .gpt directory.")

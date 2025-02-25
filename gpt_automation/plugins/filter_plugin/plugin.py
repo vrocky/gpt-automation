@@ -6,9 +6,17 @@ from gpt_automation.impl.visitor.basevisitor import BaseVisitor
 
 
 class BlacklistWhitelistPlugin(BasePlugin):
-    def configure(self, profile_names):
-        print("Initializing BlacklistWhitelistPlugin with profiles:", profile_names)
-        self.configure_profiles(self.profile_names)
+    def __init__(self):
+        super().__init__()
+        self.config_dir = None
+        self.root_dir = None
+        self.profile_names = None
+
+    def configure(self, context):
+        self.config_dir = self.plugin_settings_path
+        self.root_dir = context.get('root_dir', '')
+        self.profile_names = context.get('profile_names', [])
+        self.init_default_config()
 
     def is_plugin_configured(self):
         # Check default configuration
@@ -28,16 +36,6 @@ class BlacklistWhitelistPlugin(BasePlugin):
                 return False
 
         return True
-
-    def __init__(self, context, configs, settings):
-        super().__init__(context, configs, settings)
-        self.config_dir = context["plugin_settings_path"]
-        self.profile_names = context.get("profile_names", [])
-        self.root_dir = context["root_dir"]
-        self.prompt_dir = context["prompt_dir"]
-
-        # Initialize default configuration if not present
-        self.init_default_config()
 
     def get_visitors(self,prompt_dir):
         visitors = []

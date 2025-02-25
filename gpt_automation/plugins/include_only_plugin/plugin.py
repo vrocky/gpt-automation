@@ -1,24 +1,28 @@
 from gpt_automation.plugins.include_only_plugin.includeonly_visitor import IncludeOnlyVisitor
 from gpt_automation.impl.base_plugin import BasePlugin
 
-
 class IncludeOnlyPlugin(BasePlugin):
+    def __init__(self):
+        super().__init__()
+        self.config_dir = None
+        self.root_dir = None
+        self.settings_args = None
+        self.profile_names = None
+
+    def configure(self, context):
+        self.config_dir = self.plugin_settings_path
+        self.root_dir = context.get('root_dir', '')
+        self.settings_args = context.get('settings_args', {})
+        self.profile_names = context.get('profile_names', [])
 
     def is_plugin_configured(self):
         return True
 
-    def configure(self, context):
-        pass
-
-    def __init__(self, context, configs, file_args):
-        super().__init__(context, configs, file_args)
-        self.config_dir = context["plugin_settings_path"]
-        self.root_dir = context["root_dir"]
-
-
-
     def get_visitors(self, prompt_dir):
-        include_only_visitor = IncludeOnlyVisitor(self.root_dir,prompt_dir,
-            include_only_filenames=self.configs.get('include_only_filenames', []),
-            profile_names=self.context.get('profile_names', []))
+        include_only_visitor = IncludeOnlyVisitor(
+            self.root_dir,
+            prompt_dir,
+            include_only_filenames=self.settings_args.get('include_only_filenames', []),
+            profile_names=self.profile_names
+        )
         return [include_only_visitor]

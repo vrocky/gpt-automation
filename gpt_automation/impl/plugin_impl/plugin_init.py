@@ -1,151 +1,144 @@
-from gpt_automation.impl.base_plugin import BasePlugin
-from gpt_automation.impl.plugin_impl.plugin_arg_filter import PluginArgFilter
-from gpt_automation.impl.plugin_impl.utils.file_pattern_filter import FilePatternFilter
+import logging
+from typing import Dict, Any, List, Union
+from dataclasses import dataclass
+from gpt_automation.impl.plugin_impl.plugin_loader import (
+    PluginLoader, PluginConfigLoader, PluginSettings, PluginInfo
+)
+from gpt_automation.impl.plugin_impl.plugin_interfaces import (
+    IPluginLifecycleCallback, IPluginConfigCallback, IConfigurationCallback
+)
+from gpt_automation.impl.plugin_impl.utils.plugin_arg_filter import PluginArgFilter
 from gpt_automation.impl.setting.paths import PathManager
-from gpt_automation.impl.plugin_impl.plugin_settings import PluginSettings
-from gpt_automation.impl.plugin_impl.plugin_registry import PluginLoader
-from gpt_automation.impl.plugin_impl.plugin_context import PluginContext, PluginContextBuilder
+from gpt_automation.impl.plugin_impl.plugin_context import PluginContext
+from gpt_automation.impl.setting.setting_models import Settings
 
+@dataclass
+class PluginInstanceInfo:
+    instance: Any
+    context: PluginContext
+
+class PluginLifecycleHandler(IPluginLifecycleCallback):
+    def __init__(self, instance_manager: 'PluginInstanceManager', logger, context: PluginContext):
+        self.instance_manager = instance_manager
+        self.logger = logger
+        self.context = context
+
+    def on_plugin_loaded(self, identifier: str, instance: Any) -> None:
+        self.logger.info(f"Plugin {identifier} loaded successfully")
+        self.instance_manager.add_plugin_instance(identifier, instance, self.context)
+
+    def on_plugin_error(self, identifier: str, error: str) -> None:
+        self.logger.error(f"Plugin error for {identifier}: {error}")
+
+class PluginConfigCallback(IPluginConfigCallback):
+    def __init__(self, logger):
+        self.logger = logger
+
+    def on_config_error(self, identifier: str, error: str) -> None:
+        self.logger.error(f"Configuration error for {identifier}: {error}")
+
+class ConfigurationCallback(IConfigurationCallback):
+    def __init__(self, instance_manager: 'PluginInstanceManager', logger):
+        self.instance_manager = instance_manager
+        self.logger = logger
+
+    def create_plugin_loader(self, context: PluginContext) -> 'PluginLoader':
+        """Create configured plugin loader"""
+        self.logger.info(f"Creating loader for {context.plugin_name}")
+        return PluginLoader(
+            context=context,
+            lifecycle_callback=PluginLifecycleHandler(
+                self.instance_manager,
+                self.logger,
+                context
+            )
+        )
+
+    def on_config_loaded(self, identifier: str, context: PluginContext) -> PluginContext:
+        self.logger.info(f"Configuration loaded for {identifier}")
+        # Opportunity to modify context before returning
+        return context
+
+    def on_config_error(self, identifier: str, error: str) -> None:
+        self.logger.error(f"Configuration error for {identifier}: {error}")
 
 class PluginInstanceManager:
-    """Manages initialization and lifecycle of plugin instances."""
-
     def __init__(self):
-        self.plugin_instances = {}
+        self.plugin_infos: Dict[str, PluginInstanceInfo] = {}
 
-    def create_and_store_plugin_instance(self, plugin_class, context, config, file_args):
-        """Create an instance of a plugin and store it in the dictionary."""
-        context_dict = context.to_dict()
-        plugin_instance = plugin_class(context_dict, config, file_args)
-        self.plugin_instances[context.plugin_key] = plugin_instance
-        return plugin_instance
+    def add_plugin_instance(self, identifier: str, instance: Any, context: PluginContext) -> None:
+        self.plugin_infos[identifier] = PluginInstanceInfo(instance=instance, context=context)
 
     def get_all_plugin_visitors(self, prompt_dir):
-        """Return visitors from all plugins if they have a 'get_visitors' method."""
         visitors = []
-        for plugin_instance in self.plugin_instances.values():
-            if hasattr(plugin_instance, 'get_visitors'):
-                visitors.extend(plugin_instance.get_visitors(prompt_dir))
+        for plugin_info in self.plugin_infos.values():
+            if hasattr(plugin_info.instance, 'get_visitors'):
+                visitors.extend(plugin_info.instance.get_visitors(prompt_dir))
         return visitors
 
     def verify_all_plugins_are_configured(self):
-        """Check if all plugins are configured properly, log if not."""
-        for key, plugin_instance in self.plugin_instances.items():
-            if hasattr(plugin_instance, 'is_plugin_configured') and not plugin_instance.is_plugin_configured():
-                print(f"Plugin {key} is not properly configured.")
+        for plugin_info in self.plugin_infos.values():
+            if hasattr(plugin_info.instance, 'is_plugin_configured') and not plugin_info.instance.is_plugin_configured():
                 return False
         return True
 
+    def get_instances(self) -> Dict[str, Any]:
+        """Return all plugin instances"""
+        return {k: v.instance for k, v in self.plugin_infos.items()}
 
-class PluginInitializationContext:
-    """Handles initialization context for plugins, including directories."""
+    def get_contexts(self) -> Dict[str, PluginContext]:
+        """Return all plugin contexts"""
+        return {k: v.context for k, v in self.plugin_infos.items()}
 
-    def __init__(self, profile_names, root_dir):
-        self.profile_names = profile_names
-        self.root_dir = root_dir
-        self.prompt_dir = root_dir  # Default to the root directory unless updated.
+    def get_all_info(self) -> Dict[str, PluginInstanceInfo]:
+        """Return all plugin information"""
+        return self.plugin_infos
 
-    def update_prompt_directory(self, new_prompt_dir):
-        """Update the directory where prompts are stored."""
-        self.prompt_dir = new_prompt_dir
-
-
-class PluginArguments:
-    """Handles merging of base and specific plugin arguments."""
-
-    def __init__(self, base_args, plugin_specific_args):
-        self.base_args = base_args
-        self.plugin_specific_args = plugin_specific_args
-
-    def merge_arguments(self):
-        """Merge base and plugin-specific arguments to form a complete set."""
-        return {**self.base_args, **self.plugin_specific_args}
-
-
-class FileArguments:
-    """Handles file argument filtering based on provided patterns."""
-
-    def __init__(self, file_args):
-        self.file_args = file_args
-
-    def get_filtered_files(self, pattern):
-        """Filter files based on the specified pattern."""
-        return FilePatternFilter(pattern).filter_files(self.file_args)
-
-class BasePluginManager:
-    """Provides common functionalities for managing plugin instances."""
-    def __init__(self, profile_names, root_dir, settings):
-        self.init_context = PluginInitializationContext(profile_names, root_dir)
-        self.plugin_settings = PluginSettings(settings)
-        self.path_manager = PathManager(root_dir)
-
-    def load_plugin(self, plugin_loader, plugin_info, args, file_arguments):
-        """Common logic for loading and initializing a plugin."""
-        filtered_args = PluginArgFilter.get_plugin_args(args, plugin_info.package_name, plugin_info.plugin_name)
-        plugin_arguments = PluginArguments(plugin_info.settings_args, filtered_args).merge_arguments()
-        if plugin_arguments.get('enable', False):
-            context = self.create_context_for_plugin(plugin_info)
-            matched_files = file_arguments.get_filtered_files(
-                plugin_loader.get_manifest(plugin_info.plugin_name).get('configFilePatterns', []))
-            return context, plugin_arguments, matched_files
-        return None, None, None
-
-    def create_context_for_plugin(self, plugin_info):
-        """Create a context for plugin initialization based on plugin information."""
-        path = self.path_manager.get_plugin_settings_path(plugin_info.package_name, plugin_info.plugin_name)
-        return PluginContextBuilder() \
-            .set_plugin_key(plugin_info.key()) \
-            .set_package_name(plugin_info.package_name) \
-            .set_plugin_name(plugin_info.plugin_name) \
-            .set_profile_names(self.init_context.profile_names) \
-            .set_root_dir(self.init_context.root_dir) \
-            .set_prompt_dir(self.init_context.prompt_dir) \
-            .set_plugin_settings_path(path) \
-            .build()
-
-class PluginManager(BasePluginManager):
-    """Manages plugin lifecycle independently without using PluginConfigurationManager."""
-    def __init__(self, profile_names, root_dir, settings):
-        super().__init__(profile_names, root_dir, settings)
+class PluginManager:
+    def __init__(self, path_manager: PathManager, settings: Union[Dict, Settings]):
+        # Convert dict to Settings only if it's a dict
+        self.settings = Settings.from_dict(settings) if isinstance(settings, dict) else settings
+        self.path_manager = path_manager
         self.plugin_instance_manager = PluginInstanceManager()
+        self.logger = logging.getLogger(__name__)
 
-    def setup_and_activate_plugins(self, plugin_args, config_file_args):
-        """Setup and possibly activate plugins based on the provided arguments."""
-        file_arguments = FileArguments(config_file_args)
-        for plugin_info in self.plugin_settings.get_all_plugins():
-            plugin_loader = PluginLoader(plugin_info.package_name)
-            if plugin_loader.registry.plugin_exists(plugin_info.plugin_name):
-                context, plugin_arguments, matched_files = self.load_plugin(plugin_loader, plugin_info, plugin_args, file_arguments)
-                if context and plugin_arguments:
-                    plugin_class = plugin_loader.get_plugin_class(plugin_info.plugin_name)
-                    plugin_instance = self.plugin_instance_manager.create_and_store_plugin_instance(
-                        plugin_class, context, plugin_arguments, matched_files)
-                    if hasattr(plugin_instance, 'activate'):
-                        plugin_instance.activate(context.to_dict())
-                        print(f"Activated plugin {context.plugin_name} with key {context.plugin_key}.")
+    def setup_and_activate_plugins(self, plugin_args: Dict[str, Any], file_args: List[str]) -> None:
+        """Setup and activate plugins"""
+        filtered_plugin_args = PluginArgFilter.preprocess_args(plugin_args)
+        
+        # Get all plugin contexts
+        config_loader = PluginConfigLoader(
+            settings=self.settings,
+            path_manager=self.path_manager
+        )
+        
+        # Load and activate each plugin
+        for context in config_loader.load_all_contexts():
+            lifecycle_handler = PluginLifecycleHandler(
+                self.plugin_instance_manager, 
+                self.logger,
+                context
+            )
+            loader = PluginLoader(context=context, lifecycle_callback=lifecycle_handler)
+            loader.load_and_activate_plugin(
+                arguments=filtered_plugin_args,
+                file_args=file_args
+            )
 
-    def get_all_plugin_visitors(self,prompt_dir):
-        """Return visitors from all plugins."""
-        return self.plugin_instance_manager.get_all_plugin_visitors(prompt_dir=prompt_dir)
+    def get_all_plugin_visitors(self, prompt_dir):
+        return self.plugin_instance_manager.get_all_plugin_visitors(prompt_dir)
 
     def is_all_plugin_configured(self):
-        """Check if all plugin instances are properly configured."""
         return self.plugin_instance_manager.verify_all_plugins_are_configured()
 
-class PluginConfigurationManager(BasePluginManager):
-    """Manages the configuration and initialization of plugins based on settings."""
-    def __init__(self, profile_names, root_dir, settings):
-        super().__init__(profile_names, root_dir, settings)
+    def get_all_instances(self) -> Dict[str, Any]:
+        """Return all loaded plugin instances"""
+        return self.plugin_instance_manager.get_instances()
 
-    def setup_and_configure_all_plugins(self, plugin_args, config_file_args):
-        """Initialize and configure all plugins based on the provided arguments."""
-        file_arguments = FileArguments(config_file_args)
-        for plugin_info in self.plugin_settings.get_all_plugins():
-            plugin_loader = PluginLoader(plugin_info.package_name)
-            if plugin_loader.registry.plugin_exists(plugin_info.plugin_name):
-                context, plugin_arguments, matched_files = self.load_plugin(plugin_loader, plugin_info, plugin_args, file_arguments)
-                if context and plugin_arguments:
-                    if hasattr(plugin_loader.get_plugin_class(plugin_info.plugin_name), 'configure'):
-                        plugin_instance = plugin_loader.get_plugin_class(plugin_info.plugin_name)(context.to_dict(), plugin_arguments, matched_files)
-                        plugin_instance.configure(context.to_dict())
-                        print(f"Initialized plugin {context.plugin_name} with key {context.plugin_key}.")
+    def get_all_contexts(self) -> Dict[str, PluginContext]:
+        """Return all plugin contexts"""
+        return self.plugin_instance_manager.get_contexts()
+
+    def get_all_plugin_info(self) -> Dict[str, PluginInstanceInfo]:
+        """Return all plugin information"""
+        return self.plugin_instance_manager.get_all_info()

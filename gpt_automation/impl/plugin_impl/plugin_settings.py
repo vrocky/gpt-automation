@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from gpt_automation.impl.setting.settings_manager import SettingsManager
+from gpt_automation.impl.setting.settings_resolver import SettingsManager
 
 
 @dataclass

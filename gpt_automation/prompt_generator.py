@@ -5,7 +5,7 @@ import traceback
 from gpt_automation.impl.directory_walker import DirectoryWalker
 from gpt_automation.impl.plugin_impl.plugin_init import PluginManager
 from gpt_automation.impl.setting.paths import PathManager
-from gpt_automation.impl.setting.settings_manager import SettingsManager
+from gpt_automation.impl.setting.settings_resolver import SettingsManager
 from gpt_automation.setup_settings import SettingContext, PluginArguments
 import chardet
 
@@ -34,6 +34,34 @@ def detect_file_encoding(file_path):
         return result['encoding']
 
 
+class PluginBasedTraverser(IDirectoryTraverser):
+    def __init__(self, plugin_visitors):
+        self.plugin_visitors = plugin_visitors
+
+    def on_enter_directory(self, directory_path: str) -> None:
+        for visitor in self.plugin_visitors:
+            visitor.enter_directory(directory_path)
+
+    def on_leave_directory(self, directory_path: str) -> None:
+        for visitor in self.plugin_visitors:
+            visitor.leave_directory(directory_path)
+
+    def on_file_found(self, file_path: str) -> None:
+        for visitor in self.plugin_visitors:
+            visitor.visit_file(file_path)
+
+
+class PluginBasedFilter(ITraverseFilter):
+    def __init__(self, plugin_visitors):
+        self.plugin_visitors = plugin_visitors
+
+    def should_visit_file(self, file_path: str) -> bool:
+        return all(visitor.should_visit_file(file_path) for visitor in self.plugin_visitors)
+
+    def should_visit_directory(self, directory_path: str) -> bool:
+        return all(visitor.should_visit_subdirectory(directory_path) for visitor in self.plugin_visitors)
+
+
 class PromptGenerator:
     def __init__(self, prompt_dir, context: SettingContext, plugin_args: PluginArguments):
         self.root_dir = context.root_dir.rstrip(os.sep)
@@ -43,7 +71,13 @@ class PromptGenerator:
         self.plugin_manager = PluginManager(context.profile_names, context.root_dir,
                                             settings=self.settings_manager.get_settings(context.profile_names))
         self.plugin_manager.setup_and_activate_plugins(plugin_args.args, plugin_args.config_file_args)
-        self.directory_walker = DirectoryWalker(prompt_dir, self.plugin_manager.get_all_plugin_visitors(prompt_dir))
+        plugin_visitors = self.plugin_manager.get_all_plugin_visitors(prompt_dir)
+        
+        self.directory_walker = DirectoryWalker(
+            prompt_dir,
+            traverser=PluginBasedTraverser(plugin_visitors),
+            traverse_filter=PluginBasedFilter(plugin_visitors)
+        )
 
         log_file = os.path.join(path_manager.get_logs_dir(), 'prompt_generator.log')
         self.logger = setup_logging(log_file)
