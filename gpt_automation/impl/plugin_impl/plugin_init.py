@@ -73,7 +73,7 @@ class PluginManager:
     def add_plugin_instance(self, identifier: str, instance: Any, context: PluginContext) -> None:
         self.plugin_infos[identifier] = PluginInstanceInfo(instance=instance, context=context)
 
-    def setup_and_activate_plugins(self, plugin_args: Dict[str, Any], file_args: List[str]) -> None:
+    def setup_and_activate_plugins(self) -> None:
         """Setup and load plugins without initialization"""
         # Get all plugin contexts
         config_loader = PluginConfigLoader(

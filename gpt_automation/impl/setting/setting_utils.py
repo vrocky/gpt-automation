@@ -87,4 +87,4 @@ class SettingGenerator:
             copyfile(template_path, dest_path)
             print(f".gitignore template copied to {dest_path}.")
         else:
-            print(".gitignore already exists in the .gpt2 directory.")
+            print(".gitignore already exists in the .gpt directory.")

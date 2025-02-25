@@ -4,18 +4,22 @@ from gpt_automation.impl.base_plugin import BasePlugin
 class IncludeOnlyPlugin(BasePlugin):
     def __init__(self):
         super().__init__()
-        self.config_dir = None
         self.root_dir = None
         self.settings_args = None
         self.profile_names = None
 
+    def init(self, plugin_settings_path: str, root_dir: str, profile_names: list):
+        """Initialize plugin with all required parameters"""
+        self.plugin_settings_path = plugin_settings_path
+        self.configure(root_dir, profile_names)
+
     def configure(self, root_dir, profile_names):
-        self.config_dir = self.plugin_settings_path
+        """Configure plugin with required parameters"""
         self.root_dir = root_dir
         self.profile_names = profile_names
 
     def is_plugin_configured(self):
-        return True
+        return self.plugin_settings_path is not None and self.root_dir is not None
 
     def get_visitors(self, prompt_dir):
         include_only_visitor = IncludeOnlyVisitor(

@@ -71,6 +71,7 @@ class PromptCommand:
         self.setting_resolver = SettingsResolver(self.path_manager.get_base_settings_path())
         self.settings = self.setting_resolver.resolve_settings()
         self.plugin_manager = PluginManager(path_manager=self.path_manager, settings=self.settings)
+        self.plugin_manager.setup_and_activate_plugins()
         
         log_file = os.path.join(self.path_manager.logs_dir, 'prompt_command.log')
         self.logger, self.file_handler = setup_logging(log_file)
@@ -115,13 +116,49 @@ class PromptCommand:
 
         return True
 
+    def _get_initialized_visitors(self) -> list:
+        """Get visitors from properly initialized plugins"""
+        all_visitors = []
+        plugin_infos = self.plugin_manager.get_all_plugins()
+        
+        self.logger.info(f"Initializing {len(plugin_infos)} plugins for visitor collection")
+        
+        for plugin_id, plugin_info in plugin_infos.items():
+            try:
+                # Get plugin settings path and initialize plugin
+                plugin_settings_path = self.path_manager.get_plugin_settings_path(
+                    plugin_info.context.package_name,
+                    plugin_info.context.plugin_name
+                )
+                
+                self.logger.info(f"Initializing plugin: {plugin_id}")
+                plugin_info.instance.init(plugin_settings_path, self.root_dir, self.profiles)
+                
+                # Get visitors after initialization
+                visitors = plugin_info.instance.get_visitors(self.prompt_dir)
+                if visitors:
+                    all_visitors.extend(visitors)
+                    self.logger.info(f"Added {len(visitors)} visitors from plugin {plugin_id}")
+                else:
+                    self.logger.debug(f"No visitors returned from plugin {plugin_id}")
+                    
+            except Exception as e:
+                self.logger.error(f"Error initializing plugin {plugin_id}: {str(e)}", exc_info=True)
+                
+        return all_visitors
+
     def _generate_directory_prompt(self) -> str:
         try:
-            plugin_visitors = self.plugin_manager.get_all_plugins()
+            all_visitors = self._get_initialized_visitors()
+            
+            if not all_visitors:
+                self.logger.warning("No plugin visitors available")
+                return ""
+
             directory_walker = DirectoryWalker(
                 self.prompt_dir,
-                traverser=PluginBasedTraverser(plugin_visitors),
-                traverse_filter=PluginBasedFilter(plugin_visitors)
+                traverser=PluginBasedTraverser(all_visitors),
+                traverse_filter=PluginBasedFilter(all_visitors)
             )
 
             tree = {}
@@ -144,11 +181,16 @@ class PromptCommand:
 
     def _generate_content_prompt(self) -> str:
         try:
-            plugin_visitors = self.plugin_manager.get_all_plugins()
+            all_visitors = self._get_initialized_visitors()
+            
+            if not all_visitors:
+                self.logger.warning("No plugin visitors available")
+                return ""
+
             directory_walker = DirectoryWalker(
                 self.prompt_dir,
-                traverser=PluginBasedTraverser(plugin_visitors),
-                traverse_filter=PluginBasedFilter(plugin_visitors)
+                traverser=PluginBasedTraverser(all_visitors),
+                traverse_filter=PluginBasedFilter(all_visitors)
             )
 
             prompt = ""

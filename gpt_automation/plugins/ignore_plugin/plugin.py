@@ -9,8 +9,14 @@ class IgnorePlugin(BasePlugin):
         self.settings_args = None
         self.profile_names = None
 
+    def init(self, plugin_settings_path: str, root_dir: str, profile_names: list):
+        """Initialize plugin with all required parameters"""
+        self.plugin_settings_path = plugin_settings_path
+        self.config_dir = plugin_settings_path
+        self.configure(root_dir, profile_names)
+
     def configure(self, root_dir, profile_names):
-        self.config_dir = self.plugin_settings_path
+        """Configure plugin with required parameters"""
         self.root_dir = root_dir
         self.profile_names = profile_names
 
