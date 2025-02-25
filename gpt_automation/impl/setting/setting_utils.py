@@ -58,24 +58,26 @@ class SettingMerger:
         return json.dumps(self.data, indent=4)
 
 
-
 class SettingGenerator:
-    def __init__(self, path_resolver):
-        self.path_resolver = path_resolver
+    def __init__(self, path_manager):
+        self.path_manager = path_manager
 
     def create_base_config_if_needed(self):
-        if not os.path.exists(self.path_resolver.base_settings_path):
-            os.makedirs(os.path.dirname(self.path_resolver.base_settings_path), exist_ok=True)
-            copyfile(self.path_resolver.get_default_base_config_path(), self.path_resolver.base_settings_path)
+        base_settings_path = self.path_manager.get_base_settings_path()
+        if not os.path.exists(base_settings_path):
+            os.makedirs(os.path.dirname(base_settings_path), exist_ok=True)
+            default_config_path = os.path.join(self.path_manager.resources_dir, 'default_base_settings.json')
+            copyfile(default_config_path, base_settings_path)
             print("Base configuration initialized.")
         else:
             print("Base configuration already exists.")
 
     def is_base_config_initialized(self):
-        return os.path.exists(self.path_resolver.base_settings_path)
+        return os.path.exists(self.path_manager.get_base_settings_path())
 
     def copy_gitignore_template(self):
-        template_path, dest_path = self.path_resolver.get_gitignore_paths()
+        template_path = os.path.join(self.path_manager.resources_dir, '.gitignore_template')
+        dest_path = os.path.join(self.path_manager.gpt_dir, '.gitignore')
         os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
         if not os.path.exists(dest_path):

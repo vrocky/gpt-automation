@@ -1,42 +1,45 @@
 import logging
-import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 
 from gpt_automation.impl.setting.setting_utils import SettingGenerator
-from gpt_automation.impl.setting.settings_resolver import SettingsResolver
+from gpt_automation.impl.setting.settings_resolver import SettingsManager
 from gpt_automation.impl.plugin_impl.plugin_init import PluginManager
 from gpt_automation.impl.setting.paths import PathManager
 
 
-class InitCommand:
-    def __init__(self, root_dir: str, profile_names: list[str]):
-        self.root_dir = root_dir
-        self.profile_names = profile_names
+class InitializeConfig:
+    def __init__(self, root_dir: str, profile_names: List[str] = None):
         self.path_manager = PathManager(root_dir)
+        self.settings_manager = SettingsManager(self.path_manager)
         self.setting_generator = SettingGenerator(self.path_manager)
         self.logger = logging.getLogger(__name__)
         self.plugin_manager = None
+        self.root_dir = root_dir
+        self.profile_names = profile_names or []
 
-    def execute(self):
+    def initialize(self, plugin_args: Dict[str, Any] = None, file_args: list = None) -> bool:
+        """
+        Initialize the configuration and plugins
+        Returns True if initialization was successful
+        """
         try:
-            if not os.path.exists(self.root_dir):
-                self.logger.error(f"Root directory does not exist: {self.root_dir}")
-                return False
-
-            # Initialize base configuration
+            # Check and initialize base settings if needed
             if not self.setting_generator.is_base_config_initialized():
                 self.setting_generator.create_base_config_if_needed()
                 self.setting_generator.copy_gitignore_template()
 
-            # Load settings using SettingsResolver with correct path
-            settings_resolver = SettingsResolver(self.path_manager.get_base_settings_path())
-            settings = settings_resolver.resolve_settings()
+            # Load settings
+            settings = self.settings_manager.load_settings()
 
-            # Initialize plugin manager with resolved settings
-            self.plugin_manager = PluginManager( path_manager=self.path_manager, settings= settings)
+            # Initialize plugin manager if not provided
+            if not self.plugin_manager:
+                self.plugin_manager = PluginManager(self.path_manager, settings)
 
-            # Setup and activate plugins
-            self.plugin_manager.setup_and_activate_plugins({}, [])
+            # Setup and load plugins
+            self.plugin_manager.setup_and_activate_plugins(
+                plugin_args or {},
+                file_args or []
+            )
 
             # Configure plugins
             self._configure_plugins()

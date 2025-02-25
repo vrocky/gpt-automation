@@ -9,11 +9,10 @@ class IncludeOnlyPlugin(BasePlugin):
         self.settings_args = None
         self.profile_names = None
 
-    def configure(self, context):
+    def configure(self, root_dir, profile_names):
         self.config_dir = self.plugin_settings_path
-        self.root_dir = context.get('root_dir', '')
-        self.settings_args = context.get('settings_args', {})
-        self.profile_names = context.get('profile_names', [])
+        self.root_dir = root_dir
+        self.profile_names = profile_names
 
     def is_plugin_configured(self):
         return True
@@ -22,7 +21,7 @@ class IncludeOnlyPlugin(BasePlugin):
         include_only_visitor = IncludeOnlyVisitor(
             self.root_dir,
             prompt_dir,
-            include_only_filenames=self.settings_args.get('include_only_filenames', []),
+            include_only_filenames=self.settings_args.get('include_only_filenames', []) if self.settings_args else [],
             profile_names=self.profile_names
         )
         return [include_only_visitor]

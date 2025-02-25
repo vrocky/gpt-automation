@@ -14,10 +14,15 @@ class PathManager:
 
     def ensure_directories(self):
         """ Ensure that all required directories exist, or create them. """
-        os.makedirs(self.gpt_dir, exist_ok=True)
-        os.makedirs(self.settings_base_dir, exist_ok=True)
-        os.makedirs(self.plugins_dir, exist_ok=True)
-        os.makedirs(self.logs_dir, exist_ok=True)
+        directories = [
+            self.gpt_dir,
+            self.settings_base_dir,
+            self.config_dir,  # Added this
+            self.plugins_dir,
+            self.logs_dir
+        ]
+        for directory in directories:
+            os.makedirs(directory, exist_ok=True)
 
     def get_base_settings_path(self):
         """ Returns the path to the base configuration file. """

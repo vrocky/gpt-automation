@@ -17,7 +17,7 @@ class TestPluginManager(unittest.TestCase):
         # Initialize path management and settings
         self.path_manager = PathManager(self.test_dir)
         self.path_resolver = PathResolver.from_path_manager(self.path_manager)
-        self.setting_generator = SettingGenerator(self.path_resolver)
+        self.setting_generator = SettingGenerator(self.path_manager)
         
         # Generate base settings
         self.setting_generator.create_base_config_if_needed()

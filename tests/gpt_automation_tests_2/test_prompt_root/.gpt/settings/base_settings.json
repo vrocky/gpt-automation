@@ -1,0 +1,1 @@
+{"extends": "none", "override": false, "plugins": [{"plugin_name": "gpt_ignore", "package_name": "gpt_automation", "args": {"enable": true}}]}

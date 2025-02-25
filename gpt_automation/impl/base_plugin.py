@@ -4,14 +4,12 @@ from abc import ABC, abstractmethod
 class BasePlugin(ABC):
     def __init__(self):
         """Empty constructor"""
-        self.context = None
         self.plugin_settings_path = None
 
-    def init(self, context):
-        """Initialize plugin with context"""
-        self.context = context
-        self.plugin_settings_path = context['plugin_settings_path']
-        self.configure(context)
+    def init(self, plugin_settings_path: str, root_dir: str, profile_names: list):
+        """Initialize plugin with required parameters"""
+        self.plugin_settings_path = plugin_settings_path
+        self.configure(root_dir, profile_names)
 
     @abstractmethod
     def is_plugin_configured(self):
@@ -24,8 +22,8 @@ class BasePlugin(ABC):
         pass
 
     @abstractmethod
-    def configure(self, context):
-        """Configure plugin with context"""
+    def configure(self, root_dir, profile_names):
+        """Configure plugin with required parameters"""
         pass
 
     def activate(self, context):

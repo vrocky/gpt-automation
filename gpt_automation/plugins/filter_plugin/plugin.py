@@ -12,10 +12,10 @@ class BlacklistWhitelistPlugin(BasePlugin):
         self.root_dir = None
         self.profile_names = None
 
-    def configure(self, context):
+    def configure(self, root_dir, profile_names):
         self.config_dir = self.plugin_settings_path
-        self.root_dir = context.get('root_dir', '')
-        self.profile_names = context.get('profile_names', [])
+        self.root_dir = root_dir
+        self.profile_names = profile_names
         self.init_default_config()
 
     def is_plugin_configured(self):
