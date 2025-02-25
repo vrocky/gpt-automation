@@ -5,10 +5,12 @@ from .setting_models import Settings
 
 class SettingsResolver:
     def __init__(self, base_settings_path: str):
-        self.base_settings_path = base_settings_path
+        """Initialize with the path to base settings file."""
+        self.base_settings_path = str(base_settings_path)  # Ensure path is string
 
     def _load_json_file(self, file_path: str) -> Dict[str, Any]:
         """Load and parse a JSON file."""
+        file_path = str(file_path)  # Ensure path is string
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Settings file not found: {file_path}")
         

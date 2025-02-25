@@ -59,9 +59,29 @@ class TestPromptCommand(unittest.TestCase):
             raise RuntimeError("Failed to initialize settings")
 
     def tearDown(self):
-        # Clean up test directories
-        if os.path.exists(self.test_root):
-            shutil.rmtree(self.test_root)
+        # Ensure prompt command is cleaned up
+        if hasattr(self, 'prompt_command'):
+            if hasattr(self.prompt_command, 'file_handler'):
+                self.prompt_command.file_handler.close()
+            if hasattr(self.prompt_command, 'logger'):
+                for handler in self.prompt_command.logger.handlers[:]:
+                    handler.close()
+                    self.prompt_command.logger.removeHandler(handler)
+            self.prompt_command.__del__()
+        
+        # Clean up test directories with retry
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                if os.path.exists(self.test_root):
+                    shutil.rmtree(self.test_root)
+                break
+            except PermissionError:
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(0.2 * (attempt + 1))  # Increasing delay between retries
+                else:
+                    raise  # Re-raise the last exception if all retries failed
 
     def test_directory_structure_generation(self):
         result = self.prompt_command.execute()

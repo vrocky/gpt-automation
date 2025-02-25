@@ -32,8 +32,8 @@ class InitCommand:
             settings_resolver = SettingsResolver(self.path_manager.get_base_settings_path())
             settings = settings_resolver.resolve_settings()
 
-            # Initialize plugin manager with resolved settings
-            self.plugin_manager = PluginManager( path_manager=self.path_manager, settings= settings)
+            # Update plugin manager initialization
+            self.plugin_manager = PluginManager(path_manager=self.path_manager, settings=settings)
 
             # Setup and activate plugins
             self.plugin_manager.setup_and_activate_plugins({}, [])

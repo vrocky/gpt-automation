@@ -12,12 +12,21 @@ from gpt_automation.impl.setting.settings_resolver import SettingsResolver
 def setup_logging(log_file):
     logger = logging.getLogger('PromptCommand')
     logger.setLevel(logging.ERROR)
-    file_handler = logging.FileHandler(log_file)
+    
+    # Remove any existing handlers
+    for handler in logger.handlers[:]:
+        handler.close()
+        logger.removeHandler(handler)
+    
+    # Ensure log directory exists
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    
+    file_handler = logging.FileHandler(log_file)  # Remove delay=True
     file_handler.setLevel(logging.WARNING)
     file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(file_formatter)
     logger.addHandler(file_handler)
-    return logger
+    return logger, file_handler
 
 class PluginBasedTraverser(IDirectoryTraverser):
     def __init__(self, plugin_visitors):
@@ -59,14 +68,21 @@ class PromptCommand:
 
         # Initialize required components
         self.path_manager = PathManager(root_dir)
-        self.setting_resolver = SettingsResolver(self.path_manager)
+        self.setting_resolver = SettingsResolver(self.path_manager.get_base_settings_path())
         self.settings = self.setting_resolver.resolve_settings()
-        self.plugin_manager = PluginManager(profiles, root_dir, self.settings)
+        self.plugin_manager = PluginManager(path_manager=self.path_manager, settings=self.settings)
         
-        log_file = os.path.join(self.path_manager.get_logs_dir(), 'prompt_command.log')
-        self.logger = setup_logging(log_file)
+        log_file = os.path.join(self.path_manager.logs_dir, 'prompt_command.log')
+        self.logger, self.file_handler = setup_logging(log_file)
         self.skipped_files_count = 0
         self.log_file_path = log_file
+
+    def __del__(self):
+        """Cleanup resources"""
+        if hasattr(self, 'file_handler') and self.file_handler:
+            self.file_handler.close()
+            if self.logger:
+                self.logger.removeHandler(self.file_handler)
 
     def _check_settings_initialized(self) -> bool:
         """Check if settings are properly initialized."""
@@ -100,47 +116,55 @@ class PromptCommand:
         return True
 
     def _generate_directory_prompt(self) -> str:
-        plugin_visitors = self.plugin_manager.get_all_plugin_visitors(self.prompt_dir)
-        directory_walker = DirectoryWalker(
-            self.prompt_dir,
-            traverser=PluginBasedTraverser(plugin_visitors),
-            traverse_filter=PluginBasedFilter(plugin_visitors)
-        )
+        try:
+            plugin_visitors = self.plugin_manager.get_all_plugins()
+            directory_walker = DirectoryWalker(
+                self.prompt_dir,
+                traverser=PluginBasedTraverser(plugin_visitors),
+                traverse_filter=PluginBasedFilter(plugin_visitors)
+            )
 
-        tree = {}
-        for file_path in sorted(directory_walker.walk()):
-            if file_path.startswith(self.root_dir):
-                relative_path = file_path[len(self.root_dir) + 1:]
-                parts = relative_path.split(os.sep)
-                current_level = tree
-                for part in parts[:-1]:
-                    current_level = current_level.setdefault(part, {})
-                current_level[parts[-1]] = {}
+            tree = {}
+            for file_path in sorted(directory_walker.walk()):
+                if file_path.startswith(self.root_dir):
+                    relative_path = file_path[len(self.root_dir) + 1:]
+                    parts = relative_path.split(os.sep)
+                    current_level = tree
+                    for part in parts[:-1]:
+                        current_level = current_level.setdefault(part, {})
+                    current_level[parts[-1]] = {}
 
-        prompt = "\n./\n" + self._format_tree_output(tree, 0)
-        print("\nDirectory Structure Preview:")
-        print(prompt)
-        return prompt
+            prompt = "\n./\n" + self._format_tree_output(tree, 0)
+            print("\nDirectory Structure Preview:")
+            print(prompt)
+            return prompt
+        except Exception as e:
+            self.logger.error(f"Error generating directory prompt: {str(e)}")
+            return ""
 
     def _generate_content_prompt(self) -> str:
-        plugin_visitors = self.plugin_manager.get_all_plugin_visitors(self.prompt_dir)
-        directory_walker = DirectoryWalker(
-            self.prompt_dir,
-            traverser=PluginBasedTraverser(plugin_visitors),
-            traverse_filter=PluginBasedFilter(plugin_visitors)
-        )
+        try:
+            plugin_visitors = self.plugin_manager.get_all_plugins()
+            directory_walker = DirectoryWalker(
+                self.prompt_dir,
+                traverser=PluginBasedTraverser(plugin_visitors),
+                traverse_filter=PluginBasedFilter(plugin_visitors)
+            )
 
-        prompt = ""
-        for file_path in directory_walker.walk():
-            if os.path.isfile(file_path):
-                relative_path = os.path.relpath(file_path, self.root_dir)
-                content = self._read_file_content(file_path)
-                if content is not None:
-                    prompt += f"=========={relative_path}:\n{content}\n\n"
+            prompt = ""
+            for file_path in directory_walker.walk():
+                if os.path.isfile(file_path):
+                    relative_path = os.path.relpath(file_path, self.root_dir)
+                    content = self._read_file_content(file_path)
+                    if content is not None:
+                        prompt += f"=========={relative_path}:\n{content}\n\n"
 
-        if self.skipped_files_count > 0:
-            print(f"{self.skipped_files_count} file(s) have been skipped. Check the logs at: {self.log_file_path}")
-        return prompt
+            if self.skipped_files_count > 0:
+                print(f"{self.skipped_files_count} file(s) have been skipped. Check the logs at: {self.log_file_path}")
+            return prompt
+        except Exception as e:
+            self.logger.error(f"Error generating content prompt: {str(e)}")
+            return ""
 
     def _read_file_content(self, file_path: str) -> Optional[str]:
         try:
