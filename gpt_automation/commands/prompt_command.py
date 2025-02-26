@@ -56,60 +56,57 @@ class PluginBasedVisitor(BaseVisitor):
         return all(visitor.should_visit_subdirectory(directory_path) for visitor in self.plugin_visitors)
 
 class RootLookup:
-    def __init__(self, initial_dir):
+    def __init__(self, initial_dir, provided_root_dir=None):
         self.initial_dir = initial_dir
+        self.provided_root_dir = provided_root_dir
 
     def find_root_directory(self):
         """
-        Recursively checks parent directories from the initial directory to find the '.gpt' directory.
+        Recursively checks parent directories from the initial_dir to find the '.gpt' directory.
         Returns the directory containing the '.gpt' directory as the root, if found.
         """
         current_dir = self.initial_dir
-        while current_dir != os.path.dirname(current_dir):  # Stop when reaching the filesystem root
-            if '.gpt' in os.listdir(current_dir):
-                return current_dir
-            current_dir = os.path.dirname(current_dir)
+        try:
+            while current_dir != os.path.dirname(current_dir):  # Stop when reaching the filesystem root
+                if os.path.exists(current_dir) and '.gpt' in os.listdir(current_dir):
+                    return current_dir
+                current_dir = os.path.dirname(current_dir)
+        except (FileNotFoundError, OSError):
+            pass
         return None
 
-    def determine_directories(self, default_prompt_dir):
+    def determine_directories(self, prompt_dir=None):
         """
-        Determines the root and prompt directories based on the presence of the '.gpt' directory.
+        Determines the root and prompt directories based on provided arguments and environment.
+        Raises ValueError if validation fails.
         """
-        root_dir = self.find_root_directory()
-        if not root_dir:
-            print("Error: No '.gpt' directory found in any parent directories.")
-            return None, None
+        root_dir = self.provided_root_dir or self.find_root_directory()
+        if not root_dir or not os.path.exists(root_dir):
+            raise ValueError(f"Could not find valid root directory. Provided or discovered path: {root_dir}")
 
-        # Validate prompt directory
-        prompt_dir = default_prompt_dir or root_dir
-        if not os.path.exists(prompt_dir):
-            print(f"Error: Prompt directory does not exist: {prompt_dir}")
-            return None, None
+        final_prompt_dir = prompt_dir or self.initial_dir
+        if not os.path.exists(final_prompt_dir):
+            raise ValueError(f"Prompt directory does not exist: {final_prompt_dir}")
 
         # Validate prompt directory is within root
         try:
-            relative_path = os.path.relpath(prompt_dir, root_dir)
+            relative_path = os.path.relpath(final_prompt_dir, root_dir)
             if relative_path.startswith('..'):
-                print(f"Error: Prompt directory must be within root directory")
-                return None, None
-        except ValueError:
-            print(f"Error: Invalid prompt directory path")
-            return None, None
+                raise ValueError(f"Prompt directory must be within root directory: {final_prompt_dir}")
+        except ValueError as e:
+            raise ValueError(f"Invalid prompt directory: {str(e)}")
 
-        return root_dir, prompt_dir
+        return root_dir, final_prompt_dir
 
 class PromptCommand:
     def __init__(self, root_dir: str, prompt_dir: str, profiles: list[str], 
                  dir_profiles: list[str], content_profiles: list[str],
                  generate_dir: bool = True, generate_content: bool = True):
         # Initialize using RootLookup
-        root_lookup = RootLookup(root_dir or os.getcwd())
+        root_lookup = RootLookup(root_dir or os.getcwd(), root_dir)
+        # This will now raise ValueError for invalid directories
         self.root_dir, self.prompt_dir = root_lookup.determine_directories(prompt_dir)
         
-        # Exit early if directory resolution failed
-        if not self.root_dir or not self.prompt_dir:
-            return
-            
         self.profiles = profiles
         self.dir_profiles = dir_profiles
         self.content_profiles = content_profiles

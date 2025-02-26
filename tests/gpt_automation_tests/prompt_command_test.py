@@ -111,29 +111,34 @@ class TestPromptCommand(unittest.TestCase):
         self.assertIn('Directory Structure:', copied_content)
 
     def test_invalid_prompt_directory(self):
+        """Test behavior with invalid prompt directories"""
         # Test with non-existent directory
-        invalid_command = PromptCommand(
-            root_dir=self.test_root,
-            prompt_dir='/invalid/path',
-            profiles=self.test_profiles,
-            dir_profiles=self.test_profiles,
-            content_profiles=self.test_profiles
-        )
-        result = invalid_command.execute()
-        self.assertFalse(result)
+        with self.assertRaises(ValueError) as cm:
+            PromptCommand(
+                root_dir=self.test_root,
+                prompt_dir='/invalid/path',
+                profiles=self.test_profiles,
+                dir_profiles=self.test_profiles,
+                content_profiles=self.test_profiles
+            )
+        self.assertIn("Prompt directory does not exist", str(cm.exception))
 
         # Test with prompt directory outside root
         outside_dir = os.path.abspath(os.path.join(self.test_root, '..', 'outside'))
-        os.makedirs(outside_dir, exist_ok=True)
-        invalid_command = PromptCommand(
-            root_dir=self.test_root,
-            prompt_dir=outside_dir,
-            profiles=self.test_profiles,
-            dir_profiles=self.test_profiles,
-            content_profiles=self.test_profiles
-        )
-        result = invalid_command.execute()
-        self.assertFalse(result)
+        try:
+            os.makedirs(outside_dir, exist_ok=True)
+            with self.assertRaises(ValueError) as cm:
+                PromptCommand(
+                    root_dir=self.test_root,
+                    prompt_dir=outside_dir,
+                    profiles=self.test_profiles,
+                    dir_profiles=self.test_profiles,
+                    content_profiles=self.test_profiles
+                )
+            self.assertIn("Prompt directory must be within root directory", str(cm.exception))
+        finally:
+            if os.path.exists(outside_dir):
+                shutil.rmtree(outside_dir)
 
     def test_directory_only_generation(self):
         command = PromptCommand(
