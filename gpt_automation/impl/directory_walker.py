@@ -1,84 +1,48 @@
 import os
-from abc import ABC, abstractmethod
 from typing import Optional, Set
+from gpt_automation.impl.visitor.basevisitor import BaseVisitor
 
 
-class ITraverseFilter(ABC):
-    """Interface for filtering files and directories during traversal"""
-    
-    @abstractmethod
-    def should_visit_file(self, file_path: str) -> bool:
-        """Determine if a file should be visited"""
-        pass
-
-    @abstractmethod
-    def should_visit_directory(self, directory_path: str) -> bool:
-        """Determine if a directory should be visited"""
-        pass
-
-
-class IDirectoryTraverser(ABC):
-    """Interface for directory traversal notifications"""
-    
-    @abstractmethod
-    def on_enter_directory(self, directory_path: str) -> None:
-        """Called when entering a directory"""
-        pass
-
-    @abstractmethod
-    def on_leave_directory(self, directory_path: str) -> None:
-        """Called when leaving a directory"""
-        pass
-
-    @abstractmethod
-    def on_file_found(self, file_path: str) -> None:
-        """Called when a file is found"""
-        pass
-
-
-class DefaultTraverseFilter(ITraverseFilter):
-    """Default implementation that accepts all files and directories"""
-    
-    def should_visit_file(self, file_path: str) -> bool:
-        return True
-
-    def should_visit_directory(self, directory_path: str) -> bool:
-        return True
-
-
-class DefaultDirectoryTraverser(IDirectoryTraverser):
+class DefaultVisitor(BaseVisitor):
     """Default implementation that does nothing for traversal events"""
     
-    def on_enter_directory(self, directory_path: str) -> None:
+    def before_traverse_directory(self, directory_path):
         pass
 
-    def on_leave_directory(self, directory_path: str) -> None:
+    def enter_directory(self, directory_path):
         pass
 
-    def on_file_found(self, file_path: str) -> None:
+    def visit_file(self, file_path):
         pass
+
+    def leave_directory(self, directory_path):
+        pass
+
+    def should_visit_file(self, file_path):
+        return True
+
+    def should_visit_subdirectory(self, directory_path):
+        return True
 
 
 class DirectoryWalker:
     def __init__(self, 
                  path: str,
-                 traverser: Optional[IDirectoryTraverser] = None,
-                 traverse_filter: Optional[ITraverseFilter] = None):
+                 visitor: Optional[BaseVisitor] = None):
         """
-        Initialize DirectoryWalker with optional traverser and filter
+        Initialize DirectoryWalker with optional visitor
         
         Args:
             path: Root path to start traversal
-            traverser: Optional IDirectoryTraverser implementation
-            traverse_filter: Optional ITraverseFilter implementation
+            visitor: Optional BaseVisitor implementation
         """
         self.path = path
-        self.traverser = traverser or DefaultDirectoryTraverser()
-        self.traverse_filter = traverse_filter or DefaultTraverseFilter()
+        self.visitor = visitor or DefaultVisitor()
 
     def walk(self):
         """Walk through directory structure and yield file paths."""
         visited_dirs = set()
+        self.visitor.before_traverse_directory(self.path)
         yield from self._walk(self.path, visited_dirs)
 
     def _walk(self, directory_path: str, visited_dirs: Set[str]):
@@ -86,7 +50,7 @@ class DirectoryWalker:
             return
         visited_dirs.add(directory_path)
 
-        self.traverser.on_enter_directory(directory_path)
+        self.visitor.enter_directory(directory_path)
 
         try:
             entries = list(os.scandir(directory_path))
@@ -95,16 +59,16 @@ class DirectoryWalker:
             # Process files first
             for entry in entries:
                 if entry.is_file():
-                    if self.traverse_filter.should_visit_file(entry.path):
-                        self.traverser.on_file_found(entry.path)
+                    if self.visitor.should_visit_file(entry.path):
+                        self.visitor.visit_file(entry.path)
                         yield entry.path
                 elif entry.is_dir(follow_symlinks=False):
                     subdirectories.append(entry.path)
 
             # Process subdirectories
             for subdir in subdirectories:
-                if self.traverse_filter.should_visit_directory(subdir):
+                if self.visitor.should_visit_subdirectory(subdir):
                     yield from self._walk(subdir, visited_dirs)
 
         finally:
-            self.traverser.on_leave_directory(directory_path)
+            self.visitor.leave_directory(directory_path)

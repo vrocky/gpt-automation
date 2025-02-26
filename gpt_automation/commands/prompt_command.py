@@ -4,7 +4,8 @@ import logging
 import chardet
 from typing import Optional
 
-from gpt_automation.impl.directory_walker import DirectoryWalker, IDirectoryTraverser, ITraverseFilter
+from gpt_automation.impl.directory_walker import DirectoryWalker
+from gpt_automation.impl.visitor.basevisitor import BaseVisitor
 from gpt_automation.impl.plugin_impl.plugin_init import PluginManager
 from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.setting.settings_resolver import SettingsResolver
@@ -28,30 +29,30 @@ def setup_logging(log_file):
     logger.addHandler(file_handler)
     return logger, file_handler
 
-class PluginBasedTraverser(IDirectoryTraverser):
+class PluginBasedVisitor(BaseVisitor):
     def __init__(self, plugin_visitors):
         self.plugin_visitors = plugin_visitors
 
-    def on_enter_directory(self, directory_path: str) -> None:
+    def before_traverse_directory(self, directory_path):
+        for visitor in self.plugin_visitors:
+            visitor.before_traverse_directory(directory_path)
+
+    def enter_directory(self, directory_path):
         for visitor in self.plugin_visitors:
             visitor.enter_directory(directory_path)
 
-    def on_leave_directory(self, directory_path: str) -> None:
+    def leave_directory(self, directory_path):
         for visitor in self.plugin_visitors:
             visitor.leave_directory(directory_path)
 
-    def on_file_found(self, file_path: str) -> None:
+    def visit_file(self, file_path):
         for visitor in self.plugin_visitors:
             visitor.visit_file(file_path)
 
-class PluginBasedFilter(ITraverseFilter):
-    def __init__(self, plugin_visitors):
-        self.plugin_visitors = plugin_visitors
-
-    def should_visit_file(self, file_path: str) -> bool:
+    def should_visit_file(self, file_path):
         return all(visitor.should_visit_file(file_path) for visitor in self.plugin_visitors)
 
-    def should_visit_directory(self, directory_path: str) -> bool:
+    def should_visit_subdirectory(self, directory_path):
         return all(visitor.should_visit_subdirectory(directory_path) for visitor in self.plugin_visitors)
 
 class PromptCommand:
@@ -157,8 +158,7 @@ class PromptCommand:
 
             directory_walker = DirectoryWalker(
                 self.prompt_dir,
-                traverser=PluginBasedTraverser(all_visitors),
-                traverse_filter=PluginBasedFilter(all_visitors)
+                visitor=PluginBasedVisitor(all_visitors)
             )
 
             tree = {}
@@ -189,8 +189,7 @@ class PromptCommand:
 
             directory_walker = DirectoryWalker(
                 self.prompt_dir,
-                traverser=PluginBasedTraverser(all_visitors),
-                traverse_filter=PluginBasedFilter(all_visitors)
+                visitor=PluginBasedVisitor(all_visitors)
             )
 
             prompt = ""
