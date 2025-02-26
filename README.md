@@ -1,7 +1,6 @@
-
 # GPT Automation
 
-This Python-based project provides a way to automatically generate a project structure, including all directories and files, while ignoring certain unwanted files or directories as specified in a blacklist or a `.gptignore` file. It also offers the capability to generate file contents, allowing users to copy either the entire project structure or just the directory structure to the clipboard.
+This Python-based project provides a way to automatically generate a project structure, including all directories and files, while ignoring certain unwanted files or directories as specified in a blacklist, whitelist, `.gptignore`, or `.gptincludeonly` file.
 
 ## Installation
 
@@ -106,6 +105,21 @@ src/main/
 *.yml
 ```
 
+<h2>Optimization Features</h2>
+
+### Early Directory Exclusion
+The tool implements early directory exclusion for optimal performance when dealing with large codebases. This means:
+- Directories matched by ignore patterns are completely skipped without scanning their contents
+- Particularly useful for directories like `node_modules`, `venv`, or `.git` that contain thousands of files
+- Significantly improves performance by avoiding unnecessary filesystem operations
+
+Example `.gptignore` for efficient directory exclusion:
+```plaintext
+node_modules/
+venv/
+.git/
+```
+
 <h2>Output</h2>
 
 The generated code, including the directory structure and file contents, will be copied to the clipboard in the following format:
@@ -128,12 +142,6 @@ File Contents:
 ==========dir_1/file_1.py:
 # Code for dir_1/file_1.py
 ```
-
-
-
-
-
-
 
 <h2>Profile-Based Configuration in .gptignore and .gptincludeonly</h2>
 
@@ -222,9 +230,6 @@ autogpt prompt --dir ignore_walk_tests --content setup
 ```
 
 This will apply the rules defined in the specified profiles to the initialization and prompt generation processes, ensuring that the directory structure and file contents meet the requirements of each specific profile.
-
-
-
 
 This README provides detailed instructions for installing and using the GPT Automation tool, including how to use the init, prompt commands with their respective options. It also explains the purpose of the blacklist, whitelist, and .gptignore files, and how the output will be formatted and copied to the clipboard.
 
