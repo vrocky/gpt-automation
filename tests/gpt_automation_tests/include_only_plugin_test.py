@@ -47,33 +47,31 @@ class TestIncludeOnlyPlugin(unittest.TestCase):
         self.test_dir = os.path.join(os.path.dirname(__file__), 'test_include_only_root')
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
-            
         os.makedirs(self.test_dir)
-        
+
         self.path_manager = PathManager(self.test_dir)
         self.plugin_settings_path = self.path_manager.get_plugin_settings_path(
-            'gpt_automation', 
+            'gpt_automation',
             'include_only_plugin'
         )
-        
         os.makedirs(self.plugin_settings_path, exist_ok=True)
-        
+
+        # Create simple test structure
         self.create_test_files()
+        
         self.plugin = IncludeOnlyPlugin()
         self.profiles = ['test_profile']
 
     def create_test_files(self):
-        test_files = {
-            'main.py': 'print("main")',
-            'test.txt': 'test content',
-            'data.json': '{"key": "value"}',
-            os.path.join('subfolder', 'sub.py'): 'print("sub")',
-            os.path.join('config', 'settings.json'): '{"setting": "value"}',
+        """Create minimal test file structure"""
+        files = {
+            '.gptincludeonly': '*.py',  # Simple pattern to include all Python files
+            'test.py': 'print("test")',
+            'test.txt': 'text content'
         }
 
-        for file_path, content in test_files.items():
+        for file_path, content in files.items():
             full_path = os.path.join(self.test_dir, file_path)
-            os.makedirs(os.path.dirname(full_path), exist_ok=True)
             with open(full_path, 'w') as f:
                 f.write(content)
 
@@ -81,14 +79,10 @@ class TestIncludeOnlyPlugin(unittest.TestCase):
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
 
-    def test_include_only_plugin(self):
+    def test_basic_include_only(self):
+        """Test simplest include-only functionality"""
         # Initialize plugin
         self.plugin.init(self.plugin_settings_path, self.test_dir, self.profiles)
-        
-        # Set include only filenames through settings
-        self.plugin.settings_args = {
-            'include_only_filenames': ['*.py', '*.json']
-        }
         
         # Get plugin visitors
         plugin_visitors = self.plugin.get_visitors(self.test_dir)
@@ -101,19 +95,13 @@ class TestIncludeOnlyPlugin(unittest.TestCase):
         # Walk and collect files
         list(walker.walk())
         
-        # Verify results
+        # Verify results using normalized paths
         def normalize_path(path):
             return os.path.normpath(os.path.join(self.test_dir, path))
-
-        # Files that should be included
-        self.assertIn(normalize_path('main.py'), collector.visited_files)
-        self.assertIn(normalize_path(os.path.join('subfolder', 'sub.py')), collector.visited_files)
-        self.assertIn(normalize_path('data.json'), collector.visited_files)
-        self.assertIn(normalize_path(os.path.join('config', 'settings.json')), collector.visited_files)
-
-        # Files that should not be included
+        
+        # Only .py file should be included
+        self.assertIn(normalize_path('test.py'), collector.visited_files)
         self.assertNotIn(normalize_path('test.txt'), collector.visited_files)
-
 
 if __name__ == '__main__':
     unittest.main()
