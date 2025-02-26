@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 
+
 from gpt_automation.commands.init_command import InitCommand
 from gpt_automation.commands.prompt_command import PromptCommand
 
@@ -34,10 +35,12 @@ def setup_cli_parser():
 def main():
     parser = setup_cli_parser()
     args = parser.parse_args()
+
+    root_dir = os.path.abspath(args.root_dir) if args.root_dir else os.getcwd()
     
     if args.command == "init":
         command = InitCommand(
-            root_dir=args.root_dir,  # Pass raw value, let command handle resolution
+            root_dir=root_dir,
             profile_names=args.profiles
         )
         command.execute()
@@ -52,8 +55,8 @@ def main():
         content_profiles = args.content if args.content else args.profiles
         
         command = PromptCommand(
-            root_dir=args.root_dir,  # Pass raw value, let command handle resolution
-            prompt_dir=args.prompt_dir,  # Pass raw value, let command handle resolution
+            root_dir=root_dir,
+            prompt_dir=args.prompt_dir or root_dir,
             profiles=args.profiles,
             dir_profiles=dir_profiles,
             content_profiles=content_profiles,
