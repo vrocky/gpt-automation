@@ -55,20 +55,69 @@ class PluginBasedVisitor(BaseVisitor):
     def should_visit_subdirectory(self, directory_path):
         return all(visitor.should_visit_subdirectory(directory_path) for visitor in self.plugin_visitors)
 
+class RootLookup:
+    def __init__(self, initial_dir):
+        self.initial_dir = initial_dir
+
+    def find_root_directory(self):
+        """
+        Recursively checks parent directories from the initial directory to find the '.gpt' directory.
+        Returns the directory containing the '.gpt' directory as the root, if found.
+        """
+        current_dir = self.initial_dir
+        while current_dir != os.path.dirname(current_dir):  # Stop when reaching the filesystem root
+            if '.gpt' in os.listdir(current_dir):
+                return current_dir
+            current_dir = os.path.dirname(current_dir)
+        return None
+
+    def determine_directories(self, default_prompt_dir):
+        """
+        Determines the root and prompt directories based on the presence of the '.gpt' directory.
+        """
+        root_dir = self.find_root_directory()
+        if not root_dir:
+            print("Error: No '.gpt' directory found in any parent directories.")
+            return None, None
+
+        # Validate prompt directory
+        prompt_dir = default_prompt_dir or root_dir
+        if not os.path.exists(prompt_dir):
+            print(f"Error: Prompt directory does not exist: {prompt_dir}")
+            return None, None
+
+        # Validate prompt directory is within root
+        try:
+            relative_path = os.path.relpath(prompt_dir, root_dir)
+            if relative_path.startswith('..'):
+                print(f"Error: Prompt directory must be within root directory")
+                return None, None
+        except ValueError:
+            print(f"Error: Invalid prompt directory path")
+            return None, None
+
+        return root_dir, prompt_dir
+
 class PromptCommand:
     def __init__(self, root_dir: str, prompt_dir: str, profiles: list[str], 
                  dir_profiles: list[str], content_profiles: list[str],
                  generate_dir: bool = True, generate_content: bool = True):
-        self.root_dir = root_dir
-        self.prompt_dir = prompt_dir
+        # Initialize using RootLookup
+        root_lookup = RootLookup(root_dir or os.getcwd())
+        self.root_dir, self.prompt_dir = root_lookup.determine_directories(prompt_dir)
+        
+        # Exit early if directory resolution failed
+        if not self.root_dir or not self.prompt_dir:
+            return
+            
         self.profiles = profiles
         self.dir_profiles = dir_profiles
         self.content_profiles = content_profiles
         self.generate_dir = generate_dir
         self.generate_content = generate_content
 
-        # Initialize required components
-        self.path_manager = PathManager(root_dir)
+        # Initialize components with resolved root_dir
+        self.path_manager = PathManager(self.root_dir)
         self.setting_resolver = SettingsResolver(self.path_manager.get_base_settings_path())
         self.settings = self.setting_resolver.resolve_settings()
         self.plugin_manager = PluginManager(path_manager=self.path_manager, settings=self.settings)
@@ -95,11 +144,11 @@ class PromptCommand:
         return True
 
     def execute(self):
-        if not self._check_settings_initialized():
+        # Add check for valid initialization
+        if not hasattr(self, 'path_manager'):
             return False
 
-        if not self._validate_directories():
-            print(f"Error: 'prompt_dir' {self.prompt_dir} must be a subdirectory of 'root_dir' {self.root_dir} or the same.")
+        if not self._check_settings_initialized():
             return False
 
         if self.generate_dir:
@@ -257,7 +306,3 @@ class PromptCommand:
             print("\nPrompt has been copied to the clipboard.")
         except ImportError:
             print("\nFailed to copy prompt to clipboard. Pyperclip module not installed.")
-
-    def _validate_directories(self) -> bool:
-        relative_path = os.path.relpath(self.prompt_dir, self.root_dir)
-        return relative_path == '.' or not relative_path.startswith('..')

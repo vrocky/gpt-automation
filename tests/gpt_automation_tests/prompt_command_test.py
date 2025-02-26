@@ -111,9 +111,23 @@ class TestPromptCommand(unittest.TestCase):
         self.assertIn('Directory Structure:', copied_content)
 
     def test_invalid_prompt_directory(self):
+        # Test with non-existent directory
         invalid_command = PromptCommand(
             root_dir=self.test_root,
             prompt_dir='/invalid/path',
+            profiles=self.test_profiles,
+            dir_profiles=self.test_profiles,
+            content_profiles=self.test_profiles
+        )
+        result = invalid_command.execute()
+        self.assertFalse(result)
+
+        # Test with prompt directory outside root
+        outside_dir = os.path.abspath(os.path.join(self.test_root, '..', 'outside'))
+        os.makedirs(outside_dir, exist_ok=True)
+        invalid_command = PromptCommand(
+            root_dir=self.test_root,
+            prompt_dir=outside_dir,
             profiles=self.test_profiles,
             dir_profiles=self.test_profiles,
             content_profiles=self.test_profiles

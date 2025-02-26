@@ -10,9 +10,9 @@ from gpt_automation.impl.setting.paths import PathManager
 
 class InitCommand:
     def __init__(self, root_dir: str, profile_names: list[str]):
-        self.root_dir = root_dir
+        self.root_dir = os.path.abspath(root_dir) if root_dir else os.getcwd()
         self.profile_names = profile_names
-        self.path_manager = PathManager(root_dir)
+        self.path_manager = PathManager(self.root_dir)
         self.setting_generator = SettingGenerator(self.path_manager)
         self.logger = logging.getLogger(__name__)
         self.plugin_manager = None
@@ -26,6 +26,12 @@ class InitCommand:
     def execute(self):
         try:
             self.logger.info(f"Initializing GPT Automation in root directory: {self.root_dir}")
+            
+            # Create .gpt directory to mark as root
+            gpt_dir = os.path.join(self.root_dir, '.gpt')
+            if not os.path.exists(gpt_dir):
+                os.makedirs(gpt_dir, exist_ok=True)
+                self.logger.info(f"Created .gpt directory at: {gpt_dir}")
             
             if not os.path.exists(self.root_dir):
                 self.logger.error(f"Root directory does not exist: {self.root_dir}")
