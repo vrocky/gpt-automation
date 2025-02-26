@@ -170,5 +170,41 @@ class TestDirectoryWalker(unittest.TestCase):
             self.assertEqual(len(remaining), 0, 
                 "Last directory was not fully processed")
 
+    def test_early_directory_exclusion(self):
+        """Test that ignored directories are not scanned at all"""
+        # Create a directory structure where some directories should be ignored
+        ignore_dir = os.path.join(self.test_dir, 'node_modules')
+        os.makedirs(ignore_dir)
+        
+        # Create some files in the ignored directory
+        for i in range(10):
+            with open(os.path.join(ignore_dir, f'file{i}.txt'), 'w') as f:
+                f.write('content')
+
+        visited_paths = set()
+        scanned_dirs = set()
+        
+        class ScanTrackingVisitor(DefaultVisitor):
+            def should_visit_subdirectory(self, directory_path):
+                return 'node_modules' not in directory_path
+                
+            def enter_directory(self, directory_path):
+                scanned_dirs.add(directory_path)
+                
+            def visit_file(self, file_path):
+                visited_paths.add(file_path)
+
+        walker = DirectoryWalker(self.test_dir, ScanTrackingVisitor())
+        list(walker.walk())  # Execute the walk
+
+        # Verify that ignored directory was not scanned
+        self.assertNotIn(ignore_dir, scanned_dirs, 
+            "Walker should not scan ignored directory")
+        
+        # Verify no files from ignored directory were visited
+        ignored_files = [f for f in visited_paths if 'node_modules' in f]
+        self.assertEqual(len(ignored_files), 0,
+            "No files from ignored directory should be visited")
+
 if __name__ == '__main__':
     unittest.main()

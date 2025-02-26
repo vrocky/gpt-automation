@@ -118,5 +118,53 @@ class TestIgnorePlugin(unittest.TestCase):
         self.assertNotIn(normalize_path('ignored_dir/secret.txt'), collector.visited_files)
         self.assertNotIn(normalize_path('ignored_dir/important.py'), collector.visited_files)
 
+    def test_early_directory_exclusion(self):
+        """Test that ignored directories are not scanned at all"""
+        # Create a large directory structure that should be ignored
+        node_modules = os.path.join(self.test_dir, 'node_modules')
+        os.makedirs(node_modules)
+        
+        # Create many files in node_modules to verify it's not scanned
+        for i in range(100):
+            subdir = os.path.join(node_modules, f'package_{i}')
+            os.makedirs(subdir)
+            with open(os.path.join(subdir, 'package.json'), 'w') as f:
+                f.write('{"name": "test"}')
+
+        # Create .gptignore with node_modules exclusion
+        with open(os.path.join(self.test_dir, '.gptignore'), 'w') as f:
+            f.write('node_modules/\n')
+
+        # Initialize plugin
+        self.plugin.init(self.plugin_settings_path, self.test_dir, self.profiles)
+        plugin_visitors = self.plugin.get_visitors(self.test_dir)
+        
+        # Track which directories are actually scanned
+        scanned_dirs = set()
+        visited_files = set()
+        
+        class TrackingVisitor(TestFileVisitor):
+            def enter_directory(self, directory_path):
+                scanned_dirs.add(directory_path)
+                super().enter_directory(directory_path)
+                
+            def visit_file(self, file_path):
+                visited_files.add(file_path)
+                super().visit_file(file_path)
+
+        # Walk the directory
+        collector = TrackingVisitor(plugin_visitors[0])
+        walker = DirectoryWalker(self.test_dir, visitor=collector)
+        list(walker.walk())
+
+        # Verify node_modules was not scanned
+        self.assertNotIn(node_modules, scanned_dirs,
+            "node_modules directory should not be scanned")
+        
+        # Verify no files from node_modules were visited
+        node_modules_files = [f for f in visited_files if 'node_modules' in f]
+        self.assertEqual(len(node_modules_files), 0,
+            "No files from node_modules should be visited")
+
 if __name__ == '__main__':
     unittest.main()
