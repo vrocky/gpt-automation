@@ -1,4 +1,5 @@
 import os
+import logging
 from typing import Optional, Set
 from gpt_automation.impl.visitor.basevisitor import BaseVisitor
 
@@ -38,6 +39,7 @@ class DirectoryWalker:
         """
         self.path = path
         self.visitor = visitor or DefaultVisitor()
+        self.logger = logging.getLogger(__name__)
 
     def walk(self):
         """Walk through directory structure and yield file paths."""
@@ -45,12 +47,20 @@ class DirectoryWalker:
         self.visitor.before_traverse_directory(self.path)
         yield from self._walk(self.path, visited_dirs)
 
+    def _safe_visit(self, method, *args):
+        """Safely execute visitor method, logging any errors"""
+        try:
+            return method(*args)
+        except Exception as e:
+            self.logger.error(f"Error in visitor {method.__name__}: {str(e)}")
+            return True  # Continue traversal by default
+
     def _walk(self, directory_path: str, visited_dirs: Set[str]):
         if directory_path in visited_dirs:
             return
         visited_dirs.add(directory_path)
 
-        self.visitor.enter_directory(directory_path)
+        self._safe_visit(self.visitor.enter_directory, directory_path)
 
         try:
             entries = list(os.scandir(directory_path))
@@ -59,16 +69,16 @@ class DirectoryWalker:
             # Process files first
             for entry in entries:
                 if entry.is_file():
-                    if self.visitor.should_visit_file(entry.path):
-                        self.visitor.visit_file(entry.path)
+                    if self._safe_visit(self.visitor.should_visit_file, entry.path):
+                        self._safe_visit(self.visitor.visit_file, entry.path)
                         yield entry.path
                 elif entry.is_dir(follow_symlinks=False):
                     subdirectories.append(entry.path)
 
             # Process subdirectories
             for subdir in subdirectories:
-                if self.visitor.should_visit_subdirectory(subdir):
+                if self._safe_visit(self.visitor.should_visit_subdirectory, subdir):
                     yield from self._walk(subdir, visited_dirs)
 
         finally:
-            self.visitor.leave_directory(directory_path)
+            self._safe_visit(self.visitor.leave_directory, directory_path)
