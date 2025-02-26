@@ -66,7 +66,7 @@ class InitCommand:
             self.plugin_manager = PluginManager(path_manager=self.path_manager, settings=settings)
 
             self.logger.info("Setting up and activating plugins...")
-            self.plugin_manager.setup_and_activate_plugins({}, [])
+            self.plugin_manager.setup_and_activate_plugins()
 
             self.logger.info("Configuring plugins...")
             self._configure_plugins()

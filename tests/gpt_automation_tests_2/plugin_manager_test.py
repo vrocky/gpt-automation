@@ -67,9 +67,7 @@ class TestPluginManager(unittest.TestCase):
 
     def test_setup_and_activate_plugins(self):
         # Setup and activate plugins
-        self.plugin_manager.setup_and_activate_plugins({
-            "root_dir": self.test_dir
-        }, [])
+        self.plugin_manager.setup_and_activate_plugins()
         
         # Get all plugins
         plugins = self.plugin_manager.get_all_plugins()
@@ -90,7 +88,7 @@ class TestPluginManager(unittest.TestCase):
 
     def test_plugin_context_data(self):
         # Setup plugins
-        self.plugin_manager.setup_and_activate_plugins({}, [])
+        self.plugin_manager.setup_and_activate_plugins()
         
         # Get all plugins
         plugins = self.plugin_manager.get_all_plugins()
