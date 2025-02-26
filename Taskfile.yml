@@ -21,6 +21,16 @@ tasks:
     cmds:
       - pipx install .
 
+  uninstall:
+    desc: Uninstall the package from development mode
+    cmds:
+      - pip uninstall -y gpt-automation
+
+  uninstall-global:
+    desc: Uninstall the package from global installation
+    cmds:
+      - pipx uninstall gpt-automation
+
   init:
     desc: Initialize with default profiles
     deps: [install]
