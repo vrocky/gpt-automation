@@ -90,7 +90,3 @@ def collect_patterns_from_ignore_files(directory_path, ignore_filenames, profile
                     pattern_pairs.extend(generate_pattern_pairs(directory_path, patterns))
     return pattern_pairs
 
-
-if __name__ == '__main__':
-    print(parse_gptignore_file(r"C:\Users\vinit\OneDrive\Documents\repo\gpt-automation\.gptincludeonly",["plugins"]))
-    print(parse_gptignore_file(r"C:\Users\vinit\OneDrive\Documents\repo\gpt-automation\.gptincludeonly",["impl"]))

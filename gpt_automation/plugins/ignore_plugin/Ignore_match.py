@@ -1,9 +1,9 @@
-import logging
+from gpt_automation.impl.logging_utils import get_logger
+logger = get_logger(__name__)
 import os
 
 from gpt_automation.plugins.ignore_plugin.third_party.gitignore_parser2.parser2 import GitIgnoreParser
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 class IgnoreMatch:
     def __init__(self, base_pattern_pairs):
         # Now expects an array of (base_path, pattern) tuples
@@ -21,7 +21,7 @@ class IgnoreMatch:
         for match in self.matches:
             log_dict = {"input": file_path,
                         "match": match.__str__()}
-            logging.debug(f"matching: {log_dict}")
+           # logger.debug(f"matching: {log_dict}")
             result = match.match(file_path)
             results.append({
                 "input": file_path,
@@ -30,8 +30,7 @@ class IgnoreMatch:
             })
 
         # Optionally, you could print or log the results array to inspect it
-        #print(results)
-        logging.debug(f"results:{ results}")
+        #logger.debug(f"results:{ results}")
         final_result = any(result['result'] for result in results)
         return final_result
 

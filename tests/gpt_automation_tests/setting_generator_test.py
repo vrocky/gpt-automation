@@ -16,6 +16,8 @@ class TestSettingGenerator(unittest.TestCase):
         self.setting_generator = SettingGenerator(self.path_manager)
 
     def tearDown(self):
+        from gpt_automation.impl.logging_utils import close_logger_handlers
+        close_logger_handlers('SettingGenerator')
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
 

@@ -1,3 +1,4 @@
+from gpt_automation.impl.plugin_impl.plugin_context import PluginContext
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from pathlib import Path
@@ -8,7 +9,7 @@ from gpt_automation.impl.plugin_impl.plugin_utils import (
 from gpt_automation.impl.plugin_impl.plugin_interfaces import IPluginLifecycleCallback
 from gpt_automation.impl.plugin_impl.plugin_class_loader import PluginClassLoader
 from gpt_automation.impl.setting.setting_models import PluginConfig, Settings, PluginArgs
-import logging
+from gpt_automation.impl.logging_utils import get_logger
 
 @dataclass
 class PluginInfo:
@@ -47,14 +48,15 @@ class PluginSettings:
 class PluginConfigLoader:
     def __init__(self, 
                  settings: Settings,
-                 path_manager: 'PathManager'):
+                 path_manager: 'PathManager',
+                 log_file: str = None):
         self.plugin_settings = PluginSettings(settings)
         self.package_name = self.plugin_settings.package_name
         self.path_manager = path_manager
         self.registry = PluginRegistry(self.package_name)
         self.class_loader = PluginClassLoader()
-        self.plugin_utils = PluginUtils(self.registry, self.class_loader)
-        self.logger = logging.getLogger(__name__)
+        self.plugin_utils = PluginUtils(self.registry, self.class_loader, log_file)
+        self.logger = get_logger(__name__, log_file)
 
     def load_all_contexts(self) -> List['PluginContext']:
         """Load all plugin contexts"""

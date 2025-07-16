@@ -1,3 +1,4 @@
+from gpt_automation.impl.logging_utils import get_logger
 import os
 from gpt_automation.plugins.ignore_plugin.filters import should_include_by_include_only_list
 from gpt_automation.impl.visitor.basevisitor import BaseVisitor
@@ -6,12 +7,12 @@ from gpt_automation.plugins.ignore_plugin.ignore_file_parser import collect_patt
 
 class IncludeOnlyVisitor(BaseVisitor):
     def __init__(self, root_dir, prompt_dir, include_only_filenames=None, profile_names=None):
+        self.logger = get_logger(__name__)
         self.root_dir = root_dir
         self.prompt_dir = prompt_dir
         self.include_only_filenames = include_only_filenames or ['.gptincludeonly']
         self.profile_names = profile_names
         self.include_only_patterns_stack = []
-
         self.initialize_include_only_patterns()
 
     def initialize_include_only_patterns(self):
@@ -53,7 +54,7 @@ class IncludeOnlyVisitor(BaseVisitor):
 
     def before_traverse_directory(self, directory_path):
         # Potential pre-processing before entering a directory
-        print(f"Preparing to traverse {directory_path}")
+        self.logger.debug(f"Preparing to traverse {directory_path}")
 
     def visit_file(self, file_path):
         pass

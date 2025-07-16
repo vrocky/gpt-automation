@@ -1,3 +1,5 @@
+from gpt_automation.impl.logging_utils import get_logger
+logger = get_logger(__name__)
 import os
 import json
 from abc import ABC, abstractmethod
@@ -71,9 +73,9 @@ class SettingGenerator:
             
             default_config_path = os.path.join(self.path_manager.resources_dir, 'default_base_settings.json')
             copyfile(default_config_path, base_settings_path)
-            print(f"Base configuration initialized at {base_settings_path}")
+            logger.info(f"Base configuration initialized at {base_settings_path}")
         else:
-            print("Base configuration already exists.")
+            logger.info("Base configuration already exists.")
 
     def is_base_config_initialized(self):
         return os.path.exists(self.path_manager.get_base_settings_path())
@@ -85,6 +87,6 @@ class SettingGenerator:
 
         if not os.path.exists(dest_path):
             copyfile(template_path, dest_path)
-            print(f".gitignore template copied to {dest_path}.")
+            logger.info(f".gitignore template copied to {dest_path}.")
         else:
-            print(".gitignore already exists in the .gpt directory.")
+            logger.info(".gitignore already exists in the .gpt directory.")

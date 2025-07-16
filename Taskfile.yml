@@ -5,6 +5,11 @@ vars:
   PROMPT_DIR: '{{.PROMPT_DIR | default "prompts"}}'
 
 tasks:
+  create-venv:
+    desc: Create a Python virtual environment in .venv directory
+    cmds:
+      - python -m venv .venv
+      - Write-Host "Virtual environment created in .venv. Activate with 'source .venv/bin/activate' (Linux/macOS) or '.venv\\Scripts\\Activate.ps1' (Windows PowerShell)."
   install-pipx:
     desc: Install pipx if not already installed
     cmds:

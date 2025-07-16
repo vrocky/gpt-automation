@@ -7,6 +7,10 @@ command-line interface (CLI). It focuses on CLI modifiers that integrate with
 plugin-specific configurations defined in external files, particularly
 aligning with settings outlined in each plugin’s `manifest.json`.
 
+#### Logging
+
+All plugin-specific logs are routed to the central log file. Debug output will not clutter the console; only summary and errors are shown on the console.
+
 #### CLI Modifiers and Arguments
 
   1. **`--plugin-args <key>=<value>`**

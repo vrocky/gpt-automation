@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpt_automation"
-version = "0.1.16"
+version = "0.1.17"
 description = "GPT directory structure and file contents prompt generator"
 authors = [
     {name = "Vinit", email = "author@example.com"},

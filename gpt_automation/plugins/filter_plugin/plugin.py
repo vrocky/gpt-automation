@@ -1,3 +1,5 @@
+from gpt_automation.impl.logging_utils import get_logger
+logger = get_logger(__name__)
 import os
 import shutil
 import fnmatch
@@ -58,7 +60,7 @@ class BlacklistWhitelistPlugin(BasePlugin):
             return True
             
         except Exception as e:
-            print(f"Error checking plugin configuration: {str(e)}")
+            logger.error(f"Error checking plugin configuration: {str(e)}")
             return False
 
     def get_visitors(self,prompt_dir):
@@ -72,13 +74,13 @@ class BlacklistWhitelistPlugin(BasePlugin):
                 profile_path = self.get_profile_config_path(profile_name)
                 blacklist, whitelist = self.load_filter_lists(profile_path)
                 visitors.append(BlacklistWhitelistVisitor(blacklist, whitelist))
-        print("visitors",visitors)
+        logger.debug(f"visitors: {visitors}")
         return visitors
 
     def init_default_config(self):
         """Initialize default configuration files"""
         try:
-            print("self.config_dir", self.config_dir)   
+            logger.debug(f"self.config_dir: {self.config_dir}")
             if not os.path.exists(self.config_dir):
                 os.makedirs(self.config_dir)
 
@@ -97,7 +99,7 @@ class BlacklistWhitelistPlugin(BasePlugin):
                     default_whitelist
                 )
         except Exception as e:
-            print(f"Error initializing default configuration: {str(e)}")
+            logger.error(f"Error initializing default configuration: {str(e)}")
 
     def configure_profiles(self, profile_names):
         """Configure profiles with their own blacklist and whitelist"""
@@ -114,9 +116,9 @@ class BlacklistWhitelistPlugin(BasePlugin):
                         os.path.join(self.sample_config_dir, "white_list.txt"),
                         os.path.join(profile_dir, "white_list.txt")
                     )
-                    print(f"Initialized {profile_dir} with sample blacklist and whitelist files.")
+                    logger.info(f"Initialized {profile_dir} with sample blacklist and whitelist files.")
             except Exception as e:
-                print(f"Error configuring profile {profile_name}: {str(e)}")
+                logger.error(f"Error configuring profile {profile_name}: {str(e)}")
 
     def get_profile_config_path(self, profile_name):
         return os.path.join(self.config_dir, profile_name)
@@ -158,8 +160,8 @@ class BlacklistWhitelistVisitor(BaseVisitor):
         return True
 
     def before_traverse_directory(self, directory_path):
-        print(f"Preparing to traverse {directory_path} with filters")
+        logger.debug(f"Preparing to traverse {directory_path} with filters")
 
     def visit_file(self, file_path):
         pass
-        #print(f"Visiting file: {file_path}")
+        #logger.debug(f"Visiting file: {file_path}")

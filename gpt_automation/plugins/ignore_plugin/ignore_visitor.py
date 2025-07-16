@@ -1,3 +1,4 @@
+from gpt_automation.impl.logging_utils import get_logger
 # gpt_automation/visitor/ignore_visitor.py
 import os
 
@@ -8,6 +9,7 @@ from gpt_automation.plugins.ignore_plugin.ignore_file_parser import collect_patt
 
 class IgnoreVisitor(BaseVisitor):
     def __init__(self, root_dir, prompt_dir, ignore_filenames=None, profile_names=None):
+        self.logger = get_logger(__name__)
         self.root_dir = root_dir
         self.prompt_dir = prompt_dir
         self.ignore_filenames = ignore_filenames or ['.gitignore', '.gptignore']
@@ -49,7 +51,8 @@ class IgnoreVisitor(BaseVisitor):
 
     def before_traverse_directory(self, directory_path):
         # Potential pre-processing before entering a directory
-        print(f"Preparing to traverse {directory_path}")
+        # self.logger.debug(f"Preparing to traverse {directory_path}")
+        pass
 
     def visit_file(self, file_path):
         pass

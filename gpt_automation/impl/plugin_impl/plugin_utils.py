@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Dict, Any, Optional, List
+
 import os
 
 class LoadStatus(Enum):
@@ -90,12 +91,16 @@ class FilePatternFilter:
                 filtered_files.append(file)
         return filtered_files
 
+
+from gpt_automation.impl.logging_utils import get_logger
+
 class PluginUtils:
-    def __init__(self, registry: PluginRegistry, class_loader: 'PluginClassLoader'):
+    def __init__(self, registry: PluginRegistry, class_loader, log_file: str = None):
         self.registry = registry
         self.class_loader = class_loader
+        self.logger = get_logger(__name__, log_file)
 
-    def get_plugin_manifest(self, plugin_info: 'PluginInfo') -> Optional[Dict]:
+    def get_plugin_manifest(self, plugin_info) -> Optional[Dict]:
         """Read plugin manifest"""
         try:
             plugin_path = self.get_plugin_path(plugin_info.plugin_name)
@@ -121,12 +126,19 @@ class PluginUtils:
         """Get plugin class"""
         try:
             manifest_parser = ManifestParser(manifest_data)
-            class_result = self.class_loader.load_class(
-                manifest_parser.get_module_name(),
-                manifest_parser.get_class_name()
-            )
-            return class_result.loaded_item if class_result.status == LoadStatus.SUCCESS else None
-        except Exception:
+            module_name = manifest_parser.get_module_name()
+            class_name = manifest_parser.get_class_name()
+            self.logger.debug(f"Attempting to load plugin class: module={module_name}, class={class_name}, manifest={manifest_data}")
+            class_result = self.class_loader.load_class(module_name, class_name)
+            if class_result.status == LoadStatus.SUCCESS:
+                return class_result.loaded_item
+            else:
+                self.logger.error(f"Failed to load plugin class: module={module_name}, class={class_name}")
+                self.logger.debug(f"Manifest data: {manifest_data}, status={class_result.status}, message={class_result.message}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Exception while loading plugin class: {e}", exc_info=True)
+            self.logger.debug(f"Manifest data: {manifest_data}")
             return None
 
     def get_plugin_args(self, plugin_name: str) -> Dict[str, Any]:

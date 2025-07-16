@@ -1,0 +1,146 @@
+Root Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation
+Prompt Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation
+
+Directory Preview for Content (to indicate what has been copied):
+
+./
+.gitignore
+.gptignore
+.gptincludeonly
+.vscode/
+    settings.json
+LICENSE
+MANIFEST.in
+README.md
+Taskfile.yml
+build_and_publish.txt
+docs-dev/
+    architecture.md
+    cli.md
+    config.md
+    dev_notes.md
+    manual_testing.md
+    output_format.md
+    overview.md
+    plugins.md
+gpt_automation/
+    .gptincludeonly
+    __init__.py
+    commands/
+        init_command.py
+        prompt_command.py
+    docs/
+        .gptconfig_spec.md
+        cli_spec.md
+        config_spec.md
+        plugin_cli_conf_spec.md
+        plugin_developer.md
+        sample_gptignore.md
+    impl/
+        .gptignore
+        .gptincludeonly
+        __init__.py
+        base_plugin.py
+        directory_walker.py
+        plugin_impl/
+            __init__.py
+            plugin_class_loader.py
+            plugin_context.py
+            plugin_init.py
+            plugin_interfaces.py
+            plugin_loader.py
+            plugin_settings.py
+            plugin_utils.py
+        setting/
+            .gptincludeonly
+            __init__.py
+            paths.py
+            setting_models.py
+            setting_utils.py
+            settings_resolver.py
+        visitor/
+            __init__.py
+            basevisitor.py
+    main.py
+    plugin_registry.json
+    plugins/
+        .gptincludeonly
+        __init__.py
+        filter_plugin/
+            __init__.py
+            manifest.json
+            paths.py
+            plugin.py
+            sample_config/
+                black_list.txt
+                white_list.txt
+        ignore_plugin/
+            Ignore_match.py
+            __init__.py
+            filters.py
+            ignore_file_parser.py
+            ignore_visitor.py
+            manifest.json
+            plugin.py
+            third_party/
+                __init__.py
+                gitignore_parser2/
+                    __init__.py
+                    parser.py
+                    parser2.py
+            utils/
+                __init__.py
+                git_tools.py
+                pattern_utils.py
+        include_only_plugin/
+            __init__.py
+            includeonly_visitor.py
+            manifest.json
+            plugin.py
+    resources/
+        .gitignore_template
+        default_base_settings.json
+        default_profile_settings.json
+manual_tests/
+    automated/
+        output_prompt_content.txt
+        output_prompt_dir.txt
+        run_all_tests.ps1
+pyproject.toml
+pytest.ini
+requirements.txt
+setup.py
+test_data/
+    test_data_2/
+        main/
+            something.txt
+            src/
+                hello/
+                    text.txt
+                main.txt
+    tests_data_1/
+        .gitignore
+        .gptignore
+        dir_1/
+            file11.txt
+        dir_3/
+            .gptignore
+        hello.txt
+tests/
+    .gptincludeonly
+    __init__.py
+    gpt_automation_tests/
+        __init__.py
+        directory_walker_test.py
+        filter_plugin_test.py
+        ignore_plugin_test.py
+        include_only_plugin_test.py
+        init_command_test.py
+        main_test.py
+        plugin_manager_test.py
+        prompt_command_test.py
+        setting_generator_test.py
+        settings_resolver_test.py
+23 file(s) have been skipped. Check the logs at: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\.gpt\logs\prompt_generator.log
+
+Prompt has been copied to the clipboard.

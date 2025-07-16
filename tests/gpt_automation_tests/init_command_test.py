@@ -46,6 +46,8 @@ class TestInitCommand(unittest.TestCase):
             json.dump(test_settings, f)
 
     def tearDown(self):
+        from gpt_automation.impl.logging_utils import close_logger_handlers
+        close_logger_handlers('InitCommand')
         if os.path.exists(self.test_root):
             shutil.rmtree(self.test_root)
 

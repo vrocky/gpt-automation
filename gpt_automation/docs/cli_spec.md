@@ -8,6 +8,10 @@ of specific files and directories. The CLI provides commands for initializing
 configuration profiles and generating prompts for directory structures and
 file contents.
 
+## Logging Behavior
+
+All CLI actions log to a centralized log file. Only summary, info, warning, and error messages appear on the console. Stack traces and debug logs are written to the log file only.
+
 ## Commands
 
 ### `init`

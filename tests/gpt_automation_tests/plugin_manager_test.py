@@ -100,6 +100,8 @@ class TestPluginManager(unittest.TestCase):
             self.assertIsNotNone(plugin_info.context.plugin_settings_path)
 
     def tearDown(self):
+        from gpt_automation.impl.logging_utils import close_logger_handlers
+        close_logger_handlers('PluginManager')
         self.registry_patcher.stop()
         self.plugin_utils_patcher.stop()
         if os.path.exists(self.test_dir):

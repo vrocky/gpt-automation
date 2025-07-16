@@ -1,0 +1,91 @@
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----          16-07-2025    05:42                test_data_2
+d----          16-07-2025    05:42                tests_data_1
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\tests_data_1
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----          16-07-2025    05:42                dir_1
+d----          16-07-2025    05:42                dir_3
+-a---          16-07-2025    05:42             18 .gitignore
+-a---          16-07-2025    05:42             18 .gptignore
+-a---          16-07-2025    05:42              0 hello.txt
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\tests_data_1\dir_1
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---          16-07-2025    05:42              9 .gitignore
+-a---          16-07-2025    05:42             10 .gptincludeonly
+-a---          16-07-2025    05:42              0 file10.txt
+-a---          16-07-2025    05:42              0 file11.txt
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\tests_data_1\dir_3
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---          16-07-2025    05:42              0 .gptignore
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\test_data_2
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----          16-07-2025    05:42                .gpt
+d----          16-07-2025    05:42                main
+d----          16-07-2025    05:42                other
+-a---          16-07-2025    05:42              4 .gptincludeonly
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\test_data_2\.gpt
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---          16-07-2025    05:42             18 black_list.txt
+-a---          16-07-2025    05:42              2 white_list.txt
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\test_data_2\main
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----          16-07-2025    05:42                res
+d----          16-07-2025    05:42                src
+-a---          16-07-2025    05:42             13 .gptignore
+-a---          16-07-2025    05:42            185 .gptincludeonly
+-a---          16-07-2025    05:42              0 something.txt
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\test_data_2\main\res
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----          16-07-2025    05:42                world
+-a---          16-07-2025    05:42              0 res.dat
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\test_data_2\main\res\world
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---          16-07-2025    05:42              0 readme.md
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\test_data_2\main\src
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----          16-07-2025    05:42                hello
+-a---          16-07-2025    05:42              0 main.txt
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\test_data_2\main\src\hello
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---          16-07-2025    05:42              0 text.txt
+
+    Directory: C:\Users\vinit\OneDrive\Documents\project-5\gpt-automation\test_data\test_data_2\other
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---          16-07-2025    05:42             29 other.txt
+

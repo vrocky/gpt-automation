@@ -32,6 +32,8 @@ class TestDirectoryWalker(unittest.TestCase):
                 f.write(content)
 
     def tearDown(self):
+        from gpt_automation.impl.logging_utils import close_logger_handlers
+        close_logger_handlers('DirectoryWalker')
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
 

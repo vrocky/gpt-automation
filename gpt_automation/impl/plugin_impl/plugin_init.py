@@ -1,4 +1,4 @@
-import logging
+from gpt_automation.impl.logging_utils import get_logger
 from typing import Dict, Any, List, Union
 from dataclasses import dataclass
 from gpt_automation.impl.plugin_impl.plugin_loader import (
@@ -21,7 +21,7 @@ class PluginInstanceInfo:
 class PluginLifecycleHandler(IPluginLifecycleCallback):
     def __init__(self, plugin_manager: 'PluginManager', logger, context: PluginContext):
         self.plugin_manager = plugin_manager
-        self.logger = logger
+        self.logger = logger or get_logger('PluginLifecycleHandler')
         self.context = context
 
     def on_plugin_loaded(self, identifier: str, instance: Any) -> None:
@@ -33,7 +33,7 @@ class PluginLifecycleHandler(IPluginLifecycleCallback):
 
 class PluginConfigCallback(IPluginConfigCallback):
     def __init__(self, logger):
-        self.logger = logger
+        self.logger = logger or get_logger('PluginConfigCallback')
 
     def on_config_error(self, identifier: str, error: str) -> None:
         self.logger.error(f"Configuration error for {identifier}: {error}")
@@ -41,7 +41,7 @@ class PluginConfigCallback(IPluginConfigCallback):
 class ConfigurationCallback(IConfigurationCallback):
     def __init__(self, plugin_manager: 'PluginManager', logger):
         self.plugin_manager = plugin_manager
-        self.logger = logger
+        self.logger = logger or get_logger('ConfigurationCallback')
 
     def create_plugin_loader(self, context: PluginContext) -> 'PluginLoader':
         """Create configured plugin loader"""
@@ -64,11 +64,12 @@ class ConfigurationCallback(IConfigurationCallback):
         self.logger.error(f"Configuration error for {identifier}: {error}")
 
 class PluginManager:
-    def __init__(self, path_manager: PathManager, settings: Union[Dict, Settings]):
+    def __init__(self, path_manager: PathManager, settings: Union[Dict, Settings], log_file: str = None):
         self.settings = Settings.from_dict(settings) if isinstance(settings, dict) else settings
         self.path_manager = path_manager
         self.plugin_infos: Dict[str, PluginInstanceInfo] = {}
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger(__name__, log_file)
+        self.log_file = log_file
 
     def add_plugin_instance(self, identifier: str, instance: Any, context: PluginContext) -> None:
         self.plugin_infos[identifier] = PluginInstanceInfo(instance=instance, context=context)
@@ -78,7 +79,8 @@ class PluginManager:
         # Get all plugin contexts
         config_loader = PluginConfigLoader(
             settings=self.settings,
-            path_manager=self.path_manager
+            path_manager=self.path_manager,
+            log_file=self.log_file
         )
         
         # Load each plugin

@@ -1,6 +1,6 @@
 import os
 import sys
-import logging
+from gpt_automation.impl.logging_utils import get_logger
 import chardet
 from typing import Optional
 
@@ -10,24 +10,7 @@ from gpt_automation.impl.plugin_impl.plugin_init import PluginManager
 from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.setting.settings_resolver import SettingsResolver
 
-def setup_logging(log_file):
-    logger = logging.getLogger('PromptCommand')
-    logger.setLevel(logging.ERROR)
-    
-    # Remove any existing handlers
-    for handler in logger.handlers[:]:
-        handler.close()
-        logger.removeHandler(handler)
-    
-    # Ensure log directory exists
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    
-    file_handler = logging.FileHandler(log_file)  # Remove delay=True
-    file_handler.setLevel(logging.WARNING)
-    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(file_formatter)
-    logger.addHandler(file_handler)
-    return logger, file_handler
+
 
 class PluginBasedVisitor(BaseVisitor):
     def __init__(self, plugin_visitors):
@@ -115,22 +98,21 @@ class PromptCommand:
 
         # Initialize components with resolved root_dir
         self.path_manager = PathManager(self.root_dir)
+        # Ensure log directory exists before logger initialization
+        os.makedirs(self.path_manager.logs_dir, exist_ok=True)
         self.setting_resolver = SettingsResolver(self.path_manager.get_base_settings_path())
         self.settings = self.setting_resolver.resolve_settings()
         self.plugin_manager = PluginManager(path_manager=self.path_manager, settings=self.settings)
         self.plugin_manager.setup_and_activate_plugins()
-        
+
         log_file = os.path.join(self.path_manager.logs_dir, 'prompt_command.log')
-        self.logger, self.file_handler = setup_logging(log_file)
+        self.logger = get_logger('PromptCommand', log_file)
+        self.logger.info("PromptCommand logger initialized.")
         self.skipped_files_count = 0
         self.log_file_path = log_file
 
     def __del__(self):
-        """Cleanup resources"""
-        if hasattr(self, 'file_handler') and self.file_handler:
-            self.file_handler.close()
-            if self.logger:
-                self.logger.removeHandler(self.file_handler)
+        pass  # No custom handler cleanup needed with centralized logger
 
     def _check_settings_initialized(self) -> bool:
         """Check if settings are properly initialized."""
@@ -255,6 +237,12 @@ class PromptCommand:
 
     def _read_file_content(self, file_path: str) -> Optional[str]:
         try:
+            # Check if file is empty before encoding detection
+            if os.path.getsize(file_path) == 0:
+                self.logger.debug(f"File is empty: {file_path}. Skipping file.")
+                self.skipped_files_count += 1
+                return None
+
             encoding = chardet.detect(open(file_path, 'rb').read(1024))['encoding']
             if encoding is None:
                 self.logger.warning(f"Could not detect encoding for {file_path}. Skipping file.")
