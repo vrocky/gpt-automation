@@ -1,37 +1,37 @@
-# .gptignore File Specification
 
-The `.gptignore` file is a custom file format similar to `.gitignore` but with the ability to include headers like an INI file.
+The revised `.gptignore` file specification can incorporate the concept of "grouped headers" where consecutive headers share the same pattern rules until a new pattern or header is encountered. This can simplify managing similar patterns under multiple profiles or conditions without redundancy. Here's how you could define this functionality in the file format:
+## Revised .gptignore File Format 
+ 
+- **Comments:**  Lines starting with `#` are considered comments and ignored in parsing.
+ 
+- **Headers:**  Lines within `[...]` brackets define headers. These are profile names that group specific ignore patterns.
+ 
+- **Grouped Headers:**  Consecutive headers without intervening patterns are grouped together, meaning they share the same subsequent patterns until a new pattern or header disrupts the group.
+ 
+- **Patterns:**  Patterns listed under headers or globally apply to the ignoring mechanism, similar to `.gitignore`.
 
-## Format
+## Example with Grouped Headers 
 
-- Lines starting with `#` are considered comments.
-- Lines within `[...]` brackets are considered headers.
-- Patterns listed under each header are similar to those in a `.gptignore` file.
-- headers are not compulsory 
-- Headers are considered as profile name
-
-## Example
 
 ```ignore
-# This is a header
+# Global patterns
 pattern1
-pattern2
 
+# Grouped headers for shared patterns
 [Header_1]
+[Header_2]
 pattern2
 pattern3
 
-# Another header
-[Header_2]
-pattern3
+# Single header for specific patterns
+[Header_3]
 pattern4
+pattern5
 ```
-
-In this example:
-
-`pattern1` and `pattern2` are listed under global pattern
-
-`pattern3` and `pattern4` are listed under the header [Header 1].
-
-`pattern5` and `pattern6` are listed under the header [Header 1].
+ 
+- `pattern1` is global and applies to all profiles.
+ 
+- `pattern2` and `pattern3` apply to both `Header_1` and `Header_2`.
+ 
+- `pattern4` and `pattern5` are specific to `Header_3`.
 

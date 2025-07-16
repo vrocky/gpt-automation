@@ -7,6 +7,10 @@ application using JSON files. The configuration system allows for flexibility
 and modularity, enabling users to enable or disable specific plugins based on
 their preferences.
 
+## Logging
+
+All plugin enable/disable actions and errors are logged to the centralized log file. Console output remains clean and minimal.
+
 ## Configuration File Structure
 
 ### Main Config
@@ -18,9 +22,7 @@ of the plugins, which are handled separately by the plugin developers.
 
     
     
-    json
-    
-    Copy code
+```json
     
     {
         "extends": "none",
@@ -38,7 +40,7 @@ of the plugins, which are handled separately by the plugin developers.
             }
         ]
     }
-    
+  ```  
 
 ## Configuration Keys
 

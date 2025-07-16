@@ -1,0 +1,26 @@
+{
+    "extends": "none",
+    "override": false,
+    "plugins": [
+        {
+            "plugin_name": "gpt_ignore",
+            "package_name": "gpt_automation",
+            "args": {   "enable": true,"ignore_filenames": [".gitignore", ".gptignore"]}
+        },
+        {
+            "plugin_name": "gpt_include_only",
+            "package_name": "gpt_automation",
+
+            "args": {"enable": true,"include_only_filenames": [".gptincludeonly"]}
+        },
+          {
+            "plugin_name": "bw_filter",
+            "package_name": "gpt_automation",
+
+            "args": {"enable": true,"back_list": ["blacklist.txt"]}
+        }
+
+
+    ]
+  }
+

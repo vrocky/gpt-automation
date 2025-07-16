@@ -1,0 +1,9 @@
+{
+    "name": "bw_filter",
+    "description": "A plugin to filter files and directories based on blacklist and whitelist patterns.",
+    "module_name": "gpt_automation.plugins.filter_plugin.plugin",
+    "class_name": "BlacklistWhitelistPlugin",
+    "version": "1.0.0",
+    "author": "Your Organization",
+    "package_name": "gpt_automation"
+}

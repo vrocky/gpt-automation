@@ -1,59 +1,68 @@
 import argparse
+import os
+import sys
 
-from gpt_automation.config.config_manager import ConfigManager
-from gpt_automation.prompt_generator import PromptGenerator
+from gpt_automation.commands.init_command import InitCommand
+from gpt_automation.commands.prompt_command import PromptCommand
 
+class KeyValueAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, dict())
+        for item in values:
+            key, value = item.split('=')()
+            getattr(namespace, self.dest)[key] = value
+
+def setup_cli_parser():
+    parser = argparse.ArgumentParser(description="Automates project structure and file content generation.")
+    subparsers = parser.add_subparsers(dest='command', required=True, help='Commands')
+    
+    # Init command
+    init_parser = subparsers.add_parser('init', help='Set up initial configuration files and directories.')
+    init_parser.add_argument('--root_dir', default=None, help='Root directory for configuration.')
+    init_parser.add_argument("profiles", nargs='*', default=[], help="Profile names for initial setup.")
+
+    # Prompt command
+    prompt_parser = subparsers.add_parser('prompt', help='Generate structure and content prompts for profiles.')
+    prompt_parser.add_argument('--root_dir', default=None, help='Root directory for configuration.')
+    prompt_parser.add_argument("profiles", nargs='*', help="Profile names for generating prompts.")
+    prompt_parser.add_argument("--dir", nargs='*', default=None, help="Generate directory structure for these profiles.")
+    prompt_parser.add_argument("--content", nargs='*', default=None, help="Generate content for these profiles.")
+    prompt_parser.add_argument('--prompt_dir', default=None, help='Prompt directory to store generated content.')
+
+    return parser
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Generate directory structure and file contents prompt for a GPT model.")
-    subparsers = parser.add_subparsers(dest='command', help='Select a command to execute', required=True)
-
-    init_parser = subparsers.add_parser('init',
-                                        help='Initialize the .gpt directory with sample black and white list files.')
-    init_parser.add_argument("profiles", nargs='*', default=[], help="Names of the profiles to initialize.")
-
-    prompt_parser = subparsers.add_parser('prompt', help='Generate prompts for directory and/or file contents.')
-    prompt_parser.add_argument("profiles", nargs='*', help="Profiles to generate prompts for.")
-    prompt_parser.add_argument("--dir", nargs='*', default=None,
-                               help="Generate directory structure prompt for these profiles.")
-    prompt_parser.add_argument("--content", nargs='*', default=None,
-                               help="Generate file contents prompt for these profiles.")
-
+    parser = setup_cli_parser()
     args = parser.parse_args()
-
+    
     if args.command == "init":
-        config_manager = ConfigManager()
-        if not args.profiles:
-            config_manager.initialize_configurations()  # Initialize default configurations
-        else:
-            for profile in set(args.profiles):  # Use a set to avoid initializing the same profile more than once
-                config_manager.initialize_profile_config(profile)
+        command = InitCommand(
+            root_dir=args.root_dir,
+            profile_names=args.profiles
+        )
+        command.execute()
+        
     elif args.command == "prompt":
         generate_dir = args.dir is not None
         generate_content = args.content is not None
-        dir_path = args.dir if args.dir is not None else "."
-        config_manager = ConfigManager(dir_path)
-        prompt_generator = PromptGenerator(config_manager)
-
-        # Combine all profile lists and remove duplicates using set
-        all_profiles = set(args.profiles or [])
-        dir_profiles = set(args.dir or [])
-        content_profiles = set(args.content or [])
-
-        # Combine all sets into one to ensure all profiles are unique
-        combined_profiles = all_profiles | dir_profiles | content_profiles
-
-        # Pass the combined and unique profiles to generate prompts
         if not generate_dir and not generate_content:
-            generate_dir = generate_content = True  # Default to both if neither flag is provided
-
-        prompt_generator.generate_prompt(dir_profiles=combined_profiles if generate_dir else set(),
-                                         content_profiles=combined_profiles if generate_content else set(),
-                                         generate_dir=generate_dir, generate_content=generate_content)
+            generate_dir = generate_content = True
+            
+        dir_profiles = args.dir if args.dir else args.profiles
+        content_profiles = args.content if args.content else args.profiles
+        
+        command = PromptCommand(
+            root_dir=args.root_dir,
+            prompt_dir=args.prompt_dir,
+            profiles=args.profiles,
+            dir_profiles=dir_profiles,
+            content_profiles=content_profiles,
+            generate_dir=generate_dir,
+            generate_content=generate_content
+        )
+        command.execute()
     else:
         parser.print_help()
-
 
 if __name__ == "__main__":
     main()

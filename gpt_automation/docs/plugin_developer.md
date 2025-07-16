@@ -38,36 +38,51 @@ point.
 The `manifest.json` file is crucial as it contains metadata about the plugin,
 crucial for the application to correctly load and use the plugin.
 
+
+## Plugin Manifest File
+
+The `manifest.json` file is essential as it contains metadata about the
+plugin, which is critical for the application to correctly load and manage the
+plugin within its ecosystem.
+
 ### Manifest File Structure
 
-The manifest should now include the following:
+The manifest should now comprehensively include the following key elements:
 
-  * **name** : The official name of the plugin.
-  * **description** : A brief description of what the plugin does.
-  * **module_name** : The Python module where the main plugin code is located.
-  * **class_name** : The class within the module that should be instantiated or used.
-  * **version** : The current version of the plugin.
-  * **author** : The name or organization behind the plugin.
-  * **package_name** : The Python package name, if applicable.
+  * **name** : The official name of the plugin, used for identification within the system.
+  * **description** : A brief description of what the plugin does, detailing its purpose and functionality.
+  * **module_name** : The Python module where the main plugin code is located. This is essential for the system to know from where to import the plugin.
+  * **class_name** : The specific class within the module that should be instantiated or used by the application. This class must implement the necessary plugin interfaces.
+  * **version** : The current version of the plugin, helpful for dependency management and updates.
+  * **author** : The name or organization behind the plugin, providing credit and contact information if necessary.
+  * **package_name** : The Python package name if the plugin is part of a larger Python package. This can be crucial for resolving any dependencies or namespace issues.
+
+Additional metadata that might be crucial for more advanced plugin handling:
+
+  * **configFilePatterns** : An array of file patterns that this plugin can accept for configuration. These patterns help the system to automatically assign configuration files to the plugin based on the extensions specified in the CLI commands.
 
 ### Example `manifest.json`
 
-    
-    
-    json
-    
-    Copy code
+```json
     
     {
-        "name": "my_plugin",
-        "description": "Provides enhanced data processing capabilities.",
-        "module_name": "my_plugin_module",
-        "class_name": "DataProcessor",
-        "version": "1.0.0",
-        "author": "Your Name",
-        "package_name": "advanced_data_processing"
+      "name": "my_plugin",
+      "description": "Provides enhanced data processing capabilities.",
+      "module_name": "my_plugin_module",
+      "class_name": "DataProcessor",
+      "version": "1.0.0",
+      "author": "Your Name",
+      "package_name": "advanced_data_processing",
+      "configFilePatterns": [
+        ".cfg.json",
+        ".setting.json"
+      ]
     }
-    
+```  
+
+
+
+
 
 ## Central Plugin Registry (`plugin_registry.json`)
 

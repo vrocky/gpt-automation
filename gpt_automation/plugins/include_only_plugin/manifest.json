@@ -1,9 +1,14 @@
 {
-    "name": "IncludeOnlyPlugin",
+    "name": "gpt_include_only",
     "description": "A plugin to select specified files based on patterns.",
     "module_name": "gpt_automation.plugins.include_only_plugin.plugin",
     "class_name": "IncludeOnlyPlugin",
     "version": "1.0.0",
     "author": "Your Organization",
-    "package_name": "gpt_automation"
+    "package_name": "gpt_automation",
+    "configFilePatterns": [
+            ".cfg.json",
+            ".setting.json"
+            ]
+
 }

@@ -1,2 +1,9 @@
 [plugins]
-#base_plugin.py
+__init__.py
+
+
+[filter_plugin]
+filter_plugin
+
+[ignore_plugin]
+ignore_plugin

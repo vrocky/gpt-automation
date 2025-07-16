@@ -1,0 +1,104 @@
+version: '3'
+
+vars:
+  ROOT_DIR: '{{.ROOT_DIR | default "."}}'
+  PROMPT_DIR: '{{.PROMPT_DIR | default "prompts"}}'
+
+tasks:
+  create-venv:
+    desc: Create a Python virtual environment in .venv directory
+    cmds:
+      - python -m venv .venv
+      - Write-Host "Virtual environment created in .venv. Activate with 'source .venv/bin/activate' (Linux/macOS) or '.venv\\Scripts\\Activate.ps1' (Windows PowerShell)."
+  install-pipx:
+    desc: Install pipx if not already installed
+    cmds:
+      - python3 -m pip install --user pipx
+      - python3 -m pipx ensurepath
+
+  install:
+    desc: Install the package in development mode
+    cmds:
+      - pip install -e .
+
+  install-global:
+    desc: Install the package globally using pipx
+    cmds:
+      - pipx install .
+
+  uninstall:
+    desc: Uninstall the package from development mode
+    cmds:
+      - pip uninstall -y gpt-automation
+
+  uninstall-global:
+    desc: Uninstall the package from global installation
+    cmds:
+      - pipx uninstall gpt-automation
+
+  init:
+    desc: Initialize with default profiles
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} init default web api
+
+  init-custom:
+    desc: Initialize with custom profiles
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} init {{.PROFILES}}
+
+  prompt-all:
+    desc: Generate both directory and content prompts
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} --prompt_dir {{.PROMPT_DIR}} prompt default web api
+
+  prompt-dir:
+    desc: Generate only directory structure prompts
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} --prompt_dir {{.PROMPT_DIR}} prompt --dir default web api
+
+  prompt-content:
+    desc: Generate only content prompts
+    deps: [install]
+    cmds:
+      - python -m gpt_automation.main --root_dir {{.ROOT_DIR}} --prompt_dir {{.PROMPT_DIR}} prompt --content default web api
+
+  test-all:
+    desc: Run all test scenarios
+    cmds:
+      - task: init
+      - task: prompt-all
+      - task: clean
+
+  clean:
+    desc: Clean up generated files
+    cmds:
+      - rm -rf {{.ROOT_DIR}}/prompts/*
+      - rm -rf {{.ROOT_DIR}}/config/*
+
+  build:
+    desc: Build the package distribution
+    cmds:
+      - python setup.py sdist bdist_wheel
+
+  publish:
+    desc: Publish the package to PyPI
+    deps: [build]
+    cmds:
+      - twine upload dist/*
+
+  publish-test:
+    desc: Publish the package to TestPyPI
+    deps: [build]
+    cmds:
+      - twine upload --repository testpypi dist/*
+
+  clean-dist:
+    desc: Clean up distribution files
+    cmds:
+      - rm -rf build/
+      - rm -rf dist/
+      - rm -rf *.egg-info
