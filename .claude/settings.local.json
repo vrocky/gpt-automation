@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Recurse -Depth 2 -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object FullName)",
+      "Bash(xargs cat)",
+      "Bash(git pull *)",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(pip install *)",
+      "Bash(python -m venv venv)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Clean up legacy code and fix test warnings *)"
+    ]
+  }
+}

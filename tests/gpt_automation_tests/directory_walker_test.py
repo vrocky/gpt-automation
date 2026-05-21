@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 import unittest
 from unittest.mock import MagicMock
 
@@ -93,6 +94,7 @@ class TestDirectoryWalker(unittest.TestCase):
         leave_idx = len(call_order) - call_order[::-1].index('leave_directory') - 1
         self.assertGreater(leave_idx, visit_idx)
 
+    @unittest.skipIf(sys.platform == 'win32', "Symlink creation requires admin privileges on Windows")
     def test_cyclic_directory_handling(self):
         """Test handling of cyclic directory structures"""
         # Create a directory cycle using symlinks

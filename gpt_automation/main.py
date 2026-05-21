@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 from gpt_automation.container import AppContainer
-from gpt_automation.commands.prompt_command import RootLookup
+from gpt_automation.infrastructure.filesystem.root_discovery import RootLookup
 
 
 def _build_parser() -> argparse.ArgumentParser:

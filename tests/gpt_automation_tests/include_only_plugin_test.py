@@ -7,7 +7,7 @@ from gpt_automation.impl.setting.paths import PathManager
 from gpt_automation.impl.visitor.basevisitor import BaseVisitor
 
 
-class TestFileVisitor(BaseVisitor):
+class MockFileVisitor(BaseVisitor):
     def __init__(self, plugin_visitor=None):
         self.plugin_visitor = plugin_visitor
         self.visited_files = []
@@ -91,7 +91,7 @@ class TestIncludeOnlyPlugin(unittest.TestCase):
         self.assertTrue(len(plugin_visitors) > 0)
         
         # Create collector with plugin visitor
-        collector = TestFileVisitor(plugin_visitors[0])
+        collector = MockFileVisitor(plugin_visitors[0])
         walker = DirectoryWalker(self.test_dir, visitor=collector)
         
         # Walk and collect files
