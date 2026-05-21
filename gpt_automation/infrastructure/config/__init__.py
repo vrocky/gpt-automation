@@ -1,0 +1,1 @@
+"""Configuration (settings) infrastructure layer."""
