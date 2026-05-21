@@ -9,7 +9,15 @@
       "Bash(pip install *)",
       "Bash(python -m venv venv)",
       "Bash(git add *)",
-      "Bash(git commit -m 'Clean up legacy code and fix test warnings *)"
+      "Bash(git commit -m 'Clean up legacy code and fix test warnings *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\globql-local\\\\Documents\\\\projects\\\\gpt-automation\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Bash(xargs wc -l)",
+      "Bash(python -m pytest --collect-only -q)",
+      "Bash(rm tests/gpt_automation_tests/directory_walker_test.py)",
+      "Bash(python -m pytest tests/ -x --tb=short)",
+      "Bash(Select-Object -Last 80)"
     ]
   }
 }
