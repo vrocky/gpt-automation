@@ -1,24 +1,27 @@
 """
 Build file filters from project settings.
 
-Bridges settings (what the user configured) with concrete visitor objects
-(the actual filtering logic). Each enabled plugin becomes a FileFilter.
+Orchestrates filter creation: decides which filters to create and how to combine them.
+Delegates actual creation to FilterFactory.
 """
 
 from pathlib import Path
 
 from gpt_automation.domain.filters.file_filter import FileFilter, AllFilters, IncludeEverythingFilter
 from gpt_automation.infrastructure.config.settings_model import ProjectSettings, BuiltinPlugin
+from gpt_automation.infrastructure.plugins.filter_factory import FilterFactory
 
 
 class FilterBuilder:
     """
-    Construct a FileFilter from ProjectSettings.
+    Orchestrate filter creation and combination.
+
+    Decides which filters to create, in what order, and how to combine them.
+    Delegates actual creation to FilterFactory.
 
     Usage:
-        builder = FilterBuilder(settings, project_paths)
+        builder = FilterBuilder(settings, plugin_dir)
         filter_ = builder.build_for_traversal(root_dir, work_dir, profiles)
-        files = walker.collect_matching_files(work_dir, filter_)
     """
 
     def __init__(self, settings: ProjectSettings, plugin_dir: Path):
@@ -27,7 +30,7 @@ class FilterBuilder:
         plugin_dir – .gpt/config/ directory where plugin data files live
         """
         self._settings = settings
-        self._plugin_dir = plugin_dir
+        self._factory = FilterFactory(settings, plugin_dir)
 
     def build_for_traversal(
         self,
@@ -58,7 +61,7 @@ class FilterBuilder:
         Called during `init` so that users can edit the files after setup.
         """
         if self._settings.is_plugin_active(BuiltinPlugin.BLOCKLIST_ALLOWLIST):
-            self._setup_blocklist_allowlist(root_dir, profiles)
+            self._factory.setup_blocklist_allowlist_files(root_dir, profiles)
 
     # ──────────────────────────── private helpers ────────────────────────────
 
@@ -68,84 +71,22 @@ class FilterBuilder:
         work_dir: Path,
         profiles: list[str],
     ) -> list[FileFilter]:
-        """Create one FileFilter per active plugin, in order."""
+        """Create one FileFilter per active plugin, in order (via factory)."""
         filters: list[FileFilter] = []
 
         if self._settings.is_plugin_active(BuiltinPlugin.IGNORE_PATTERNS):
-            f = self._create_ignore_filter(root_dir, work_dir, profiles)
+            f = self._factory.create_ignore_filter(root_dir, work_dir, profiles)
             if f:
                 filters.append(f)
 
         if self._settings.is_plugin_active(BuiltinPlugin.INCLUDE_PATTERNS):
-            f = self._create_include_filter(root_dir, work_dir, profiles)
+            f = self._factory.create_include_only_filter(root_dir, work_dir, profiles)
             if f:
                 filters.append(f)
 
         if self._settings.is_plugin_active(BuiltinPlugin.BLOCKLIST_ALLOWLIST):
-            f = self._create_blocklist_allowlist_filter(root_dir, profiles)
+            f = self._factory.create_blocklist_allowlist_filter(root_dir, profiles)
             if f:
                 filters.append(f)
 
         return filters
-
-    def _create_ignore_filter(
-        self,
-        root_dir: Path,
-        work_dir: Path,
-        profiles: list[str],
-    ) -> FileFilter:
-        """Build IgnoreVisitor-backed filter."""
-        from gpt_automation.infrastructure.plugins.visitor_adapter import IgnoreVisitorFilter
-
-        cfg = self._settings.plugin_settings(BuiltinPlugin.IGNORE_PATTERNS)
-        filenames = cfg.option('ignore_filenames') or ['.gitignore', '.gptignore']
-
-        return IgnoreVisitorFilter(
-            root_dir=root_dir,
-            work_dir=work_dir,
-            ignore_filenames=filenames,
-            profiles=profiles,
-        )
-
-    def _create_include_filter(
-        self,
-        root_dir: Path,
-        work_dir: Path,
-        profiles: list[str],
-    ) -> FileFilter:
-        """Build IncludeOnlyVisitor-backed filter."""
-        from gpt_automation.infrastructure.plugins.visitor_adapter import IncludeOnlyVisitorFilter
-
-        cfg = self._settings.plugin_settings(BuiltinPlugin.INCLUDE_PATTERNS)
-        filenames = cfg.option('include_only_filenames') or ['.gptincludeonly']
-
-        return IncludeOnlyVisitorFilter(
-            root_dir=root_dir,
-            work_dir=work_dir,
-            include_filenames=filenames,
-            profiles=profiles,
-        )
-
-    def _create_blocklist_allowlist_filter(
-        self,
-        root_dir: Path,
-        profiles: list[str],
-    ) -> FileFilter:
-        """Build BlocklistAllowlist-backed filter."""
-        from gpt_automation.infrastructure.plugins.visitor_adapter import BlocklistAllowlistFilter
-
-        plugin_data_dir = self._plugin_dir / 'gpt_automation' / 'bw_filter'
-
-        return BlocklistAllowlistFilter(
-            root_dir=root_dir,
-            plugin_dir=plugin_data_dir,
-            profiles=profiles,
-        )
-
-    def _setup_blocklist_allowlist(self, root_dir: Path, profiles: list[str]) -> None:
-        """Initialize blocklist/allowlist files for first run."""
-        from gpt_automation.plugins.filter_plugin.plugin import BlacklistWhitelistPlugin
-
-        plugin = BlacklistWhitelistPlugin()
-        plugin_data_dir = str(self._plugin_dir / 'gpt_automation' / 'bw_filter')
-        plugin.init(plugin_data_dir, str(root_dir), profiles)
