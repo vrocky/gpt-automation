@@ -9,8 +9,8 @@ from pathlib import Path
 from dataclasses import dataclass
 
 from gpt_automation.domain.traversal.directory_reader import DirectoryWalker
-from gpt_automation.infrastructure.config.settings_loader import SettingsReader
 from gpt_automation.infrastructure.filesystem.project_paths import ProjectPaths
+from gpt_automation.infrastructure.config.settings_model import ProjectSettings
 from gpt_automation.infrastructure.plugins.filter_builder import FilterBuilder
 from gpt_automation.infrastructure.logging.logger import Logger
 
@@ -30,8 +30,15 @@ class GeneratePrompts:
     """
     Walk a directory and generate LLM-ready prompts.
 
-    Reads settings, builds the right filters for the current profiles,
-    walks the work directory, and formats the results.
+    All dependencies are injected:
+    - walker: traverses directory, applies filters
+    - logger: logs progress/errors
+    - content_reader: reads file contents with encoding handling
+    - paths: project directory structure
+    - settings: which plugins are enabled
+    - filter_builder: creates visitor filters from settings
+
+    This use case has NO hidden construction — everything comes in.
     """
 
     def __init__(
@@ -39,14 +46,19 @@ class GeneratePrompts:
         walker: DirectoryWalker,
         logger: Logger,
         content_reader: 'FileContentReader',
+        paths: ProjectPaths,
+        settings: ProjectSettings,
+        filter_builder: FilterBuilder,
     ):
         self._walker = walker
         self._logger = logger
         self._content_reader = content_reader
+        self._paths = paths
+        self._settings = settings
+        self._filter_builder = filter_builder
 
     def run(
         self,
-        project_root: Path,
         work_dir: Path,
         profiles: list[str],
         include_tree: bool = True,
@@ -55,21 +67,26 @@ class GeneratePrompts:
         """
         Generate prompts for the given directory and profiles.
 
-        project_root – directory containing .gpt/
-        work_dir     – directory to analyse (often == project_root)
+        work_dir     – directory to analyse
         profiles     – list of profile names (empty list = default profile)
+        include_tree – whether to include directory structure
+        include_contents – whether to include file contents
         """
         self._logger.info(f"Generating prompts for {work_dir} (profiles={profiles})")
 
-        paths = ProjectPaths(project_root)
-        settings = SettingsReader(paths.settings_file).read()
-        filter_builder = FilterBuilder(settings, paths.plugins_dir)
-        file_filter = filter_builder.build_for_traversal(project_root, work_dir, profiles)
+        # Build filter from settings
+        file_filter = self._filter_builder.build_for_traversal(
+            self._paths.root,
+            work_dir,
+            profiles,
+        )
 
+        # Collect matching files
         files = self._walker.collect_matching_files(work_dir, file_filter)
         self._logger.info(f"Collected {len(files)} files after filtering")
 
-        tree_block = self._build_tree(files, project_root) if include_tree else ''
+        # Format output blocks
+        tree_block = self._build_tree(files, self._paths.root) if include_tree else ''
         content_block = self._build_contents(files) if include_contents else ''
 
         return PromptResult(directory_tree=tree_block, file_contents=content_block)

@@ -62,13 +62,15 @@ def main() -> int:
 
 
 def _run_init(args) -> int:
+    """Dispatch init command through the container."""
     root = Path(args.root_dir).resolve() if args.root_dir else Path.cwd()
     container = AppContainer(root)
-    success = container.initialize_project.run(root, args.profiles)
+    success = container.initialize_project.run(args.profiles)
     return 0 if success else 1
 
 
 def _run_prompt(args) -> int:
+    """Dispatch prompt command through the container."""
     # Discover root directory (walk up from cwd looking for .gpt/)
     lookup = RootLookup(
         initial_dir=args.root_dir or str(Path.cwd()),
@@ -97,7 +99,6 @@ def _run_prompt(args) -> int:
     # Generate tree
     if want_tree:
         result = container.generate_prompts.run(
-            project_root=root,
             work_dir=work,
             profiles=dir_profiles,
             include_tree=True,
@@ -110,7 +111,6 @@ def _run_prompt(args) -> int:
     # Generate content
     if want_content:
         result = container.generate_prompts.run(
-            project_root=root,
             work_dir=work,
             profiles=content_profiles,
             include_tree=False,
