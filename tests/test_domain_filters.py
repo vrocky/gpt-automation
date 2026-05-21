@@ -2,76 +2,76 @@
 Test domain layer filter logic.
 
 Pure business logic tests — no I/O, no external dependencies.
+All tests run in milliseconds with zero mock setup.
 """
 
 import pytest
 from pathlib import Path
-from gpt_automation.domain.filters.file_filter import FileFilter, NullFilter, ChainedFilter
+from gpt_automation.domain.filters.file_filter import (
+    FileFilter,
+    AllFilters,
+    IncludeEverythingFilter,
+)
 
 
-class AlwaysAcceptFilter(FileFilter):
-    """Test filter that always accepts."""
+# ── helpers ──────────────────────────────────────────────────────────────────
 
-    def accepts(self, file_path: Path) -> bool:
+class AcceptAll(FileFilter):
+    def should_include_file(self, f: Path) -> bool:
         return True
 
-    def should_traverse_directory(self, dir_path: Path) -> bool:
+    def should_include_directory(self, d: Path) -> bool:
         return True
 
 
-class NeverAcceptFilter(FileFilter):
-    """Test filter that never accepts."""
-
-    def accepts(self, file_path: Path) -> bool:
+class RejectAll(FileFilter):
+    def should_include_file(self, f: Path) -> bool:
         return False
 
-    def should_traverse_directory(self, dir_path: Path) -> bool:
-        return True
+    def should_include_directory(self, d: Path) -> bool:
+        return False
 
 
-class TestNullFilter:
-    """Test NullFilter (accept everything)."""
+# ── IncludeEverythingFilter ───────────────────────────────────────────────────
+
+class TestIncludeEverythingFilter:
+    """Pass-through filter accepts all files and directories."""
 
     def test_accepts_all_files(self):
-        f = NullFilter()
-        assert f.accepts(Path('file.txt'))
-        assert f.accepts(Path('dir/file.py'))
-        assert f.accepts(Path('.hidden'))
+        f = IncludeEverythingFilter()
+        assert f.should_include_file(Path('file.txt'))
+        assert f.should_include_file(Path('deep/nested/path.py'))
+        assert f.should_include_file(Path('.hidden'))
 
     def test_traverses_all_directories(self):
-        f = NullFilter()
-        assert f.should_traverse_directory(Path('any/dir'))
-        assert f.should_traverse_directory(Path('.git'))
+        f = IncludeEverythingFilter()
+        assert f.should_include_directory(Path('any/dir'))
+        assert f.should_include_directory(Path('.git'))
+        assert f.should_include_directory(Path('.'))
 
 
-class TestChainedFilter:
-    """Test ChainedFilter (AND logic)."""
+# ── AllFilters ────────────────────────────────────────────────────────────────
 
-    def test_all_accept_returns_true(self):
-        """All filters accept → file accepted."""
-        f1 = AlwaysAcceptFilter()
-        f2 = AlwaysAcceptFilter()
-        chained = ChainedFilter([f1, f2])
+class TestAllFilters:
+    """AND logic — every filter must agree."""
 
-        assert chained.accepts(Path('file.txt'))
+    def test_all_accept_means_include(self):
+        assert AllFilters([AcceptAll(), AcceptAll()]).should_include_file(Path('f'))
 
-    def test_one_rejects_returns_false(self):
-        """One filter rejects → file rejected."""
-        f1 = AlwaysAcceptFilter()
-        f2 = NeverAcceptFilter()
-        chained = ChainedFilter([f1, f2])
+    def test_one_reject_means_exclude(self):
+        assert not AllFilters([AcceptAll(), RejectAll()]).should_include_file(Path('f'))
 
-        assert not chained.accepts(Path('file.txt'))
+    def test_all_reject_means_exclude(self):
+        assert not AllFilters([RejectAll(), RejectAll()]).should_include_file(Path('f'))
+
+    def test_directory_all_must_agree(self):
+        assert AllFilters([AcceptAll(), AcceptAll()]).should_include_directory(Path('d'))
+        assert not AllFilters([AcceptAll(), RejectAll()]).should_include_directory(Path('d'))
 
     def test_requires_at_least_one_filter(self):
-        """ChainedFilter requires at least one filter."""
-        with pytest.raises(ValueError):
-            ChainedFilter([])
+        with pytest.raises(ValueError, match="at least one"):
+            AllFilters([])
 
-    def test_directory_traversal_requires_all(self):
-        """All filters must allow directory traversal."""
-        f1 = AlwaysAcceptFilter()
-        f2 = AlwaysAcceptFilter()
-        chained = ChainedFilter([f1, f2])
-
-        assert chained.should_traverse_directory(Path('dir'))
+    def test_single_filter_works(self):
+        assert AllFilters([AcceptAll()]).should_include_file(Path('f'))
+        assert not AllFilters([RejectAll()]).should_include_file(Path('f'))

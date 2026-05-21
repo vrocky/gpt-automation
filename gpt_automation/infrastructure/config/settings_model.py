@@ -1,71 +1,74 @@
 """
-Settings data structures (immutable configuration objects).
+Settings data structures — immutable configuration objects.
 
-These are pure data—no I/O, no logic, just structure.
+Pure data, no I/O, no business logic. These are loaded once and
+passed around. Treat them as read-only after creation.
 """
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 
 
-class PluginType(Enum):
-    """Available plugin types in the system."""
+class BuiltinPlugin(Enum):
+    """
+    The three built-in file filtering plugins.
 
-    IGNORE = 'ignore'
-    INCLUDE = 'include'
-    BLACKLIST_WHITELIST = 'bw_filter'
+    Each controls a different aspect of which files get included.
+    """
+
+    IGNORE_PATTERNS = 'ignore'           # Reads .gitignore / .gptignore files
+    INCLUDE_PATTERNS = 'include'         # Reads .gptincludeonly files
+    BLOCKLIST_ALLOWLIST = 'bw_filter'    # Reads black_list.txt / white_list.txt
 
 
 @dataclass
-class PluginConfig:
-    """Configuration for a single plugin."""
+class PluginSettings:
+    """
+    Settings for one plugin: is it on, and what options does it have?
+    """
 
-    type: PluginType
+    plugin: BuiltinPlugin
     enabled: bool = True
-    settings: Dict[str, Any] = field(default_factory=dict)
+    options: dict[str, Any] = field(default_factory=dict)
 
-    def is_enabled(self) -> bool:
-        """Check if plugin is enabled."""
-        return self.enabled
-
-    def get_setting(self, key: str, default: Any = None) -> Any:
-        """Get a plugin setting with optional default."""
-        return self.settings.get(key, default)
+    def option(self, key: str, default: Any = None) -> Any:
+        """Read one option value, with a fallback default."""
+        return self.options.get(key, default)
 
 
 @dataclass
-class Settings:
+class ProjectSettings:
     """
-    Application settings (immutable).
+    Full project settings.
 
-    Contains plugin configurations and extension settings.
+    Holds the configuration for all plugins.
+    Loaded from base_settings.json; use ProjectSettings.defaults() for a
+    fresh project that hasn't been configured yet.
     """
 
-    extends: str = 'none'
-    override: bool = False
-    plugins: list[PluginConfig] = field(default_factory=list)
+    plugins: list[PluginSettings] = field(default_factory=list)
 
     @classmethod
-    def defaults(cls) -> 'Settings':
-        """Return default settings with all plugins enabled."""
+    def defaults(cls) -> 'ProjectSettings':
+        """All plugins enabled with sensible defaults."""
         return cls(
-            extends='none',
-            override=False,
             plugins=[
-                PluginConfig(PluginType.IGNORE, enabled=True),
-                PluginConfig(PluginType.INCLUDE, enabled=True),
-                PluginConfig(PluginType.BLACKLIST_WHITELIST, enabled=True),
-            ],
+                PluginSettings(BuiltinPlugin.IGNORE_PATTERNS, enabled=True),
+                PluginSettings(BuiltinPlugin.INCLUDE_PATTERNS, enabled=True),
+                PluginSettings(BuiltinPlugin.BLOCKLIST_ALLOWLIST, enabled=True),
+            ]
         )
 
-    def find_plugin_by_type(self, plugin_type: PluginType) -> Optional[PluginConfig]:
-        """Find plugin config by type."""
-        return next(
-            (p for p in self.plugins if p.type == plugin_type),
-            None,
-        )
+    def plugin_settings(self, plugin: BuiltinPlugin) -> Optional[PluginSettings]:
+        """Find configuration for a specific plugin. Returns None if not configured."""
+        return next((p for p in self.plugins if p.plugin == plugin), None)
 
-    def enabled_plugins(self) -> list[PluginConfig]:
-        """Return only enabled plugins."""
-        return [p for p in self.plugins if p.is_enabled()]
+    def active_plugins(self) -> list[PluginSettings]:
+        """Return only the plugins that are enabled."""
+        return [p for p in self.plugins if p.enabled]
+
+    def is_plugin_active(self, plugin: BuiltinPlugin) -> bool:
+        """True if the given plugin is configured and enabled."""
+        cfg = self.plugin_settings(plugin)
+        return cfg is not None and cfg.enabled

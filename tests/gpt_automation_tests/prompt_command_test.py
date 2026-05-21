@@ -100,6 +100,7 @@ class TestPromptCommand(unittest.TestCase):
         self.assertTrue(result)
         # ...existing code...
 
+    @unittest.skipUnless(__import__('importlib').util.find_spec('pyperclip'), 'pyperclip not installed')
     @patch('pyperclip.copy')
     def test_clipboard_copy(self, mock_copy):
         self.prompt_command.execute()

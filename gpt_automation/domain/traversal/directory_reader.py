@@ -1,7 +1,8 @@
 """
-Directory traversal using injected path provider.
+Directory traversal using injected filesystem query object.
 
-Domain logic for walking directories. No filesystem calls—uses injected PathProvider.
+Domain logic for walking directories. No filesystem calls — uses injected
+FilesystemQuery abstraction so this code stays testable without real I/O.
 """
 
 from abc import ABC, abstractmethod
@@ -9,74 +10,71 @@ from pathlib import Path
 from gpt_automation.domain.filters.file_filter import FileFilter
 
 
-class PathProvider(ABC):
+class FilesystemQuery(ABC):
     """
-    Infrastructure abstraction: "How do we know which files exist?"
+    Abstraction for asking questions about the filesystem.
 
-    Injected into domain so domain can be tested without real filesystem.
-    This is the ONLY way domain communicates with I/O layer.
+    Injected into domain so it can be tested without real filesystem.
+    This is the boundary between domain logic and I/O infrastructure.
+
+    Domain uses this to ask: "is this a file?", "what's in this directory?"
+    Infrastructure provides the real answers from the OS.
     """
-
-    @abstractmethod
-    def file_exists(self, path: Path) -> bool:
-        """Check if path exists as a file."""
-        ...
 
     @abstractmethod
     def is_file(self, path: Path) -> bool:
-        """Check if path is a regular file."""
+        """True if path is a regular file."""
         ...
 
     @abstractmethod
     def is_directory(self, path: Path) -> bool:
-        """Check if path is a directory."""
+        """True if path is a directory."""
         ...
 
     @abstractmethod
-    def list_entries(self, dir_path: Path) -> list[Path]:
-        """Return all entries in directory (files and subdirectories)."""
+    def list_directory(self, dir_path: Path) -> list[Path]:
+        """Return all entries inside a directory (files and subdirs combined)."""
         ...
 
 
-class DirectoryReader:
+class DirectoryWalker:
     """
-    Recursively read directory tree, filtering with FileFilter.
+    Walk a directory tree and collect files matching a filter.
 
-    Does NOT do I/O itself—uses injected PathProvider.
-    Does NOT know about JSON, plugins, or settings.
-    Pure business logic: given filesystem info, apply filter.
+    All filesystem queries go through injected FilesystemQuery.
+    No I/O happens in this class—pure coordination logic.
     """
 
-    def __init__(self, path_provider: PathProvider):
-        self._paths = path_provider
+    def __init__(self, filesystem: FilesystemQuery):
+        self._filesystem = filesystem
 
-    def collect_files(self, root_dir: Path, file_filter: FileFilter) -> list[Path]:
+    def collect_matching_files(self, root_dir: Path, file_filter: FileFilter) -> list[Path]:
         """
-        Recursively collect files that filter accepts.
+        Recursively collect files that pass the filter.
 
-        Returns list of absolute paths.
+        Returns sorted list of absolute paths.
         """
         collected: list[Path] = []
-        self._traverse(root_dir, file_filter, collected)
+        self._walk(root_dir, file_filter, collected)
         return collected
 
-    def _traverse(self, current_dir: Path, file_filter: FileFilter, collected: list[Path]) -> None:
-        """Recursively traverse directory, respecting filter decisions."""
-        if not self._paths.is_directory(current_dir):
+    def _walk(self, current_dir: Path, file_filter: FileFilter, collected: list[Path]) -> None:
+        """Recursively walk directory, applying filter at each step."""
+        if not self._filesystem.is_directory(current_dir):
             return
 
-        if not file_filter.should_traverse_directory(current_dir):
+        if not file_filter.should_include_directory(current_dir):
             return
 
         try:
-            entries = self._paths.list_entries(current_dir)
+            entries = self._filesystem.list_directory(current_dir)
         except (OSError, PermissionError):
-            return  # Silently skip unreadable directories
+            return  # Skip unreadable directories silently
 
         for entry in sorted(entries):
-            if self._paths.is_file(entry):
-                if file_filter.accepts(entry):
+            if self._filesystem.is_file(entry):
+                if file_filter.should_include_file(entry):
                     collected.append(entry)
 
-            elif self._paths.is_directory(entry):
-                self._traverse(entry, file_filter, collected)
+            elif self._filesystem.is_directory(entry):
+                self._walk(entry, file_filter, collected)

@@ -1,83 +1,91 @@
 """
 Use case: Initialize a new project.
 
-Story: "As a user, I want to set up a new project with .gpt/ directory and default settings."
+Story: "Set up a project with .gpt/ directory, default settings, and plugin files."
 """
 
 from pathlib import Path
+from shutil import copyfile
 
-from gpt_automation.domain.traversal.directory_reader import PathProvider
 from gpt_automation.infrastructure.filesystem.project_paths import ProjectPaths
-from gpt_automation.infrastructure.config.settings_model import Settings
-from gpt_automation.infrastructure.config.settings_loader import SettingsSaver
+from gpt_automation.infrastructure.config.settings_model import ProjectSettings
+from gpt_automation.infrastructure.config.settings_loader import SettingsWriter
+from gpt_automation.infrastructure.plugins.filter_builder import FilterBuilder
 from gpt_automation.infrastructure.logging.logger import Logger
 
 
 class InitializeProject:
     """
-    Initialize a new project with .gpt/ directory and settings.
+    Initialize a project directory for use with gpt_automation.
 
-    Dependencies injected:
-    - path_provider: For filesystem operations (abstraction)
-    - logger: For logging (abstraction)
+    Creates .gpt/ directory structure, writes default settings, copies
+    template files, and initializes any plugin-managed files.
+
+    Dependencies are all injected — no direct filesystem calls from this class.
     """
 
-    def __init__(self, path_provider: PathProvider, logger: Logger):
-        self._path_provider = path_provider
+    def __init__(
+        self,
+        filter_builder: FilterBuilder,
+        logger: Logger,
+        resources_dir: Path,
+    ):
+        self._filter_builder = filter_builder
         self._logger = logger
+        self._resources_dir = resources_dir
 
-    def execute(self, project_root: Path, profile_names: list[str]) -> bool:
+    def run(self, project_root: Path, profiles: list[str]) -> bool:
         """
-        Initialize project.
+        Fully initialize the project. Returns True on success.
 
-        Returns True if successful, False otherwise.
+        Steps:
+          1. Create .gpt/ directory structure
+          2. Write default settings.json
+          3. Copy .gitignore template
+          4. Create plugin data files (blocklist, allowlist, etc.)
         """
         try:
-            self._logger.info(f"Initializing project at {project_root}")
-
+            self._logger.info(f"Initializing project: {project_root}")
             paths = ProjectPaths(project_root)
 
-            # Step 1: Create all required directories
             self._create_directories(paths)
+            self._write_default_settings(paths)
+            self._copy_gitignore_template(paths)
+            self._setup_plugin_files(paths, profiles)
 
-            # Step 2: Create default settings file
-            self._create_settings_file(paths)
-
-            # Step 3: Initialize plugins (they may create files)
-            self._initialize_plugins(paths, profile_names)
-
-            self._logger.info("Project initialized successfully")
+            self._logger.info("Project ready")
             return True
 
         except Exception as e:
             self._logger.exception(e, "Initialization failed")
             return False
 
+    # ─────────────────────────── steps ───────────────────────────
+
     def _create_directories(self, paths: ProjectPaths) -> None:
-        """Create all required .gpt/ directories."""
-        self._logger.debug("Creating directories...")
-
         for directory in paths.all_required_directories():
-            if not self._path_provider.is_directory(directory):
-                Path(directory).mkdir(parents=True, exist_ok=True)
-                self._logger.debug(f"Created {directory}")
+            directory.mkdir(parents=True, exist_ok=True)
+        self._logger.debug("Directories ready")
 
-    def _create_settings_file(self, paths: ProjectPaths) -> None:
-        """Create default settings.json."""
-        self._logger.debug("Creating settings file...")
-
+    def _write_default_settings(self, paths: ProjectPaths) -> None:
         if paths.settings_file.exists():
-            self._logger.debug("Settings file already exists")
+            self._logger.debug("Settings file already exists — skipping")
             return
 
-        settings = Settings.defaults()
-        saver = SettingsSaver(paths.settings_file)
-        saver.save(settings)
-        self._logger.debug(f"Created settings file at {paths.settings_file}")
+        writer = SettingsWriter(paths.settings_file)
+        writer.write(ProjectSettings.defaults())
+        self._logger.debug(f"Wrote default settings to {paths.settings_file}")
 
-    def _initialize_plugins(self, paths: ProjectPaths, profile_names: list[str]) -> None:
-        """Initialize plugins that need setup (e.g., create blacklist/whitelist files)."""
-        self._logger.debug(f"Initializing plugins for profiles: {profile_names}")
+    def _copy_gitignore_template(self, paths: ProjectPaths) -> None:
+        template = self._resources_dir / '.gitignore_template'
+        destination = paths.gpt_dir / '.gitignore'
 
-        # TODO: Plugin initialization will be implemented in integration layer
-        pass
+        if destination.exists() or not template.exists():
+            return
+
+        copyfile(template, destination)
+        self._logger.debug(f"Copied .gitignore template to {destination}")
+
+    def _setup_plugin_files(self, paths: ProjectPaths, profiles: list[str]) -> None:
+        self._filter_builder.setup_plugin_files(paths.root, profiles)
+        self._logger.debug("Plugin files ready")
